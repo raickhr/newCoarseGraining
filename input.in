@@ -1,0 +1,24 @@
+&input
+InputPath = './input'
+gridFile = 'ROMSgrid.nc'
+num_of_files_to_read = 3
+num_of_fields_to_read = 6
+startTimeIndex = 1
+endTimeIndex =52 
+nx = 2599
+ny = 599
+nz = 1
+nt = 52 
+nfilter = 3
+OutputPath = 'outputFolder'
+/
+
+&Lists
+list_filenames = "some_h.14b.19980301.nc", 
+                 "some_h.14b.19980311.nc", 
+                 "some_h.14b.19980321.nc"
+
+list_fieldsNames = "uo", "vo", "taux", "tauy", "tauxUo", "tauyVo"
+
+list_filterLength = 10, 20, 30
+/
