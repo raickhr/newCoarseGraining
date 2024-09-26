@@ -1,7 +1,7 @@
-tests/*.f90
-tests/*.F90
-tests/*.f
-tests/*.c
+# tests/*.f90
+# tests/*.F90
+# tests/*.f
+# tests/*.c
 
 **/*.o
 **/*.mod
