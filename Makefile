@@ -39,8 +39,10 @@ mpiwrapper.o: mpiwrapper.F90
 
 all: $(OBJ)
 	$(FC) $^ -o main.exe $(FFLAGS) $(FLIBS)
+	mv main.exe tests/
 
 clean:
 	rm -f *.mod *.o
+
 
 

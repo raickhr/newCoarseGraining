@@ -5,6 +5,9 @@ module input_data_info
 
     integer (kind=int_kind) :: num_files, num_zlevels, start_timeindex, end_timeindex
     integer (kind=int_kind) , allocatable :: arr_z_index(:)
+    real (kind=real_kind) :: timevar_val(1)
+    character (len=varname_len) :: timevar_name
+    character (len=units_len) :: timevar_units, timevar_calendar
     contains
 
     subroutine set_numfiles_numzlevels_ntimesinafile(n1, n2, n3, n4)

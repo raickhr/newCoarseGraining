@@ -7,6 +7,29 @@ module netcdf_io
 
     contains
 
+    subroutine getTimeVar(fileid, varname_in_ncfile, units, calendar, time_index, value, error_string)
+        integer, intent(in) :: fileid, time_index
+        character(*), intent(in) :: varname_in_ncfile, error_string
+        character(len=units_len), intent(out) :: units, calendar
+        real(kind=real_kind), intent(out) :: value(1)
+
+        integer :: ncerr, varid, startcount(1), endcount(1)
+
+        startcount = (/time_index/)
+        endcount = (/1/)
+        ncerr = nf90_inq_varid(fileid, varname_in_ncfile, varid)
+        if ( ncerr .NE. nf90_noerr )  call handle_err(ncerr, error_string)
+
+        ncerr = nf90_get_att(fileid, varid, "units", units)
+        if (ncerr .NE. nf90_noerr) call handle_err(ncerr, "error obtaining units of "//varname_in_ncfile)
+
+        ncerr = nf90_get_att(fileid, varid, "calendar", calendar)
+        if (ncerr .NE. nf90_noerr) call handle_err(ncerr, "error obtaining calendar of "//varname_in_ncfile)
+
+        ncerr = nf90_get_var(fileid, varid, value, startcount, endcount)
+
+    end subroutine
+
     subroutine getVar2D_real(fileid, varname_in_ncfile, varArr,  error_string )
         integer, intent(in) :: fileid
         character (*), intent(in) :: varname_in_ncfile, error_string

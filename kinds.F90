@@ -8,6 +8,7 @@ module kinds
                         & varname_len = 50, &
                         & units_len = 100, &
                         & longname_len = 200, &
+                        & dimname_len = 20, &
                         & int_kind = kind(5), &
                         & log_kind = kind(.true.), &
                         & real_kind = selected_real_kind(6), &

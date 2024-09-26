@@ -30,6 +30,7 @@ module configurationMod
             character (len = varname_len), allocatable :: list_3DvectorY_fieldsNames(:)
             character (len = varname_len), allocatable :: list_3DvectorZ_fieldsNames(:)
 
+            character (len = varname_len) :: timevar_name
             integer :: startTimeIndex   !Start Time index for each file
             integer :: endTimeIndex   !End Time index for each file
             integer :: nx, ny, nz, nt        ! size of the array in each file
@@ -40,8 +41,8 @@ module configurationMod
 
             character (len=pathname_len):: OutputPath 
         contains
-            procedure :: deallocate => deallocate_vars     ! Method to delloacate variables
-            procedure :: init => new_configuration
+            procedure :: destruct => deallocate_vars     ! Method to delloacate variables
+            procedure :: construct => new_configuration
 
         end type
 
@@ -54,32 +55,36 @@ module configurationMod
 
         subroutine new_configuration(self)
             class(configuration), intent(inout) :: self
+
             !Defining the configuration elements as a Data type
             character (len=pathname_len) :: InputPath  
             character (len=filename_len) :: gridFile  !Name of the grid files
 
             integer :: num_of_files_to_read   !Number of input flies excluding gridfile
-            character (len = filename_len), allocatable :: list_filenames(:)
+            character (len = filename_len), allocatable , dimension(:):: list_filenames
 
             integer :: num_of_scalar_fields_to_read !Number of fields to filter
-            character (len = varname_len), allocatable :: list_scalar_fieldsNames(:)
+            character (len = varname_len), allocatable , dimension(:):: list_scalar_fieldsNames
 
             integer :: num_of_2Dvector_fields_to_read !Number of fields to filter
-            character (len = varname_len), allocatable :: list_2DvectorX_fieldsNames(:)
-            character (len = varname_len), allocatable :: list_2DvectorY_fieldsNames(:)
+            character (len = varname_len), allocatable , dimension(:):: list_2DvectorX_fieldsNames
+            character (len = varname_len), allocatable , dimension(:):: list_2DvectorY_fieldsNames
 
             integer :: num_of_3Dvector_fields_to_read !Number of fields to filter
-            character (len = varname_len), allocatable :: list_3DvectorX_fieldsNames(:)
-            character (len = varname_len), allocatable :: list_3DvectorY_fieldsNames(:)
-            character (len = varname_len), allocatable :: list_3DvectorZ_fieldsNames(:)
+            character (len = varname_len), allocatable , dimension(:):: list_3DvectorX_fieldsNames
+            character (len = varname_len), allocatable , dimension(:):: list_3DvectorY_fieldsNames
+            character (len = varname_len), allocatable , dimension(:):: list_3DvectorZ_fieldsNames
+
+
+            character (len = varname_len) :: timevar_name
 
             integer :: startTimeIndex   !Start Time index for each file
             integer :: endTimeIndex   !End Time index for each file
             integer :: nx, ny, nz, nt        ! size of the array in each file
-            integer, allocatable :: list_zlevels(:)
+            integer, allocatable , dimension(:):: list_zlevels
 
             integer :: nfilter               ! number of filterlengths
-            real, allocatable :: list_filterLength(:)   ! array of the filterlength
+            real, allocatable , dimension(:):: list_filterLength   ! array of the filterlength
             
             character (len=pathname_len):: OutputPath   
 
@@ -95,6 +100,7 @@ module configurationMod
                     & num_of_scalar_fields_to_read, &
                     & num_of_2Dvector_fields_to_read, &
                     & num_of_3Dvector_fields_to_read, &
+                    & timevar_name, &
                     & startTimeIndex, &
                     & endTimeIndex, &
                     & nx, ny, nz, nt, &
@@ -122,6 +128,7 @@ module configurationMod
             WRITE(*,'(A50, I4)') 'num_of_scalar_fields_to_read :', num_of_scalar_fields_to_read
             WRITE(*,'(A50, I4)') 'num_of_2Dvector_fields_to_read :', num_of_2Dvector_fields_to_read
             WRITE(*,'(A50, I4)') 'num_of_3Dvector_fields_to_read :', num_of_3Dvector_fields_to_read
+            WRITE(*,'(A50, A30)') 'timevar_name :', timevar_name
             WRITE(*,'(A50, I4)') 'startTimeIndex :', startTimeIndex
             WRITE(*,'(A50, I4)') 'endTimeIndex :', endTimeIndex
             WRITE(*,'(A50, I4, I4, I4, I4)') 'nx, ny, nz, nt :', nx, ny, nz, nt
@@ -133,6 +140,7 @@ module configurationMod
             self%InputPath  = trim(adjustl(InputPath))
             self%OutputPath   = trim(adjustl(OutputPath))
             self%gridFile  = trim(adjustl(gridFile))
+            self%timevar_name = trim(adjustl(timevar_name))
             self%startTimeIndex   = startTimeIndex
             self%endTimeIndex   = endTimeIndex
             self%nx = nx

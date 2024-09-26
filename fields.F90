@@ -7,7 +7,7 @@ module fields
     type fieldInfo
         character (len=varname_len) :: varname
         character (len=units_len) :: units
-        character (len=longname_len) :: long_name      
+        character (len=longname_len) :: long_name
     end type
 
     integer(kind=int_kind) :: num_scalar_fields, &

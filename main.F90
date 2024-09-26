@@ -15,7 +15,7 @@ program main
     call startMPI()
 
     if (taskid .EQ. MASTER) then
-        call config%init   ! Run the constructor for configuration object which also reads the configuration file
+        call config%construct()   ! Run the constructor for configuration object which also reads the configuration file
         call set_size(config%nx, config%ny, config%nz)
         call init_grid(config%nx, config%ny, config%nz)
         call get_grid_nc(config%InputPath, config%gridFile)
@@ -40,8 +40,10 @@ program main
         ! setting input data info for reading
         call set_numfiles_numzlevels_ntimesinafile(config%num_of_files_to_read, &
                                             &      config%nz, &
-                                            &      config%startTimeIndex,  &
+                                            &      config%startTimeIndex,  &    
                                             &      config%endTimeIndex)
+
+        timevar_name = trim(adjustl(config%timevar_name))
 
         call alloc_arr_z_index()
 
@@ -86,15 +88,14 @@ program main
         end do !close time loop
     end do ! close
 
-    ! call deallocate_gridVars()
-    ! call deallocate_filtervars()
-    ! call deallocate_inputData_info()
-    ! call delloacate_fields()
-    ! if (taskid .EQ. MASTER) call config%deallocate()
+    call deallocate_gridVars()
+    call deallocate_filtervars()
+    call deallocate_inputData_info()
+    call delloacate_fields()
+    call config%destruct()
 
     call MPI_Barrier(MPI_COMM_WORLD, i_err)
-    print *, taskid, ' done okay till here'
-    call MPI_Barrier(MPI_COMM_WORLD, i_err)
+    if (taskid .EQ. MASTER) print *, 'Ending program'
     call stopMPI()
 
 end program

@@ -67,6 +67,10 @@ module read_write
         print *,''
         print *, 'Opened  ', trim(adjustl(filename))
 
+        if (taskid .EQ. MASTER) call getTimeVar(file_id, trim(adjustl(timevar_name)), &
+                                                timevar_units, timevar_calendar, time_index, &
+                                                timevar_val, "error getting time variable info ")
+
         do field_count =1, num_scalar_fields
             do z_count =1, num_zlevels
                 z_index = arr_z_index(z_count)
