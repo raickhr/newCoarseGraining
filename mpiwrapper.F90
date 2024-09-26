@@ -21,4 +21,8 @@ module mpiwrapper
         FROM_WORKER =2
     end subroutine
 
+    subroutine stopMPI()
+        call MPI_FINALIZE(i_err)
+    end subroutine
+
 end module

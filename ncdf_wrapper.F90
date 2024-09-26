@@ -1,7 +1,7 @@
 module ncdf_wrapper
 
-    include 'netcdf.inc'
-    !use netcdf
+    !include 'netcdf.inc'
+    use netcdf
     contains
 
     subroutine handle_err (status, string)
@@ -11,7 +11,7 @@ module ncdf_wrapper
         integer status
         character*(*) string
 
-        write (*,*) nf_strerror(status),': ',string
+        write (*,*) nf90_strerror(status),': ',string
 
         return
 

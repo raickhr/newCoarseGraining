@@ -211,7 +211,7 @@ module constants
 
 !-----------------------------------------------------------------------
 
-    if ( ierr /= 0 ) then
+    if ( ierr .NE. 0 ) then
        print *,'ERROR in int_constants: could not allocate unity arrays'
        stop 999
     endif

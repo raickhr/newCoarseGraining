@@ -1,8 +1,7 @@
 module gridModule
     use kinds
     use constants
-    use ncdf_wrapper
-    use netcdf_io
+    use mpiwrapper
 
     implicit none
 
@@ -44,45 +43,34 @@ module gridModule
             endif
         end subroutine
 
-        subroutine get_grid_nc(path, grid_filename)
-
-            character(len=*) :: path
-            character(len=*) :: grid_filename
+        subroutine broadCastGridInfo()
+            call MPI_BCAST(nxu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(nyu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(nzu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
     
-            ! local variables
-            character(len=600) :: file_netcdf
-
-            integer :: ncerr, fileid
-
-            !---- Open file
-            file_netcdf = trim(path) // '/' // trim(grid_filename)
-            print *,'Opening grid file : ',trim(file_netcdf)
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+            if (taskid .NE. MASTER) call init_grid(nxu, nyu, nzu)
     
-            ncerr = nf_open(trim(file_netcdf), nf_nowrite, fileid)
-            if ( ncerr /= nf_noerr )  call handle_err(ncerr, 'nf_open')
+            call MPI_BCAST(DXU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(DYU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(ULAT, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(ULONG, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(KMU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(UAREA, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(HU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(FCORU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
     
-            print *,'File ',trim(file_netcdf), ' opened ..'
-            print *,' '
-    
-            print *,'Reading file now ..'
-            
-            call getVar2D_real(fileid, 'DXU', DXU,  'error reading DXU')
-            call getVar2D_real(fileid, 'DYU', DYU,  'error reading DYU')
-            call getVar2D_real(fileid, 'ULAT', ULAT,  'error reading ULAT')
-            call getVar2D_real(fileid, 'ULONG', ULONG,  'error reading ULONG')
-            call getVar2D_real(fileid, 'UAREA', UAREA,  'error reading UAREA')
-            call getVar2D_real(fileid, 'KMU', KMU,  'error reading KMU')
-            call getVar2D_real(fileid, 'HU', HU,  'error reading HU')
-            call getVar2D_real(fileid, 'FCORU', FCORU,  'error reading FCORU')
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+        end subroutine
 
-            ! closing the grid file
-            ncerr = nf_close(fileid)
-
-            print *,'Read grid file complete ..'
-            print *,' '
-
-            
-        end subroutine get_grid_nc
+        subroutine deallocate_gridVars()
+            deallocate( DXU, DYU,         &  ! {x,y} spacing centered at U points
+                    &   ULAT, ULONG,      &  ! {latitude,longitude} of U points (radians)
+                    &   UAREA,            &  ! area of U cells
+                    &   FCORU,             &   ! Coriolis parameter at U  points
+                    &   KMU,               &   ! mask at U points  
+                    &   HU)                     !Bathymetry at U points      )
+        end subroutine
 
 end module
 

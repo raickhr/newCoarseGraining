@@ -4,16 +4,18 @@ program main
     use mpiwrapper
     use fields
     use filterparallel
+    use input_data_info
+    use read_write
 
     implicit none
     
     type(configuration):: config         ! object that defines run configuration
-    
+    integer :: file_index, time_index, z_index, filter_index
 
     call startMPI()
 
     if (taskid .EQ. MASTER) then
-        config = configuration()   ! Run the constructor for configuration object which also reads the configuration file
+        call config%init   ! Run the constructor for configuration object which also reads the configuration file
         call set_size(config%nx, config%ny, config%nz)
         call init_grid(config%nx, config%ny, config%nz)
         call get_grid_nc(config%InputPath, config%gridFile)
@@ -23,44 +25,76 @@ program main
         call set_num_2Dvector_fields(config%num_of_2Dvector_fields_to_read)
         call set_num_3Dvector_fields(config%num_of_3Dvector_fields_to_read)
 
+        call allocate_scalar_fields(nxu, nyu, nzu)
+        call allocate_vector2D_fields(nxu, nyu)
+        call allocate_vector3D_fields(nxu, nyu, nzu)
+
+        call set_fieldnames(config%list_scalar_fieldsNames, &
+                        &   config%list_2DvectorX_fieldsNames,  config%list_2DvectorX_fieldsNames, &
+                        &   config%list_3DvectorX_fieldsNames,  config%list_3DvectorY_fieldsNames, config%list_3DvectorZ_fieldsNames)
+
         ! setting filterlength info
         call set_num_filterlengths(config%nfilter)
         call set_arr_filterlength(config%list_filterLength)
+
+        ! setting input data info for reading
+        call set_numfiles_numzlevels_ntimesinafile(config%num_of_files_to_read, &
+                                            &      config%nz, &
+                                            &      config%startTimeIndex,  &
+                                            &      config%endTimeIndex)
+
+        call alloc_arr_z_index()
+
+        call set_arr_z_index(config%list_zlevels)
+                                    
+
     endif
 
-    call MPI_BCAST(nxu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_BCAST(nyu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_BCAST(nzu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+    call broadCastGridInfo()
+    call broadCastFieldInfo()
+    call broadCastFilterInfo()
+    call broadCastInputDataInfo()
+
+    do file_index = 1, num_files
+        if (taskid .EQ. MASTER) then
+            print *,"AT FILE NUMBER ",file_index,' OF ', num_files
+        endif
+        do time_index = start_timeindex, end_timeindex
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+            if (taskid .EQ. MASTER) then
+                print *,"AT TIME INDEX ",time_index-start_timeindex+1,' OF ', end_timeindex - start_timeindex +1
+
+                call read_fields(trim(adjustl(config%InputPath))//'/'//trim(adjustl(config%list_filenames(file_index))), &
+                                    time_index)
+                ! call assign_fields()
+            endif
+
+            !call bcastFields()
+
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+            ! do filter_index = 1, num_filterlengths
+
+            ! end do ! close filter loop
+
+            ! call collectFilteredFields
+            
+            ! if (taskid .EQ. MASTER) then
+            !     call writeFields()
+            ! end if
+
+        end do !close time loop
+    end do ! close
+
+    ! call deallocate_gridVars()
+    ! call deallocate_filtervars()
+    ! call deallocate_inputData_info()
+    ! call delloacate_fields()
+    ! if (taskid .EQ. MASTER) call config%deallocate()
 
     call MPI_Barrier(MPI_COMM_WORLD, i_err)
-    call init_grid(nxu, nyu, nzu)
-
-    call MPI_BCAST(DXU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_BCAST(DYU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_BCAST(ULAT, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_BCAST(ULONG, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_BCAST(KMU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_BCAST(UAREA, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_BCAST(HU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_BCAST(FCORU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
-
+    print *, taskid, ' done okay till here'
     call MPI_Barrier(MPI_COMM_WORLD, i_err)
-
-    call MPI_BCAST(num_scalar_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_BCAST(num_2Dvector_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_BCAST(num_3Dvector_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
-
-    call MPI_Barrier(MPI_COMM_WORLD, i_err)
-
-    call allocate_scalar_fields(nxu, nyu, nzu)
-    call allocate_vector2D_fields(nxu, nyu)
-    call allocate_vector3D_fields(nxu, nyu, nzu)
-
-    call MPI_BCAST(num_filterlengths, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
-    call MPI_Barrier(MPI_COMM_WORLD, i_err)
-    call set_num_filterlengths(num_filterlengths)
-    call MPI_BCAST(arr_filterlengths, num_filterlengths, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
-
-    call MPI_FINALIZE(i_err)
+    call stopMPI()
 
 end program

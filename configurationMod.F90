@@ -1,5 +1,5 @@
 module configurationMod
-
+    use kinds
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !
     !  THIS MODULE IS FOR SETTING THE CONFIGURATION TO RUN THE CODE
@@ -10,75 +10,81 @@ module configurationMod
     implicit none
 
     !public
-        type configuration
+        type, public:: configuration
             !Defining the configuration elements as a Data type
-            character (len=250) :: InputPath  
-            character (len=150) :: gridFile  !Name of the grid files
+            character (len=pathname_len) :: InputPath  
+            character (len=filename_len) :: gridFile  !Name of the grid files
 
             integer :: num_of_files_to_read   !Number of input flies excluding gridfile
-            character (len = 150), allocatable :: list_filenames(:)
+            character (len = filename_len), allocatable :: list_filenames(:)
 
             integer :: num_of_scalar_fields_to_read !Number of fields to filter
-            character (len = 150), allocatable :: list_scalar_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_scalar_fieldsNames(:)
 
             integer :: num_of_2Dvector_fields_to_read !Number of fields to filter
-            character (len = 150), allocatable :: list_2DvectorX_fieldsNames(:)
-            character (len = 150), allocatable :: list_2DvectorY_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_2DvectorX_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_2DvectorY_fieldsNames(:)
             
             integer :: num_of_3Dvector_fields_to_read !Number of fields to filter
-            character (len = 150), allocatable :: list_3DvectorX_fieldsNames(:)
-            character (len = 150), allocatable :: list_3DvectorY_fieldsNames(:)
-            character (len = 150), allocatable :: list_3DvectorZ_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_3DvectorX_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_3DvectorY_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_3DvectorZ_fieldsNames(:)
 
             integer :: startTimeIndex   !Start Time index for each file
             integer :: endTimeIndex   !End Time index for each file
             integer :: nx, ny, nz, nt        ! size of the array in each file
+            integer, allocatable :: list_zlevels(:)  ! list of zlevels to read
 
             integer :: nfilter               ! number of filterlengths
             real, allocatable :: list_filterLength(:)   ! array of the filterlength
 
-            character (len=250):: OutputPath   
+            character (len=pathname_len):: OutputPath 
+        contains
+            procedure :: deallocate => deallocate_vars     ! Method to delloacate variables
+            procedure :: init => new_configuration
 
         end type
 
-        !This is for the constructor function for the datatype configuration
-        interface configuration
-            module procedure new_configuration
-        end interface
+        ! !This is for the constructor function for the datatype configuration
+        ! interface configuration
+        !     module procedure new_configuration
+        ! end interface
 
         contains
 
-        function new_configuration()
+        subroutine new_configuration(self)
+            class(configuration), intent(inout) :: self
             !Defining the configuration elements as a Data type
-            character (len=250) :: InputPath  
-            character (len=150) :: gridFile  !Name of the grid files
+            character (len=pathname_len) :: InputPath  
+            character (len=filename_len) :: gridFile  !Name of the grid files
 
             integer :: num_of_files_to_read   !Number of input flies excluding gridfile
-            character (len = 150), allocatable :: list_filenames(:)
+            character (len = filename_len), allocatable :: list_filenames(:)
 
             integer :: num_of_scalar_fields_to_read !Number of fields to filter
-            character (len = 150), allocatable :: list_scalar_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_scalar_fieldsNames(:)
 
             integer :: num_of_2Dvector_fields_to_read !Number of fields to filter
-            character (len = 150), allocatable :: list_2DvectorX_fieldsNames(:)
-            character (len = 150), allocatable :: list_2DvectorY_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_2DvectorX_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_2DvectorY_fieldsNames(:)
 
             integer :: num_of_3Dvector_fields_to_read !Number of fields to filter
-            character (len = 150), allocatable :: list_3DvectorX_fieldsNames(:)
-            character (len = 150), allocatable :: list_3DvectorY_fieldsNames(:)
-            character (len = 150), allocatable :: list_3DvectorZ_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_3DvectorX_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_3DvectorY_fieldsNames(:)
+            character (len = varname_len), allocatable :: list_3DvectorZ_fieldsNames(:)
 
             integer :: startTimeIndex   !Start Time index for each file
             integer :: endTimeIndex   !End Time index for each file
             integer :: nx, ny, nz, nt        ! size of the array in each file
+            integer, allocatable :: list_zlevels(:)
 
             integer :: nfilter               ! number of filterlengths
             real, allocatable :: list_filterLength(:)   ! array of the filterlength
             
-            character (len=250):: OutputPath   
+            character (len=pathname_len):: OutputPath   
 
 
-            type(configuration) :: new_configuration
+            
 
             integer :: counter
             
@@ -103,14 +109,15 @@ module configurationMod
                     & list_3DvectorX_fieldsNames, &
                     & list_3DvectorY_fieldsNames, &
                     & list_3DvectorZ_fieldsNames, &
+                    & list_zlevels, &
                     & list_filterLength
 
 
             print *, 'reading configuration...'
             read(*,input)
 
-            WRITE(*,'(A50, A)') 'InputPath :', InputPath
-            WRITE(*,'(A50, A)') 'gridFile :', gridFile
+            WRITE(*,'(A50, A)') 'InputPath :', trim(adjustl(InputPath))
+            WRITE(*,'(A50, A)') 'gridFile :', trim(adjustl(gridFile))
             WRITE(*,'(A50, I4)') 'num_of_files_to_read :', num_of_files_to_read
             WRITE(*,'(A50, I4)') 'num_of_scalar_fields_to_read :', num_of_scalar_fields_to_read
             WRITE(*,'(A50, I4)') 'num_of_2Dvector_fields_to_read :', num_of_2Dvector_fields_to_read
@@ -119,25 +126,25 @@ module configurationMod
             WRITE(*,'(A50, I4)') 'endTimeIndex :', endTimeIndex
             WRITE(*,'(A50, I4, I4, I4, I4)') 'nx, ny, nz, nt :', nx, ny, nz, nt
             WRITE(*,'(A50, I4)') 'nfilter :', nfilter
-            WRITE(*,'(A50, A)') 'OutputPath :', OutputPath
+            WRITE(*,'(A50, A)') 'OutputPath :', trim(adjustl(OutputPath))
 
             print *, ' '
             
-            new_configuration%InputPath  = trim(adjustl(InputPath))
-            new_configuration%OutputPath   = trim(adjustl(OutputPath))
-            new_configuration%gridFile  = trim(adjustl(gridFile))
-            new_configuration%startTimeIndex   = startTimeIndex
-            new_configuration%endTimeIndex   = endTimeIndex
-            new_configuration%nx = nx
-            new_configuration%ny = ny
-            new_configuration%nz = nz
-            new_configuration%nt = nt    
+            self%InputPath  = trim(adjustl(InputPath))
+            self%OutputPath   = trim(adjustl(OutputPath))
+            self%gridFile  = trim(adjustl(gridFile))
+            self%startTimeIndex   = startTimeIndex
+            self%endTimeIndex   = endTimeIndex
+            self%nx = nx
+            self%ny = ny
+            self%nz = nz
+            self%nt = nt    
 
-            new_configuration%num_of_files_to_read   = num_of_files_to_read
-            new_configuration%num_of_scalar_fields_to_read = num_of_scalar_fields_to_read
-            new_configuration%num_of_2Dvector_fields_to_read = num_of_2Dvector_fields_to_read
-            new_configuration%num_of_3Dvector_fields_to_read = num_of_3Dvector_fields_to_read
-            new_configuration%nfilter = nfilter
+            self%num_of_files_to_read   = num_of_files_to_read
+            self%num_of_scalar_fields_to_read = num_of_scalar_fields_to_read
+            self%num_of_2Dvector_fields_to_read = num_of_2Dvector_fields_to_read
+            self%num_of_3Dvector_fields_to_read = num_of_3Dvector_fields_to_read
+            self%nfilter = nfilter
 
             allocate(list_filenames(num_of_files_to_read))
             allocate(list_scalar_fieldsNames(num_of_scalar_fields_to_read))
@@ -146,66 +153,100 @@ module configurationMod
             allocate(list_3DvectorX_fieldsNames(num_of_3Dvector_fields_to_read))
             allocate(list_3DvectorY_fieldsNames(num_of_3Dvector_fields_to_read))
             allocate(list_3DvectorZ_fieldsNames(num_of_3Dvector_fields_to_read))
+            allocate(list_zlevels(nz))
             allocate(list_filterLength(nfilter))
 
-            allocate(new_configuration%list_filenames(num_of_files_to_read))
-            allocate(new_configuration%list_scalar_fieldsNames(num_of_scalar_fields_to_read))
-            allocate(new_configuration%list_2DvectorX_fieldsNames(num_of_2Dvector_fields_to_read))
-            allocate(new_configuration%list_2DvectorY_fieldsNames(num_of_2Dvector_fields_to_read))
-            allocate(new_configuration%list_3DvectorX_fieldsNames(num_of_3Dvector_fields_to_read))
-            allocate(new_configuration%list_3DvectorY_fieldsNames(num_of_3Dvector_fields_to_read))
-            allocate(new_configuration%list_3DvectorZ_fieldsNames(num_of_3Dvector_fields_to_read))
-            allocate(new_configuration%list_filterLength(nfilter))
+            allocate(self%list_filenames(num_of_files_to_read))
+            allocate(self%list_scalar_fieldsNames(num_of_scalar_fields_to_read))
+            allocate(self%list_2DvectorX_fieldsNames(num_of_2Dvector_fields_to_read))
+            allocate(self%list_2DvectorY_fieldsNames(num_of_2Dvector_fields_to_read))
+            allocate(self%list_3DvectorX_fieldsNames(num_of_3Dvector_fields_to_read))
+            allocate(self%list_3DvectorY_fieldsNames(num_of_3Dvector_fields_to_read))
+            allocate(self%list_3DvectorZ_fieldsNames(num_of_3Dvector_fields_to_read))
+            allocate(self%list_zlevels(nz))
+            allocate(self%list_filterLength(nfilter))
 
             read(*, Lists)
             
             print *, ' Following are the filenames that will be read'
             do counter=1, num_of_files_to_read
                 WRITE(*,'(A50)') trim(adjustl(list_filenames(counter)))
-                new_configuration%list_filenames(counter) = trim(adjustl(list_filenames(counter)))
+                self%list_filenames(counter) = trim(adjustl(list_filenames(counter)))
             end do
             print *, ' '
             print *, ' '
 
             print *, ' Following are the scalar fieldnames that will be read'
             do counter=1, num_of_scalar_fields_to_read
-                WRITE(*,'(A50)') trim(adjustl(list_scalar_fieldsNames(counter)))
-                new_configuration%list_scalar_fieldsNames(counter) = trim(adjustl(list_scalar_fieldsNames(counter)))
+                WRITE(*,'(A25)') trim(adjustl(list_scalar_fieldsNames(counter)))
+                self%list_scalar_fieldsNames(counter) = trim(adjustl(list_scalar_fieldsNames(counter)))
             end do
             print *, ' '
             print *, ' '
 
             print *, ' Following are the 2D vector fieldnames that will be read'
             do counter=1, num_of_2Dvector_fields_to_read
-                WRITE(*,'(A50, A50)') trim(adjustl(list_2DvectorX_fieldsNames(counter))), trim(adjustl(list_2DvectorY_fieldsNames(counter)))
-                new_configuration%list_2DvectorX_fieldsNames(counter) = trim(adjustl(list_2DvectorX_fieldsNames(counter)))
-                new_configuration%list_2DvectorY_fieldsNames(counter) = trim(adjustl(list_2DvectorY_fieldsNames(counter)))
+                WRITE(*,'(A25, A25)') trim(adjustl(list_2DvectorX_fieldsNames(counter))), trim(adjustl(list_2DvectorY_fieldsNames(counter)))
+                self%list_2DvectorX_fieldsNames(counter) = trim(adjustl(list_2DvectorX_fieldsNames(counter)))
+                self%list_2DvectorY_fieldsNames(counter) = trim(adjustl(list_2DvectorY_fieldsNames(counter)))
             end do
             print *, ' '
             print *, ' '
 
             print *, ' Following are the 3D vector fieldnames that will be read'
             do counter=1, num_of_3Dvector_fields_to_read
-                WRITE(*,'(A50,A50, A50)') trim(adjustl(list_3DvectorX_fieldsNames(counter))), &
+                WRITE(*,'(A25,A25, A25)') trim(adjustl(list_3DvectorX_fieldsNames(counter))), &
                                     &     trim(adjustl(list_3DvectorY_fieldsNames(counter))), &
                                     &     trim(adjustl(list_3DvectorZ_fieldsNames(counter)))
-                new_configuration%list_3DvectorX_fieldsNames(counter) = trim(adjustl(list_3DvectorX_fieldsNames(counter)))
-                new_configuration%list_3DvectorY_fieldsNames(counter) = trim(adjustl(list_3DvectorY_fieldsNames(counter)))
-                new_configuration%list_3DvectorZ_fieldsNames(counter) = trim(adjustl(list_3DvectorZ_fieldsNames(counter)))
+                self%list_3DvectorX_fieldsNames(counter) = trim(adjustl(list_3DvectorX_fieldsNames(counter)))
+                self%list_3DvectorY_fieldsNames(counter) = trim(adjustl(list_3DvectorY_fieldsNames(counter)))
+                self%list_3DvectorZ_fieldsNames(counter) = trim(adjustl(list_3DvectorZ_fieldsNames(counter)))
             end do
             print *, ' '
             print *, ' '
 
-            print *, ' Following are the filterlengths '
+            print *, ' Following are the vertical level indices that will be read'
+            do counter=1, nz
+                WRITE(*,'(I50)') list_zlevels(counter)
+                self%list_zlevels(counter) = list_zlevels(counter)
+            end do
+            print *, ' '
+            print *, ' '
+
+            print *, ' Following are the filterlengths ' 
             do counter=1, nfilter
                 WRITE(*,'(F50.3)') list_filterLength(counter)
-                new_configuration%list_filterLength(counter) = list_filterLength(counter)
+                self%list_filterLength(counter) = list_filterLength(counter)
             end do
             print *, ' '
             print *, ' '
 
 	        print *, "Configuration read and set SUCCESS "
 
-        end function new_configuration
+            deallocate(list_filenames)
+            deallocate(list_scalar_fieldsNames)
+            deallocate(list_2DvectorX_fieldsNames)
+            deallocate(list_2DvectorY_fieldsNames)
+            deallocate(list_3DvectorX_fieldsNames)
+            deallocate(list_3DvectorY_fieldsNames)
+            deallocate(list_3DvectorZ_fieldsNames)
+            deallocate(list_zlevels)
+            deallocate(list_filterLength)
+
+        end subroutine new_configuration
+
+        subroutine deallocate_vars(self)
+            class(configuration), intent(inout) :: self
+            if (allocated(self%list_filenames)) deallocate(self%list_filenames)
+            if (allocated(self%list_scalar_fieldsNames)) deallocate(self%list_scalar_fieldsNames)
+            if (allocated(self%list_2DvectorX_fieldsNames)) deallocate(self%list_2DvectorX_fieldsNames)
+            if (allocated(self%list_2DvectorY_fieldsNames)) deallocate(self%list_2DvectorY_fieldsNames)
+            if (allocated(self%list_3DvectorX_fieldsNames)) deallocate(self%list_3DvectorX_fieldsNames)
+            if (allocated(self%list_3DvectorY_fieldsNames)) deallocate(self%list_3DvectorY_fieldsNames)
+            if (allocated(self%list_3DvectorZ_fieldsNames)) deallocate(self%list_3DvectorZ_fieldsNames)
+            if (allocated(self%list_zlevels)) deallocate(self%list_zlevels)
+            if (allocated(self%list_filterLength)) deallocate(self%list_filterLength)
+
+        end subroutine
 
 end module
