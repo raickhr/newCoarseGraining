@@ -1,0 +1,32 @@
+&input
+InputPath = './input'
+gridFile = 'WPE_ROMS_grid.nc'
+num_of_files_to_read = 1
+num_of_scalar_fields_to_read = 2
+num_of_2Dvector_fields_to_read = 0
+num_of_3Dvector_fields_to_read = 1
+startTimeIndex = 3
+endTimeIndex = 5 
+nx = 2599
+ny = 599
+nz = 4
+nt = 52 
+nfilter = 3
+OutputPath = 'outputFolder'
+/
+
+&Lists
+list_filenames = "ocean_avg_20180127_20180216.nc"
+
+list_scalar_fieldsNames = "temp", "salt"
+
+list_2DvectorX_fieldsNames = "n/a"
+list_2DvectorX_fieldsNames = "n/a"
+
+list_3DvectorX_fieldsNames = "u_eastward"
+list_3DvectorY_fieldsNames = "v_northward"
+list_3DvectorZ_fieldsNames = "w"
+
+list_zlevels = 30, 29, 28, 27
+list_filterLength = 10, 20, 30
+/
