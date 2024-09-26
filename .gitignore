@@ -1,3 +1,7 @@
+test/*.f90
+**/*.o
+**/*.mod
+
 .vscode/
 **/*.nc
 **/*.exe
