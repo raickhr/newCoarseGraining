@@ -41,8 +41,13 @@ module filterparallel
                 endif
                 arr_numcols_inallprocs(counter) = ncols
                 arr_startcolindex_inallprocs(counter) = offset
+                ! if (taskid .EQ. MASTER) then
+                !     WRITE(*,'(A7, I4, A10, I4, A15, I4, A15, I4)') 'taskid',  counter-1, 'ncols', ncols, 'start', offset , 'end', offset + ncols -1
+                ! endif
                 offset = offset + ncols
+                
             end do  
+            
             call MPI_Barrier(MPI_COMM_WORLD, i_err)         
         end subroutine
 
@@ -65,47 +70,45 @@ module filterparallel
                     &  startIindex, endIindex, &
                     &  i_index, j_index
 
-            startJindex = arr_startcolindex_inallprocs(taskid)
-            endJindex = startJindex + arr_numcols_inallprocs(taskid)
+            startJindex = arr_startcolindex_inallprocs(taskid+1)
+            endJindex = startJindex + arr_numcols_inallprocs(taskid+1) -1
 
             startIindex = 1
             endIindex = nxu
 
+            print *, 'at proc', taskid, startJindex, endJindex
+
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
             do j_index=startJindex, endJindex
                 do i_index = startIindex, endIindex
+                    ! condition for skipping the filterpoint for eg land
                     call filter_allVarsAtpoint(i_index, j_index)
                 end do
             end do
         end subroutine
 
-        subroutine fiter_allVarsAtpoint(i_index, j_index)
+        subroutine filter_allVarsAtpoint(i_index, j_index)
             integer , intent(in) :: i_index, j_index
             ! local variables
 
-            integer :: filter_counter, depth_counter, varcounter, numvars, &
+            integer :: filter_counter, depth_counter, varcounter, numvars, counter, &
                    &   east_west_BoxSize, north_south_BoxSize, & 
                    &   west_cornerindex, east_cornerindex, &
                    &   south_cornerindex, north_cornerindex
 
             real(kind=real_kind) :: filterlengthInKM
 
-            real(kind=real_kind), allocatable, dimension(:,:,:) :: unfiltvars
-            real(kind=real_kind), allocatable, dimension(:,:) :: filtered_vars
-            real(kind=real_kind), allocatable, dimension(:,:) :: kernelVal
+            real(kind=real_kind), allocatable, dimension(:,:,:) :: unfiltvars ! x, y, nvars
+            real(kind=real_kind), allocatable, dimension(:) :: filtered_vars ! nvars
+            real(kind=real_kind), allocatable, dimension(:,:) :: kernelVal ! x, y
 
 
             numvars = num_scalar_fields * nzu + &
                       2 * num_2Dvector_fields + &
-                      3 * nzu * num_3Dvector_fields
-
-
-            
-
-            allocate(unfiltvars(east_west_BoxSize, north_south_BoxSize, numvars))
-            allocate(filtered_vars(numvars, num_filterlengths))
-            allocate( kernelVal(east_west_BoxSize, north_south_BoxSize) )
-
-            
+                      3 * nzu * num_3Dvector_fields   
+                      
+            allocate(filtered_vars(numvars))
 
             do filter_counter=1, num_filterlengths 
 
@@ -115,6 +118,9 @@ module filterparallel
                                     &       west_cornerindex, east_cornerindex, &
                                     &       south_cornerindex, north_cornerindex, &
                                     &       east_west_BoxSize, north_south_BoxSize )
+
+                allocate(unfiltvars(east_west_BoxSize, north_south_BoxSize, numvars))
+                allocate(kernelVal(east_west_BoxSize, north_south_BoxSize) ) 
                 
                 call get_kernel(i_index, j_index, &       
                 &       west_cornerindex, east_cornerindex, &
@@ -122,12 +128,107 @@ module filterparallel
                 &       east_west_BoxSize, north_south_BoxSize, &
                 &       filterlengthInKM, kernelVal)
 
-                do varcounter=1, numvars
-                    do depth_counter = 1, nzu
-                        call test()
-                    end do
+                call groupUnfiltvars(unfiltvars, east_west_BoxSize, north_south_BoxSize, numvars, &
+                &                    west_cornerindex, east_cornerindex, &
+                &                    south_cornerindex, north_cornerindex )
+                
+                call get_filteredVals_allVars(east_west_BoxSize, north_south_BoxSize, numvars, unfiltvars, kernelVal, filtered_vars(:) )
+                call assignFilteredVars(numvars,i_index, j_index, filter_counter, filtered_vars)
+
+                deallocate(unfiltvars)
+                deallocate(kernelVal) 
+
+            end do
+            deallocate(filtered_vars)
+
+        end subroutine
+
+        subroutine groupUnfiltvars(unfiltvars, nx, ny, nvars, &
+            &                      west_cornerindex, east_cornerindex, &
+            &                      south_cornerindex, north_cornerindex )
+
+            integer(kind=int_kind), intent(in) :: nx, ny, nvars, &
+            &                                     west_cornerindex, east_cornerindex, &
+            &                                     south_cornerindex, north_cornerindex
+
+            real(kind=real_kind), intent(out) :: unfiltvars(nx, ny, nvars)
+
+            integer:: counter, varcounter, depth_counter
+
+            varcounter = 1
+            do counter=1, num_scalar_fields
+                do depth_counter = 1, nzu
+                    unfiltvars(:,:, varcounter) = &
+                        &   scalar_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
+                    varcounter = varcounter + 1
                 end do
-            end do           
+            enddo
+
+            do counter=1, num_2Dvector_fields
+                unfiltvars(:,:, varcounter) = &
+                    &   vector2DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
+                varcounter = varcounter + 1
+                unfiltvars(:,:, varcounter) = &
+                    &   vector2DY_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
+                varcounter = varcounter + 1
+            end do
+
+            do counter=1, num_3Dvector_fields
+                do depth_counter = 1, nzu
+                    unfiltvars(:,:, varcounter) = &
+                        &   vector3DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex,depth_counter, counter)
+                    varcounter = varcounter + 1
+
+                    unfiltvars(:,:, varcounter) = &
+                        &   vector3DY_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex,depth_counter, counter)
+                    varcounter = varcounter + 1
+
+                    unfiltvars(:,:, varcounter) = &
+                        &   vector3DZ_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex,depth_counter, counter)
+                    varcounter = varcounter + 1
+                end do
+            end do
+        end subroutine
+
+        subroutine assignFilteredVars(nvars, i_index, j_index, filter_index, filteredFields)
+            integer, intent(in) :: nvars, i_index, j_index, filter_index
+            real(kind=real_kind) :: filteredFields(nvars)
+
+            integer(kind=int_kind) :: varcounter, depth_index, counter
+
+            varcounter = 1
+            do counter=1, num_scalar_fields
+                do depth_index = 1, nzu
+                    ! WRITE(*,'(A14, I4, A14, I4, A14, I4, A14, I4, A14, I4, A14, I4, A14, I4)')  'taskid', taskid, &
+                    !                                                 'i_index', i_index, & 
+                    !                                                 'j_index', j_index, & 
+                    !                                                 'depth_index', depth_index, & 
+                    !                                                 'counter', counter, & 
+                    !                                                 'filter_index', filter_index,  &
+                    !                                                 'varcounter', varcounter 
+
+                    OL_scalar_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    varcounter = varcounter + 1
+                end do
+            enddo
+
+            do counter=1, num_2Dvector_fields
+                OL_vector2DX_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1
+                OL_vector2DY_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1
+            end do
+
+            do counter=1, num_3Dvector_fields
+                do depth_index = 1, nzu
+                    OL_vector3DX_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    varcounter = varcounter + 1
+                    OL_vector3DY_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    varcounter = varcounter + 1
+                    OL_vector3DZ_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    varcounter = varcounter + 1
+                end do
+            end do
         end subroutine
 
         subroutine get_kernel(i_index, j_index, &
@@ -225,7 +326,16 @@ module filterparallel
 
         end subroutine
 
+        subroutine get_filteredVals_allVars(nx, ny, nvars, allVars, arr_kernel, filtered_vars )
+            integer(kind=int_kind) :: nx, ny, nvars
+            real(kind=real_kind) :: allVars(nx,ny,nvars), arr_kernel(nx,ny)
+            real(kind=real_kind), intent(out):: filtered_vars(nvars)
+            integer :: counter 
 
-            
+            do counter = 1, nvars
+                filtered_vars(counter) = sum(allVars(:,:, counter) * arr_kernel(:,:))
+            end do
+  
+        end subroutine
 
 end module

@@ -17,22 +17,22 @@ module fields
                         &     num_3Dvector_fields
 
     real(kind=real_kind), allocatable, dimension(:,:,:,:):: scalar_fields ! x, y, z, fieldid
-    real(kind=real_kind), allocatable, dimension(:,:,:,:,:):: OL_scalar_fields  ! x, y, z, ell fieldid
+    real(kind=real_kind), allocatable, dimension(:,:,:,:,:):: OL_scalar_fields  ! x, y, z, fieldid, ell
 
     real(kind=real_kind), allocatable, dimension(:,:,:):: vector2DX_fields  ! x, y, fieldid
     real(kind=real_kind), allocatable, dimension(:,:,:):: vector2DY_fields  ! x, y, fieldid
 
-    real(kind=real_kind), allocatable, dimension(:,:,:,:):: OL_vector2DX_fields  ! x, y, ell fieldid
-    real(kind=real_kind), allocatable, dimension(:,:,:,:):: OL_vector2DY_fields  ! x, y, ell fieldid
+    real(kind=real_kind), allocatable, dimension(:,:,:,:):: OL_vector2DX_fields  ! x, y, fieldid, ell
+    real(kind=real_kind), allocatable, dimension(:,:,:,:):: OL_vector2DY_fields  ! x, y, fieldid, ell
 
     real(kind=real_kind), allocatable, dimension(:,:,:,:):: vector3DX_fields  ! x, y, z, fieldid
     real(kind=real_kind), allocatable, dimension(:,:,:,:):: vector3DY_fields  ! x, y, z, fieldid
     real(kind=real_kind), allocatable, dimension(:,:,:,:):: vector3DZ_fields  ! x, y, z, fieldid
 
 
-    real(kind=real_kind), allocatable, dimension(:,:,:,:,:):: OL_vector3DX_fields  ! x, y, z, fieldid
-    real(kind=real_kind), allocatable, dimension(:,:,:,:,:):: OL_vector3DY_fields  ! x, y, z, fieldid
-    real(kind=real_kind), allocatable, dimension(:,:,:,:,:):: OL_vector3DZ_fields  ! x, y, z, fieldid
+    real(kind=real_kind), allocatable, dimension(:,:,:,:,:):: OL_vector3DX_fields  ! x, y, z, fieldid, ell
+    real(kind=real_kind), allocatable, dimension(:,:,:,:,:):: OL_vector3DY_fields  ! x, y, z, fieldid, ell
+    real(kind=real_kind), allocatable, dimension(:,:,:,:,:):: OL_vector3DZ_fields  ! x, y, z, fieldid, ell
 
     type(fieldInfo), allocatable, dimension(:) :: scalar_field_info
 
@@ -112,9 +112,9 @@ module fields
             endif
 
             if (.not. allocated(OL_vector3DX_fields) .AND. num_3Dvector_fields > 0) then 
-                allocate(OL_vector3DX_fields(nx, ny, nz, num_2Dvector_fields, nell), &
-                    &    OL_vector3DY_fields(nx, ny, nz, num_2Dvector_fields, nell), &
-                    &    OL_vector3DZ_fields(nx, ny, nz, num_2Dvector_fields, nell))
+                allocate(OL_vector3DX_fields(nx, ny, nz, num_3Dvector_fields, nell), &
+                    &    OL_vector3DY_fields(nx, ny, nz, num_3Dvector_fields, nell), &
+                    &    OL_vector3DZ_fields(nx, ny, nz, num_3Dvector_fields, nell))
             endif
 
         end subroutine

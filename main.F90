@@ -56,8 +56,13 @@ program main
     call broadCastFieldInfo()
     call broadCastFilterInfo()
     call broadCastInputDataInfo()
+    if (taskid .EQ. MASTER) print *, ' all grid info broadcasted !'
 
     call dividework()
+
+    if (taskid .EQ. MASTER) print *, 'work division done !'
+
+    call allocate_output_fileds(nxu, nyu, nzu, num_filterlengths)
 
     do file_index = 1, num_files
         if (taskid .EQ. MASTER) then
@@ -74,6 +79,12 @@ program main
             endif
 
             call broadCastReadFields()
+
+
+            if (taskid .EQ. MASTER) then 
+                print *, ''
+                print *, 'all read field info at one time instant broadcasted !'
+            end if
 
             call filter_allvars()
 
