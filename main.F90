@@ -57,6 +57,8 @@ program main
     call broadCastFilterInfo()
     call broadCastInputDataInfo()
 
+    call dividework()
+
     do file_index = 1, num_files
         if (taskid .EQ. MASTER) then
             print *,"AT FILE NUMBER ",file_index,' OF ', num_files
@@ -71,13 +73,9 @@ program main
                 ! call assign_fields()
             endif
 
-            !call bcastFields()
+            call broadCastReadFields()
 
-            call MPI_Barrier(MPI_COMM_WORLD, i_err)
-
-            ! do filter_index = 1, num_filterlengths
-
-            ! end do ! close filter loop
+            call filter_allvars()
 
             ! call collectFilteredFields
             

@@ -12,15 +12,15 @@ module constants
 !-----------------------------------------------------------------------
 
     real (kind=dbl_kind), parameter ::     &
-   &  grav      = 980.6_dbl_kind,          & ! gravit. accel. (cm/s**2)
+   &  grav      = 9.806_dbl_kind,          & ! gravit. accel. (m/s**2)
    &  omega     = 7.292123625e-5_dbl_kind, & ! angular vel. of Earth 1/s
-   &  radius    = 6370.0e5_dbl_kind,       & ! radius of Earth (cm)
-   &  rho_sw    = 1.026_dbl_kind,          & ! density of sea water (g/cm^3)
-   &  rho_fw    = 1.0_dbl_kind,            & ! density of pure water(g/cm^3)
-   &  cp_water  = 4.180e7_dbl_kind,        & ! specific heat of water
-   &  cp_sw     = 3.996e7_dbl_kind,        & ! specific heat salt water
-   &  sound     = 1.5e5_dbl_kind,          & ! speed of sound (cm/s)
-   &  rho0      = 1.03_dbl_kind,           & ! average water density
+   &  radius    = 6370.0e3_dbl_kind,       & ! radius of Earth (m)
+   &  rho_sw    = 1026.0_dbl_kind,         & ! density of sea water (km/m^3)
+   &  rho_fw    = 1000.0_dbl_kind,         & ! density of pure water(kg/m^3)
+   &  cp_water  = 4180.0_dbl_kind,         & ! specific heat of water (J/(kg-K))
+   &  cp_sw     = 3996.0_dbl_kind,         & ! specific heat salt water (J/(kg-K))
+   &  sound     = 1500_dbl_kind,           & ! speed of sound in water (m/s)
+   &  rho0      = 1030_dbl_kind,           & ! average water density (kg/m^3)
    &  vonkar    = 0.4_dbl_kind,            & ! von Karman constant
    &  cp_air    = 1005.0_dbl_kind,         & ! heat capacity of air (J/kg/K)
    &  rho_air   = 1.2_dbl_kind,            & ! ambient air density (kg/m^3)

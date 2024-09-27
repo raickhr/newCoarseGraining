@@ -114,7 +114,7 @@ module read_write
                                     &       vector3DY_fields(:,:,z_count, field_count), &
                                     &       vector3DY_field_info(field_count)%units, &
                                     &       vector3DY_field_info(field_count)%long_name, &
-                                    &       "getVar3DatZlevel_real vector3dz" )
+                                    &       "getVar3DatZlevel_real vector3dy" )
 
                 call getVar3DatZlevel_real(file_id, trim(adjustl(vector3DZ_field_info(field_count)%varname)), &
                                     &       z_index, time_index, &
@@ -129,5 +129,9 @@ module read_write
         print *, 'closed file  ', trim(adjustl(filename)), ' ... '
         
     end subroutine
+
+
+   
+
 
 end module
