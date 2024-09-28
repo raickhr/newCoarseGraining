@@ -5,6 +5,7 @@ module read_write
     use fields
     use input_data_info
     use gridModule
+    use filterparallel
     implicit none
 
     contains
@@ -67,9 +68,13 @@ module read_write
         print *,''
         print *, 'Opened  ', trim(adjustl(filename))
 
-        if (taskid .EQ. MASTER) call getTimeVar(file_id, trim(adjustl(timevar_name)), &
-                                                timevar_units, timevar_calendar, time_index, &
-                                                timevar_val, "error getting time variable info ")
+        if (taskid .EQ. MASTER) then
+            call getTimeVar(file_id, trim(adjustl(timevar_name)), &
+                                                  timevar_units, timevar_calendar, time_index, &
+                                                  timevar_val, "error getting time variable info ")
+            call getVertDimVals(file_id, nzu, trim(adjustl(vertdim_name)), arr_z_index, vertdim_vals, "error getting vertical dim ")
+
+        endif
 
         do field_count =1, num_scalar_fields
             do z_count =1, num_zlevels
@@ -128,6 +133,155 @@ module read_write
         ncerr = nf90_close(file_id)
         print *, 'closed file  ', trim(adjustl(filename)), ' ... '
         
+    end subroutine
+
+    subroutine writeFields(fullfilename, x_dimname, y_dimname, z_dimname, filter_dimname, time_dimname)
+        character(len=*) , intent(in) :: fullfilename, x_dimname, y_dimname, z_dimname, filter_dimname, time_dimname
+        integer :: file_id, xdim_id, ydim_id, zdim_id, filterdim_id, timedim_id, coords_2d(4), coords_3d(5), ncerr , &
+                   timevar_id, latvar_id, lonvar_id, zvar_id, filtervar_id, field_count, numvars, var_index
+    
+        character(len=longname_len) :: att_names(2), att_values(2)
+        character(len=varname_len) :: varname
+
+        integer(kind=int_kind), allocatable :: varids(:)
+        numvars = num_scalar_fields + 2*num_2Dvector_fields + 3*num_3Dvector_fields
+
+        allocate(varids(numvars))
+    
+        print *, 'writing file', trim(adjustl(fullfilename))
+        
+        !-------------------------------------------------------------------
+        !  open netcdf file
+        !-------------------------------------------------------------------
+    
+        ncerr = nf90_create(fullfilename, nf90_clobber, file_id)
+        if (ncerr /= nf90_noerr) call handle_err(ncerr, 'nf90_open to write')
+    
+        !-------------------------------------------------------------------
+        !  define dimensions
+        !-------------------------------------------------------------------
+    
+        call defineDimension(file_id, nxu, xdim_id, x_dimname, 'error in defining xdim')
+        call defineDimension(file_id, nyu, ydim_id, y_dimname, 'error in defining ydim')
+        call defineDimension(file_id, nzu, zdim_id, z_dimname, 'error in defining zdim')
+        call defineDimension(file_id, num_filterlengths, filterdim_id, filter_dimname, 'error in defining filterdim')
+        !call defineDimension(file_id, 1, timedim_id, timedim_name, 'error in defining timedim')
+    
+        ncerr = nf90_def_dim(file_id, trim(adjustl(time_dimname)), NF90_UNLIMITED, timedim_id)
+        if (ncerr /= nf90_noerr) call handle_err(ncerr, 'error in defining time dimension')
+    
+        !-------------------------------------------------------------------
+        !  define coordinates
+        !-------------------------------------------------------------------
+        !-- time
+    
+        att_names(1) = 'units'
+        att_values(1) = timevar_units
+    
+        att_names(2) = 'calendar'
+        att_values(2) = timevar_calendar
+        call defineVariables(file_id, time_dimname, 2, (/timedim_id/), timevar_id, att_names, att_values )
+    
+        !-------------------------------------------------------------------
+        !-- filterlength
+        att_names(1) = 'units'
+        att_values(1) = 'kilometers'
+    
+        att_names(2) = 'long_name'
+        att_values(2) = 'coarse graining filtering isotropic xy kernel'
+        call defineVariables(file_id, filter_dimname, 1, (/filterdim_id/), filtervar_id, att_names, att_values )
+    
+        !-------------------------------------------------------------------
+        !-- vertical level
+    
+        att_names(1) = 'units'
+        att_values(1) = ' '
+    
+        att_names(2) = 'long_name'
+        att_values(2) = 'ROMS vertical co-ordinate(s-rho), 0 at surface -1 at bottom'
+        call defineVariables(file_id, z_dimname, 1, (/zdim_id/), zvar_id, att_names, att_values )
+    
+    
+        coords_2d(1)=xdim_id
+        coords_2d(2)=ydim_id
+        coords_2d(3)=filterdim_id
+        coords_2d(4)=timedim_id
+    
+    
+        coords_3d(1)=xdim_id
+        coords_3d(2)=ydim_id
+        coords_3d(3)=zdim_id
+        coords_3d(4)=filterdim_id
+        coords_3d(5)=timedim_id
+
+
+        var_index = 1
+        do field_count =1, num_scalar_fields
+            varname = trim(adjustl(scalar_field_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(scalar_field_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(scalar_field_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+            
+        end do
+
+        do field_count=1, num_2Dvector_fields
+            varname = trim(adjustl(vector2DX_field_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector2DX_field_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector2DX_field_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, 2, coords_2d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector2DY_field_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector2DY_field_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector2DY_field_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, 2, coords_2d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+        end do
+
+        do field_count=1, num_3Dvector_fields
+            varname = trim(adjustl(vector3DX_field_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector3DX_field_info(field_count)%units))    
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector3DX_field_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector3DY_field_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector3DY_field_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector3DY_field_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+
+            varname = trim(adjustl(vector3DZ_field_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector3DZ_field_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector3DZ_field_info(field_count)%long_name))
+            
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+            
+        end do
+
+
+    
+    
     end subroutine
 
 

@@ -6,7 +6,9 @@ module input_data_info
     integer (kind=int_kind) :: num_files, num_zlevels, start_timeindex, end_timeindex
     integer (kind=int_kind) , allocatable :: arr_z_index(:)
     real (kind=real_kind) :: timevar_val(1)
+    real (kind=real_kind), allocatable :: vertDim_vals(:)
     character (len=varname_len) :: timevar_name
+    character (len=varname_len) :: vertdim_name
     character (len=units_len) :: timevar_units, timevar_calendar
     contains
 
@@ -20,6 +22,7 @@ module input_data_info
 
     subroutine alloc_arr_z_index()
         if (.not. allocated(arr_z_index)) allocate(arr_z_index(num_zlevels))
+        if (.not. allocated(vertDim_vals)) allocate(vertDim_vals(num_zlevels))
     end subroutine
 
     subroutine set_arr_z_index(list_z_levels)

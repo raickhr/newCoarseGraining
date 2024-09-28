@@ -27,6 +27,33 @@ module netcdf_io
         if (ncerr .NE. nf90_noerr) call handle_err(ncerr, "error obtaining calendar of "//varname_in_ncfile)
 
         ncerr = nf90_get_var(fileid, varid, value, startcount, endcount)
+        if (ncerr .NE. nf90_noerr) call handle_err(ncerr, "error obtaining value of "//varname_in_ncfile)
+
+    end subroutine
+
+    subroutine getVertDimVals(fileid, nz, varname_in_ncfile, vertdim_indices, vertdim_vals, error_string)
+        integer, intent(in) :: fileid, nz
+        character(*), intent(in) :: varname_in_ncfile, error_string
+        integer, intent(in) :: vertdim_indices(nz)
+        real(kind=real_kind), intent(out) :: vertdim_vals(nz)
+
+        integer :: ncerr, varid, vert_index, vert_index_count, startcount(1), endcount(1)
+        real(kind=real_kind) :: readval(1)
+        
+        endcount = (/1/)
+        do vert_index_count=1, nz
+            vert_index = vertdim_indices(vert_index_count)
+            startcount = (/vert_index/)
+
+            ncerr = nf90_inq_varid(fileid, varname_in_ncfile, varid)
+            if ( ncerr .NE. nf90_noerr )  call handle_err(ncerr, error_string)
+
+            ncerr = nf90_get_var(fileid, varid, readval, startcount, endcount)
+            if (ncerr .NE. nf90_noerr) call handle_err(ncerr, "error obtaining value of "//varname_in_ncfile)
+            vertdim_vals(vert_index_count) = readval(1)
+
+        end do
+
 
     end subroutine
 
@@ -117,19 +144,54 @@ module netcdf_io
     end subroutine
 
 
-    ! subroutine getVar2D_real_inLevel(fileid, varname_in_ncfile, varArr,  error_string )
-    !     integer, intent(in) :: fileid
-    !     character (len = 100), intent(in) :: varname_in_ncfile, error_string
-    !     real (kind=real_kind), intent(out):: varArr(:,:)
+    subroutine defineDimension(file_id, dimlen, dim_id, dim_name, error_string)
+        integer, intent(in) :: file_id, dimlen
+        integer, intent(out):: dim_id 
+        character(len=*), intent(in) :: dim_name, error_string
 
-    !     integer :: ncerr, varid
+        integer :: ncerr
 
-    !     ncerr = nf90_inq_varid(fileid, varname_in_ncfile, varid)
-    !     if ( ncerr .NE. nf90_noerr )  call handle_err(ncerr, error_string)
-    !     ncerr = nf90_get_var(fileid, varid, varArr)
-    !     if ( ncerr .NE. nf90_noerr )  call handle_err(ncerr, error_string)
-    !     print *,'complete reading ', varname_in_ncfile
-    ! end subroutine
+        ncerr = nf90_def_dim(file_id, trim(adjustl(dim_name)), dimlen, dim_id)
+        if (ncerr /= nf90_noerr) call handle_err(ncerr, error_string)
+    end subroutine
+
+    subroutine defineVariables(file_id, varname, vartype, coords_ids, var_id, att_names, att_values )
+
+        integer(kind=int_kind), intent(in) :: file_id, vartype
+        character(len=*), intent(in) :: varname
+        character(len=longname_len), intent(in) :: att_names(:), att_values(:)
+
+        integer(kind=int_kind), intent(in) :: coords_ids(:)
+        integer(kind=int_kind), intent(out) :: var_id
+
+        integer(kind=int_kind) :: num_atts, num_coords, ncerr, counter
+
+        select case (vartype)
+        case (1) 
+            ncerr = nf90_def_var(file_id, varname , nf90_int,&
+            coords_ids, var_id)
+        case (2)
+            ncerr = nf90_def_var(file_id, varname , nf90_float,&
+            coords_ids, var_id)
+        case (3)
+            ncerr = nf90_def_var(file_id, varname , nf90_double,&
+            coords_ids, var_id)
+        end select
+        
+        if (ncerr /= nf90_noerr) call handle_err(ncerr, 'defining variable '//varname)
+
+        num_atts = size(att_names)
+        
+        do counter=1, num_atts
+    
+            ncerr = nf90_put_att(file_id, var_id, trim(adjustl(att_names(counter))), &
+                                & trim(adjustl(att_values(counter))))
+            if (ncerr /= nf90_noerr)  call handle_err(ncerr, 'defining '//varname//' '//trim(adjustl(att_names(counter))))
+    
+        end do
+    
+        
+    end subroutine
 
 
 end module

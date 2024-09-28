@@ -31,6 +31,7 @@ module configurationMod
             character (len = varname_len), allocatable :: list_3DvectorZ_fieldsNames(:)
 
             character (len = varname_len) :: timevar_name
+            character (len = varname_len) :: vertdim_name
             integer :: startTimeIndex   !Start Time index for each file
             integer :: endTimeIndex   !End Time index for each file
             integer :: nx, ny, nz, nt        ! size of the array in each file
@@ -77,6 +78,7 @@ module configurationMod
 
 
             character (len = varname_len) :: timevar_name
+            character (len = varname_len) :: vertdim_name
 
             integer :: startTimeIndex   !Start Time index for each file
             integer :: endTimeIndex   !End Time index for each file
@@ -101,6 +103,7 @@ module configurationMod
                     & num_of_2Dvector_fields_to_read, &
                     & num_of_3Dvector_fields_to_read, &
                     & timevar_name, &
+                    & vertdim_name, &
                     & startTimeIndex, &
                     & endTimeIndex, &
                     & nx, ny, nz, nt, &
@@ -129,6 +132,7 @@ module configurationMod
             WRITE(*,'(A50, I4)') 'num_of_2Dvector_fields_to_read :', num_of_2Dvector_fields_to_read
             WRITE(*,'(A50, I4)') 'num_of_3Dvector_fields_to_read :', num_of_3Dvector_fields_to_read
             WRITE(*,'(A50, A30)') 'timevar_name :', timevar_name
+            WRITE(*,'(A50, A30)') 'vertdim_name :', vertdim_name
             WRITE(*,'(A50, I4)') 'startTimeIndex :', startTimeIndex
             WRITE(*,'(A50, I4)') 'endTimeIndex :', endTimeIndex
             WRITE(*,'(A50, I4, I4, I4, I4)') 'nx, ny, nz, nt :', nx, ny, nz, nt
@@ -141,6 +145,7 @@ module configurationMod
             self%OutputPath   = trim(adjustl(OutputPath))
             self%gridFile  = trim(adjustl(gridFile))
             self%timevar_name = trim(adjustl(timevar_name))
+            self%vertdim_name = trim(adjustl(vertdim_name))
             self%startTimeIndex   = startTimeIndex
             self%endTimeIndex   = endTimeIndex
             self%nx = nx

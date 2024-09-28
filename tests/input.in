@@ -6,6 +6,7 @@ num_of_scalar_fields_to_read = 2
 num_of_2Dvector_fields_to_read = 0
 num_of_3Dvector_fields_to_read = 1
 timevar_name = "ocean_time"
+vertdim_name = "s_rho"
 startTimeIndex = 3
 endTimeIndex = 5 
 nx = 2599

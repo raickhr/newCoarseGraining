@@ -44,6 +44,7 @@ program main
                                             &      config%endTimeIndex)
 
         timevar_name = trim(adjustl(config%timevar_name))
+        vertdim_name = trim(adjustl(config%vertdim_name))
 
         call alloc_arr_z_index()
 
@@ -105,8 +106,6 @@ program main
                 print *, 'all filtered variables collected !'
                 print *, ''
             end if
-
-            ! call collectFilteredFields
             
             ! if (taskid .EQ. MASTER) then
             !     call writeFields()
