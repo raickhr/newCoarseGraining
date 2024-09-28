@@ -279,6 +279,9 @@ module read_write
             
         end do
 
+        ncerr = nf90_enddef(file_id)
+        if (ncerr /= nf90_noerr) stop 'at enddef'
+
 
     
     

@@ -12,6 +12,8 @@ module ncdf_wrapper
         character*(*) string
 
         write (*,*) nf90_strerror(status),': ',string
+        print *, ''
+        stop 'ERROR: STOPPING'
 
         return
 
