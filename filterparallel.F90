@@ -76,8 +76,6 @@ module filterparallel
             startIindex = 1
             endIindex = nxu
 
-            print *, 'at proc', taskid, startJindex, endJindex
-
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
             do j_index=startJindex, endJindex

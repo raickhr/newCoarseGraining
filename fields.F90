@@ -99,7 +99,7 @@ module fields
             end if
         end subroutine
 
-        subroutine allocate_output_fileds(nx, ny, nz, nell)
+        subroutine allocate_output_fields(nx, ny, nz, nell)
             integer(kind=int_kind), intent(in) :: nx, ny, nz, nell
 
             if (.not. allocated(OL_scalar_fields) .AND. num_scalar_fields > 0) then 
@@ -183,6 +183,83 @@ module fields
             end do 
             
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
+        end subroutine
+
+        subroutine collectFilteredFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
+            integer, intent(in) :: arr_numcols_inallprocs(numtasks), &
+                                   arr_startcolindex_inallprocs(numtasks), &
+                                   num_filterlengths
+            integer :: counter, zcounter, js, je, send_size, recv_size(numtasks), displacements(numtasks), filter_index
+
+            real (kind=real_kind), allocatable :: send_buffer(:,:)
+
+            js = arr_startcolindex_inallprocs(taskid + 1)
+            je = js + arr_numcols_inallprocs(taskid + 1) -1
+
+            recv_size = arr_numcols_inallprocs * nxu
+            send_size = nxu * arr_numcols_inallprocs(taskid + 1)
+
+            displacements(:) = 0
+            displacements(2:numtasks) = recv_size(1:numtasks-1)
+
+            allocate(send_buffer(nxu, arr_numcols_inallprocs(taskid + 1)))
+
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+
+            do filter_index=1, num_filterlengths
+
+                do counter = 1, num_scalar_fields
+                    do zcounter = 1, nzu
+                        send_buffer(:,:) = OL_scalar_fields(:,js:je, zcounter, counter, filter_index)
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                            &           OL_scalar_fields(:,  :  ,zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                            &           MASTER, MPI_COMM_WORLD, i_err)
+                    end do
+                    call MPI_Barrier(MPI_COMM_WORLD, i_err)
+                end do
+
+                
+                do counter = 1, num_2Dvector_fields
+                    send_buffer(:,:) = OL_vector2DX_fields(:,js:je, counter, filter_index)
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                            &           OL_vector2DX_fields(:,:, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                            &           MASTER, MPI_COMM_WORLD, i_err)
+                    
+                    send_buffer(:,:) = OL_vector2DY_fields(:,js:je, counter, filter_index)
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                            &           OL_vector2DY_fields(:,:, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                            &           MASTER, MPI_COMM_WORLD, i_err)
+                end do
+
+                call MPI_Barrier(MPI_COMM_WORLD, i_err)
+        
+                do counter = 1, num_3Dvector_fields
+                    do zcounter = 1, nzu
+                        send_buffer(:,:) = OL_vector3DX_fields(:,js:je, zcounter, counter, filter_index)
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                            &           OL_vector3DX_fields(:,:,zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                            &           MASTER, MPI_COMM_WORLD, i_err)
+
+                        send_buffer(:,:) = OL_vector3DY_fields(:,js:je, zcounter, counter, filter_index)
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                            &           OL_vector3DY_fields(:,:,zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                            &           MASTER, MPI_COMM_WORLD, i_err)
+
+                        send_buffer(:,:) = OL_vector3DZ_fields(:,js:je, zcounter, counter, filter_index)
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                            &           OL_vector3DZ_fields(:,:,zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                            &           MASTER, MPI_COMM_WORLD, i_err)
+                    end do
+                    call MPI_Barrier(MPI_COMM_WORLD, i_err)
+                end do 
+
+            end do
+
+            deallocate(send_buffer)
+            
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
         end subroutine
 
         subroutine delloacate_fields()

@@ -10,7 +10,7 @@ program main
     implicit none
     
     type(configuration):: config         ! object that defines run configuration
-    integer :: file_index, time_index, z_index, filter_index
+    integer :: file_index, time_index, z_index
 
     call startMPI()
 
@@ -62,7 +62,7 @@ program main
 
     if (taskid .EQ. MASTER) print *, 'work division done !'
 
-    call allocate_output_fileds(nxu, nyu, nzu, num_filterlengths)
+    call allocate_output_fields(nxu, nyu, nzu, num_filterlengths)
 
     do file_index = 1, num_files
         if (taskid .EQ. MASTER) then
@@ -84,9 +84,27 @@ program main
             if (taskid .EQ. MASTER) then 
                 print *, ''
                 print *, 'all read field info at one time instant broadcasted !'
+                print *, ''
+                print *, ''
+                print *, 'filtering all variables started !'
+                print *, ''
             end if
 
             call filter_allvars()
+
+            if (taskid .EQ. MASTER) then 
+                print *, ''
+                print *, 'filtering all variables completed !'
+                print *, ''
+            end if
+
+            call collectFilteredFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
+
+            if (taskid .EQ. MASTER) then 
+                print *, ''
+                print *, 'all filtered variables collected !'
+                print *, ''
+            end if
 
             ! call collectFilteredFields
             

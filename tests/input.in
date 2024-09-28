@@ -12,7 +12,7 @@ nx = 2599
 ny = 599
 nz = 4
 nt = 52 
-nfilter = 3
+nfilter = 2
 OutputPath = 'outputFolder'
 /
 
@@ -29,5 +29,5 @@ list_3DvectorY_fieldsNames = "v_northward"
 list_3DvectorZ_fieldsNames = "w"
 
 list_zlevels = 30, 29, 28, 27
-list_filterLength = 10, 20, 30
+list_filterLength = 100, 200
 /
