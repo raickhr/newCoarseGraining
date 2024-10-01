@@ -94,6 +94,9 @@ program main
 
             call filter_allvars()
 
+            OL_scalar_fields(:,:,1,:,:) = 10
+            OL_scalar_fields(:,:,2,:,:) = 20
+
             if (taskid .EQ. MASTER) then 
                 print *, ''
                 print *, 'filtering all variables completed !'

@@ -214,7 +214,7 @@ module read_write
     
         att_names(2) = 'long_name'
         att_values(2) = 'coarse graining filtering isotropic xy kernel'
-        call defineVariables(file_id, filter_dimname, 1, (/filterdim_id/), filtervar_id, att_names, att_values )
+        call defineVariables(file_id, filter_dimname, 2, (/filterdim_id/), filtervar_id, att_names, att_values )
     
         !-------------------------------------------------------------------
         !-- vertical level
@@ -224,7 +224,7 @@ module read_write
     
         att_names(2) = 'long_name'
         att_values(2) = 'ROMS vertical co-ordinate(s-rho), 0 at surface -1 at bottom'
-        call defineVariables(file_id, z_dimname, 1, (/zdim_id/), zvar_id, att_names, att_values )
+        call defineVariables(file_id, z_dimname, 2, (/zdim_id/), zvar_id, att_names, att_values )
     
     
         coords_2d(1)=xdim_id
@@ -310,20 +310,21 @@ module read_write
         ! Put time, lengthscale and z co-ordinates value
 
         do counter = 1, num_zlevels
-            ncerr = nf90_put_var(file_id, zdim_id,(/arr_z_index(counter)/),       &
+            ncerr = nf90_put_var(file_id, zvar_id,(/arr_z_index(counter)/),       &
                       start = (/counter/), &
                       count = (/1/))
             if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing z co-ordinate vals')
         end do
 
         do counter = 1, num_filterlengths
-            ncerr = nf90_put_var(file_id, filterdim_id,(/arr_filterlengths(counter)/),       &
+            print *, 'arr_filterlengths(counter)', arr_filterlengths(counter)
+            ncerr = nf90_put_var(file_id, filtervar_id,(/arr_filterlengths(counter)/),       &
                       start = (/counter/), &
                       count = (/1/))
             if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing filterlength co-ordinate vals')
         end do
 
-        ncerr = nf90_put_var(file_id, timedim_id, (/timevar_val/),       &
+        ncerr = nf90_put_var(file_id, timevar_id, (/timevar_val/),       &
                 start = (/1/), &
                 count = (/1/))
         if(ncerr /= nf90_noerr) call handle_err(ncerr, 'time co-ordinate vals')

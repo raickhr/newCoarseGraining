@@ -312,7 +312,7 @@ module filterparallel
             west_cornerindex = i_index - half_east_west_BoxSize
             east_cornerindex = i_index + half_east_west_BoxSize
             south_cornerindex = j_index - half_north_south_BoxSize
-            north_cornerindex = j_index - half_north_south_BoxSize
+            north_cornerindex = j_index + half_north_south_BoxSize
 
             if (west_cornerindex < 1) west_cornerindex = 1
             if (east_cornerindex > nxu) east_cornerindex = nxu
