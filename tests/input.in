@@ -14,7 +14,7 @@ ny = 599
 nz = 4
 nt = 52 
 nfilter = 2
-OutputPath = 'outputFolder'
+OutputPath = 'output'
 /
 
 &Lists

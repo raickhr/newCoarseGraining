@@ -138,7 +138,7 @@ module read_write
     subroutine writeFields(fullfilename, x_dimname, y_dimname, z_dimname, filter_dimname, time_dimname)
         character(len=*) , intent(in) :: fullfilename, x_dimname, y_dimname, z_dimname, filter_dimname, time_dimname
         integer :: file_id, xdim_id, ydim_id, zdim_id, filterdim_id, timedim_id, coords_2d(4), coords_3d(5), ncerr , &
-                   timevar_id, latvar_id, lonvar_id, zvar_id, filtervar_id, field_count, numvars, var_index
+                   timevar_id, latvar_id, lonvar_id, zvar_id, filtervar_id, field_count, numvars, var_index, counter
     
         character(len=longname_len) :: att_names(2), att_values(2)
         character(len=varname_len) :: varname
@@ -282,7 +282,72 @@ module read_write
         ncerr = nf90_enddef(file_id)
         if (ncerr /= nf90_noerr) stop 'at enddef'
 
+        ! Put time, lengthscale and z co-ordinates value
 
+        do counter = 1, num_zlevels
+            ncerr = nf90_put_var(file_id, zdim_id,(/arr_z_index(counter)/),       &
+                      start = (/counter/), &
+                      count = (/1/))
+            if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing z co-ordinate vals')
+        end do
+
+        do counter = 1, num_filterlengths
+            ncerr = nf90_put_var(file_id, filterdim_id,(/arr_filterlengths(counter)/),       &
+                      start = (/counter/), &
+                      count = (/1/))
+            if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing filterlength co-ordinate vals')
+        end do
+
+        ncerr = nf90_put_var(file_id, timedim_id, (/timevar_val/),       &
+                start = (/1/), &
+                count = (/1/))
+        if(ncerr /= nf90_noerr) call handle_err(ncerr, 'time co-ordinate vals')
+
+
+        ! Start writing variables
+        do counter = 1, num_filterlengths
+            var_index = 1
+            do field_count =1, num_scalar_fields
+                !call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+                ncerr = nf90_put_var(file_id, varids(var_index), OL_scalar_fields(:,:,:, field_count, counter),       &
+                        start = (/1, 1, 1, field_count, counter/), &
+                        count = (/nxu, nyu, nzu, 1, 1 /))
+                var_index = var_index + 1    
+            end do
+
+            do field_count=1, num_2Dvector_fields
+                ncerr = nf90_put_var(file_id, varids(var_index), OL_vector2DX_fields( :,:, field_count, counter),       &
+                        start = (/1, 1, field_count, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
+                var_index = var_index + 1
+
+                ncerr = nf90_put_var(file_id, varids(var_index), OL_vector2DY_fields( :,:, field_count, counter),       &
+                        start = (/1, 1, field_count, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
+                var_index = var_index + 1
+            end do
+
+            do field_count=1, num_3Dvector_fields
+                ncerr = nf90_put_var(file_id, varids(var_index), OL_vector3DX_fields(:,:, :, field_count, counter),       &
+                        start = (/1, 1, 1, field_count, counter/), &
+                        count = (/nxu, nyu, nzu, 1, 1 /))
+                var_index = var_index + 1
+
+                ncerr = nf90_put_var(file_id, varids(var_index), OL_vector3DY_fields(:,:, :, field_count, counter),       &
+                        start = (/1, 1, 1, field_count, counter/), &
+                        count = (/nxu, nyu, nzu, 1, 1 /))
+                var_index = var_index + 1
+                
+                ncerr = nf90_put_var(file_id, varids(var_index), OL_vector3DZ_fields(:,:, :, field_count, counter),       &
+                        start = (/1, 1, 1, field_count, counter/), &
+                        count = (/nxu, nyu, nzu, 1, 1 /))
+                var_index = var_index + 1
+                
+            end do
+        end do
+
+        ncerr = nf90_close(file_id)
+        if (ncerr /= nf90_noerr) stop 'at close'
     
     
     end subroutine
