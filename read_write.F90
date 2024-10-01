@@ -85,9 +85,16 @@ module read_write
                                     &       scalar_field_info(field_count)%units, &
                                     &       scalar_field_info(field_count)%long_name, &
                                     &       "getVar3DatZlevel_real" )
+                where (abs(scalar_fields(:,:,z_count, field_count)) > 1d10)
+                    scalar_fields(:,:,z_count, field_count) = 0
+                end where
             end do
         end do
 
+        scalar_fields(:,:,:,: ) = 0 
+        scalar_fields(1300,1,:,: ) = 10
+        scalar_fields(1300,300,:,: ) = 10
+        scalar_fields(1300,599,:,: ) = 10
         do field_count=1, num_2Dvector_fields
             call getVar2D_WithAttrs_real(file_id,  trim(adjustl(vector2DX_field_info(field_count)%varname)), &
                                   &       time_index, &
@@ -96,12 +103,20 @@ module read_write
                                   &       vector2DX_field_info(field_count)%long_name, &
                                   &       "getVar2D_withAttrs_real vector2dx" )
 
+            where (abs(vector2DX_fields(:,:, field_count)) > 1d10)
+                vector2DX_fields(:,:, field_count) = 0
+            end where
+
             call getVar2D_WithAttrs_real(file_id,  trim(adjustl(vector2DX_field_info(field_count)%varname)), &
                                   &       time_index, &
                                   &       vector2DY_fields(:,:,field_count), &
                                   &       vector2DY_field_info(field_count)%units, &
                                   &       vector2DY_field_info(field_count)%long_name, &
                                   &       "getVar2D_withAttrs_real vector2dy" )
+
+            where (abs(vector2DY_fields(:,:, field_count)) > 1d10)
+                vector2DY_fields(:,:, field_count) = 0
+            end where
         end do
 
         do field_count=1, num_3Dvector_fields
@@ -127,6 +142,16 @@ module read_write
                                     &       vector3DZ_field_info(field_count)%units, &
                                     &       vector3DZ_field_info(field_count)%long_name, &
                                     &       "getVar3DatZlevel_real vector3dz" )
+
+            where (abs(vector3DX_fields(:,:, z_count, field_count)) > 1d10)
+                vector3DX_fields(:,:, z_count, field_count) = 0
+            end where
+            where (abs(vector3DY_fields(:,:, z_count, field_count)) > 1d10)
+                vector3DY_fields(:,:, z_count, field_count) = 0
+            end where
+            where (abs(vector3DZ_fields(:,:, z_count, field_count)) > 1d10)
+                vector3DZ_fields(:,:, z_count, field_count) = 0
+            end where
             end do
         end do
 

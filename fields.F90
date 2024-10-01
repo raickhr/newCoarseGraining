@@ -189,9 +189,9 @@ module fields
             integer, intent(in) :: arr_numcols_inallprocs(numtasks), &
                                    arr_startcolindex_inallprocs(numtasks), &
                                    num_filterlengths
-            integer :: counter, zcounter, js, je, send_size, recv_size(numtasks), displacements(numtasks), filter_index
+            integer :: offset, counter, zcounter, js, je, send_size, recv_size(numtasks), displacements(numtasks), filter_index
 
-            real (kind=real_kind), allocatable :: send_buffer(:,:)
+            real (kind=real_kind), allocatable :: send_buffer(:,:), recv_buffer(:,:)
 
             js = arr_startcolindex_inallprocs(taskid + 1)
             je = js + arr_numcols_inallprocs(taskid + 1) -1
@@ -200,9 +200,15 @@ module fields
             send_size = nxu * arr_numcols_inallprocs(taskid + 1)
 
             displacements(:) = 0
-            displacements(2:numtasks) = recv_size(1:numtasks-1)
-
+            offset = 0
+            do counter = 2, numtasks
+                offset = offset + recv_size(counter-1)
+                displacements(counter) = offset
+            end do
+            
             allocate(send_buffer(nxu, arr_numcols_inallprocs(taskid + 1)))
+            allocate(recv_buffer(nxu, nyu))
+            
 
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
@@ -215,8 +221,9 @@ module fields
                         call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
                             &           OL_scalar_fields(:,  :  ,zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
                             &           MASTER, MPI_COMM_WORLD, i_err)
+                        call MPI_Barrier(MPI_COMM_WORLD, i_err)
                     end do
-                    call MPI_Barrier(MPI_COMM_WORLD, i_err)
+                    
                 end do
 
                 
