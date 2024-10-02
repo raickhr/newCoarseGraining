@@ -2,33 +2,36 @@
 InputPath = './input'
 gridFile = 'WPE_ROMS_grid.nc'
 num_of_files_to_read = 1
-num_of_scalar_fields_to_read = 2
+num_of_scalar_fields_to_read = 1
 num_of_2Dvector_fields_to_read = 0
-num_of_3Dvector_fields_to_read = 1
+num_of_3Dvector_fields_to_read = 2
 timevar_name = "ocean_time"
 vertdim_name = "s_rho"
-startTimeIndex = 3
-endTimeIndex = 3 
+startTimeIndex = 1
+endTimeIndex = 21 
 nx = 2599
 ny = 599
-nz = 4
-nt = 52 
-nfilter = 2
+nz = 1
+nt = 1 
+nfilter = 1
 OutputPath = 'output'
 /
 
 &Lists
-list_filenames = "ocean_avg_20180127_20180216.nc"
+list_filenames = "input.nc"
 
-list_scalar_fieldsNames = "temp", "salt"
+! "ocean_avg_20180127_20180216.nc"
+
+list_scalar_fieldsNames = "temp"
+! "salt"
 
 ! list_2DvectorX_fieldsNames = "ubar_eastward"
 ! list_2DvectorX_fieldsNames = "vbar_northward"
 
-list_3DvectorX_fieldsNames = "u_eastward"
-list_3DvectorY_fieldsNames = "v_northward"
-list_3DvectorZ_fieldsNames = "w"
+list_3DvectorX_fieldsNames = "u_eastward", "UT"
+list_3DvectorY_fieldsNames = "v_northward", "VT"
+list_3DvectorZ_fieldsNames = "w", "WT"
 
-list_zlevels = 30, 29, 28, 27
-list_filterLength = 10, 20
+list_zlevels = 30
+list_filterLength = 500
 /

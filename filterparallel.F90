@@ -79,6 +79,7 @@ module filterparallel
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
             do j_index=startJindex, endJindex
+                ! WRITE(*, '(A12, I4, A10, I4, A5, I4)') 'At taskid: ', taskid, '  column ', j_index - startJindex + 1, ' of ', endJindex - startJindex +1
                 do i_index = startIindex, endIindex
                     ! condition for skipping the filterpoint for eg land
                     call filter_allVarsAtpoint(i_index, j_index)
@@ -129,6 +130,7 @@ module filterparallel
                 call groupUnfiltvars(unfiltvars, east_west_BoxSize, north_south_BoxSize, numvars, &
                 &                    west_cornerindex, east_cornerindex, &
                 &                    south_cornerindex, north_cornerindex )
+
                 
                 call get_filteredVals_allVars(east_west_BoxSize, north_south_BoxSize, numvars, unfiltvars, kernelVal, filtered_vars(:) )
                 call assignFilteredVars(numvars,i_index, j_index, filter_counter, filtered_vars)
@@ -261,11 +263,16 @@ module filterparallel
 
             call calc_greatCircDist(center_long, center_lat, east_west_BoxSize, north_south_BoxSize, arr_ULONG, arr_ULAT, great_circ_dist)
 
-            Ell_Filter_by2(:,:) =  filterlengthInKM/2 * 1d3 ! turn into meters
+            great_circ_dist = great_circ_dist * 1d-3 ! turn into kilometers
+            Ell_Filter_by2(:,:) =  filterlengthInKM/2 
             pointfive(:,:) = 0.5
 
             kernelVal = pointfive-0.5*tanh((great_circ_dist-Ell_Filter_by2)/10.0) * arr_UAREA
+            where (great_circ_dist > Ell_filter_by2 .OR. kernelVal .LT. 0)
+                kernelVal = 0
+            end where
             kernelVal = kernelVal/sum(kernelVal)
+            !if (taskid .EQ. 0) print *, sum(kernelVal)
         
         end subroutine
 

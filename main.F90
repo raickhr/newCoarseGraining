@@ -94,8 +94,11 @@ program main
 
             call filter_allvars()
 
-            OL_scalar_fields(:,:,1,:,:) = 10
-            OL_scalar_fields(:,:,2,:,:) = 20
+            ! OL_scalar_fields(:,:,1,:,1) = 1.0d0
+            ! OL_scalar_fields(:,:,2,:,1) = 2.0d0
+
+            ! OL_scalar_fields(:,:,1,:,2) = 10*2.0d0
+            ! OL_scalar_fields(:,:,2,:,2) = 20*2.0d0
 
             if (taskid .EQ. MASTER) then 
                 print *, ''

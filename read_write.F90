@@ -91,10 +91,11 @@ module read_write
             end do
         end do
 
-        scalar_fields(:,:,:,: ) = 0 
-        scalar_fields(1300,1,:,: ) = 10
-        scalar_fields(1300,300,:,: ) = 10
-        scalar_fields(1300,599,:,: ) = 10
+        ! scalar_fields(:,:,:,: ) = 0 
+        ! scalar_fields(1300,1,:,: ) = 10
+        ! scalar_fields(1300,300,:,: ) = 10
+        ! scalar_fields(1300,599,:,: ) = 10
+
         do field_count=1, num_2Dvector_fields
             call getVar2D_WithAttrs_real(file_id,  trim(adjustl(vector2DX_field_info(field_count)%varname)), &
                                   &       time_index, &
@@ -169,9 +170,12 @@ module read_write
         character(len=varname_len) :: varname
 
         integer(kind=int_kind), allocatable :: varids(:)
+
+        real(kind=real_kind) , allocatable:: dummy2d(:,:,:,:), dummy3d(:,:,:,:,:)  ! x, y, z, filterlength, time
         numvars = num_scalar_fields + 2*num_2Dvector_fields + 3*num_3Dvector_fields
 
         allocate(varids(numvars))
+        allocate(dummy2d(nxu,nyu,1,1), dummy3d(nxu,nyu,nzu,1,1))
     
         print *, 'writing file', trim(adjustl(fullfilename))
         
@@ -192,7 +196,7 @@ module read_write
         call defineDimension(file_id, num_filterlengths, filterdim_id, filter_dimname, 'error in defining filterdim')
         !call defineDimension(file_id, 1, timedim_id, timedim_name, 'error in defining timedim')
     
-        ncerr = nf90_def_dim(file_id, trim(adjustl(time_dimname)), NF90_UNLIMITED, timedim_id)
+        ncerr = nf90_def_dim(file_id, trim(adjustl(time_dimname)), 1, timedim_id) !NF90_UNLIMITED
         if (ncerr /= nf90_noerr) call handle_err(ncerr, 'error in defining time dimension')
     
         !-------------------------------------------------------------------
@@ -324,9 +328,9 @@ module read_write
             if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing filterlength co-ordinate vals')
         end do
 
-        ncerr = nf90_put_var(file_id, timevar_id, (/timevar_val/),       &
-                start = (/1/), &
-                count = (/1/))
+        ncerr = nf90_put_var(file_id, timevar_id, (/timevar_val(1)/),       &
+                 start = (/1/), &
+                 count = (/1/))
         if(ncerr /= nf90_noerr) call handle_err(ncerr, 'time co-ordinate vals')
 
 
@@ -334,38 +338,44 @@ module read_write
         do counter = 1, num_filterlengths
             var_index = 1
             do field_count =1, num_scalar_fields
-                !call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
-                ncerr = nf90_put_var(file_id, varids(var_index), OL_scalar_fields(:,:,:, field_count, counter),       &
-                        start = (/1, 1, 1, field_count, counter/), &
+                dummy3d(:,:,:, 1,1) = OL_scalar_fields(:,:,:, field_count, counter)
+                !print*, 'field num', field_count, 'filter_counter' , counter, ' value', OL_scalar_fields(1300,300,1,field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                        start = (/1, 1, 1, 1, counter/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1    
             end do
 
             do field_count=1, num_2Dvector_fields
-                ncerr = nf90_put_var(file_id, varids(var_index), OL_vector2DX_fields( :,:, field_count, counter),       &
-                        start = (/1, 1, field_count, counter/), &
+                dummy2d(:,:, 1,1) = OL_vector2DX_fields( :,:, field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
+                        start = (/1, 1, 1, counter/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
-                ncerr = nf90_put_var(file_id, varids(var_index), OL_vector2DY_fields( :,:, field_count, counter),       &
-                        start = (/1, 1, field_count, counter/), &
+                dummy2d(:,:, 1,1) = OL_vector2DY_fields( :,:, field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
+                        start = (/1, 1, 1, counter/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
             end do
 
             do field_count=1, num_3Dvector_fields
-                ncerr = nf90_put_var(file_id, varids(var_index), OL_vector3DX_fields(:,:, :, field_count, counter),       &
-                        start = (/1, 1, 1, field_count, counter/), &
+                dummy3d(:,:,:, 1,1) = OL_vector3DX_fields(:,:, :, field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                        start = (/1, 1, 1, 1, counter/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
 
-                ncerr = nf90_put_var(file_id, varids(var_index), OL_vector3DY_fields(:,:, :, field_count, counter),       &
-                        start = (/1, 1, 1, field_count, counter/), &
+                dummy3d(:,:,:, 1,1) = OL_vector3DY_fields(:,:, :, field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                        start = (/1, 1, 1, 1, counter/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
                 
-                ncerr = nf90_put_var(file_id, varids(var_index), OL_vector3DZ_fields(:,:, :, field_count, counter),       &
-                        start = (/1, 1, 1, field_count, counter/), &
+                dummy3d(:,:,:, 1,1) = OL_vector3DZ_fields(:,:, :, field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                        start = (/1, 1, 1, 1, counter/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
                 
