@@ -10,9 +10,7 @@ module forTestReadWrite
         integer, intent(in):: nx, ny
 
         integer :: file_id, varid, ncerr
-        real, allocatable, intent(out) :: varArr(:,:)
-
-        allocate(varArr(nx, ny))
+        real, intent(out) :: varArr(nx,ny)
 
         ncerr = nf90_open(trim(adjustl(fileName)), nf90_nowrite, file_id)
         if ( ncerr .NE. nf90_noerr )  call handle_err(ncerr, 'nf90_open')
@@ -45,7 +43,7 @@ module forTestReadWrite
         !-------------------------------------------------------------------
         !  define dimensions
         !-------------------------------------------------------------------
-        print *, 'nx ny', nx, ny
+        !print *, 'nx ny', nx, ny
         ncerr = nf90_def_dim(file_id, 'X' , nx, xdim_id)
         if (ncerr /= nf90_noerr) call handle_err(ncerr, 'dimension X')
 
