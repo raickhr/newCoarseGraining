@@ -2,6 +2,7 @@ program forTestMain
     use kinds
     use coarsening
     use forTestReadWrite
+    use interpolation
 
 
     implicit none
@@ -21,7 +22,8 @@ program forTestMain
           & AREA(nx, ny), &
           & LAT_RHO(nx, ny), &
           & LON_RHO(nx, ny), &
-          & uvel(nx, ny)      
+          & uvel(nx, ny), &
+          & interpolated_uvel(nx, ny)      
 
     integer:: factor, cnx, cny
 
@@ -123,8 +125,13 @@ program forTestMain
 
     call coarsenField(nx, ny, factor, uvel, AREA, Crs_uvel, padded_uvel, padded_AREA)
 
+    !call blinearInterpolation(Crs_LAT_RHO, Crs_LON_RHO, LAT_RHO, LON_RHO, Crs_uvel, interpolated_uvel)
+    call blinearInterpolationLatLon(Crs_LAT_RHO(1,:), Crs_LON_RHO(:,1), LAT_RHO(1,:), LON_RHO(:,1), Crs_uvel, interpolated_uvel)
+
     call write2dVar('padded_uvel.nc','padded_uvel', padded_uvel )
     call write2dVar('Crs_uvel.nc','Crs_uvel', Crs_uvel )
+
+    call write2dVar('int_uvel.nc','int_uvel', interpolated_uvel)
 
 
     deallocate(padded_LNDX_RHO, &
