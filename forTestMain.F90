@@ -6,7 +6,7 @@ program forTestMain
 
     implicit none
 
-    integer, parameter :: nx = 2599, ny = 599                 ! Dimensions of the array
+    integer, parameter :: nx = 2597, ny = 597                 ! Dimensions of the array
 
     real :: LNDX_RHO(nx, ny), &
           & DNDY_RHO(nx, ny), &
@@ -75,7 +75,7 @@ program forTestMain
 
     call read2Dvar('test.nc', 'uvel', nx, ny, uvel)
     
-    factor = 19
+    factor = 8
 
     call coarsenLatLon(nx, ny, factor, LAT_RHO, LON_RHO, crs_LAT_RHO, crs_LON_RHO, padded_LAT_RHO, padded_LON_RHO)
     
