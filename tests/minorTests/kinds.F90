@@ -11,6 +11,6 @@ module kinds
                         & dimname_len = 20, &
                         & int_kind = kind(5), &
                         & log_kind = kind(.true.), &
-                        & real_kind = selected_real_kind(6), &
+                        & real_kind = selected_real_kind(8), &
                         & dbl_kind = selected_real_kind(13)
 end module
