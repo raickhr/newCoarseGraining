@@ -1,8 +1,11 @@
 program forTestMain
     use kinds
+    use operators
     use coarsening
-    use forTestReadWrite
     use interpolation
+    use forTestReadWrite
+    
+    
 
 
     implicit none
@@ -43,11 +46,11 @@ program forTestMain
                                       &  Crs_uvel(:, :), &  
                                       &  Crs_vvel(:, :), &
                                       &  Crs_curl(:, :), &
-                                      &  Crs_div(:,:), &
-                                      &  Crs_psi(:,:), &
-                                      &  Crs_phi(:,:), &
-                                      &  Crs_uvel_pol(:,:), &
-                                      &  Crs_uvel_tor(:,:)
+                                      &  Crs_div(:,:)!, &
+                                !       &  Crs_psi(:,:), &
+                                !       &  Crs_phi(:,:), &
+                                !       &  Crs_uvel_pol(:,:), &
+                                !       &  Crs_uvel_tor(:,:)
 
 
     real(kind=real_kind), allocatable :: padded_LNDX_RHO(:,:), &
@@ -63,8 +66,10 @@ program forTestMain
                                       &  padded_AREA(:,:), &
                                       &  padded_LAT_RHO(:, :), &
                                       &  padded_LON_RHO(:, :), &
-                                      &  padded_uvel(:, :)   &
+                                      &  padded_uvel(:, :),   &
                                       &  padded_vvel(:, :)    
+
+    print *, 'READING VARIABLES ...'
 
     call read2Dvar('WPE_ROMS_grid.nc', 'LNDX_RHO', nx, ny, LNDX_RHO)
     call read2Dvar('WPE_ROMS_grid.nc', 'DNDY_RHO', nx, ny, DNDY_RHO)
@@ -87,8 +92,10 @@ program forTestMain
     call read2Dvar('test.nc', 'uvel', nx, ny, uvel)
     call read2Dvar('test.nc', 'vvel', nx, ny, vvel)
     
-    factor = 8
+    factor = 2
+    
 
+    print *, 'COARSENING THE GRID VARIABLES'
     call coarsenLatLon(nx, ny, factor, LAT_RHO, LON_RHO, crs_LAT_RHO, crs_LON_RHO, padded_LAT_RHO, padded_LON_RHO)
     call coarsenDXDY(nx, ny, factor, DX_RHO, DY_RHO, crs_DX_RHO, crs_DY_RHO, padded_DX_RHO, padded_DY_RHO, 0)
     call coarsenAREA(nx, ny, factor, AREA, Crs_AREA, padded_AREA)
@@ -97,15 +104,34 @@ program forTestMain
     call coarsenDXDY(nx, ny, factor, DEDX_RHO, LEDY_RHO, crs_DEDX_RHO, crs_LEDY_RHO, padded_DEDX_RHO, padded_LEDY_RHO, -1)
     call coarsenDXDY(nx, ny, factor, UEDX_RHO, REDY_RHO, crs_UEDX_RHO, crs_REDY_RHO, padded_UEDX_RHO, padded_REDY_RHO, 1)
 
+
+    print *, 'COARSENING THE FIELD VARIABLES'
     deallocate(padded_AREA)
     call coarsenField(nx, ny, factor, uvel, AREA, Crs_uvel, padded_uvel, padded_AREA)
     deallocate(padded_AREA)
     call coarsenField(nx, ny, factor, vvel, AREA, Crs_vvel, padded_vvel, padded_AREA)
 
+    print *, 'COARSENING COMPLETE'
+
     !call blinearInterpolationLatLon(Crs_LAT_RHO(1,:), Crs_LON_RHO(:,1), LAT_RHO(1,:), LON_RHO(:,1), Crs_uvel, interpolated_uvel)
 
+    call calcHozDivVertCurl(Crs_uvel, Crs_vvel, Crs_DEDX_RHO, Crs_UEDX_RHO, Crs_LEDY_RHO, Crs_REDY_RHO, Crs_AREA, Crs_div, Crs_curl)
+    print *, 'DIV CURL CALCULATED'
     
-    call write2dVar('int_uvel.nc','int_uvel', interpolated_uvel)
+    call write2dVar('Crs_div.nc','Crs_div', Crs_div)
+    call write2dVar('Crs_curl.nc','Crs_curl', Crs_curl)
+    call write2dVar('Crs_div.nc','Crs_div', Crs_div)
+
+    call write2dVar('Crs_DX_RHO.nc','Crs_DX_RHO', Crs_DX_RHO)
+    call write2dVar('Crs_DY_RHO.nc','Crs_DY_RHO', Crs_DY_RHO)
+
+    call write2dVar('Crs_DEDX_RHO.nc','Crs_DEDX_RHO', Crs_DEDX_RHO)
+    call write2dVar('Crs_UEDX_RHO.nc','Crs_UEDX_RHO', Crs_UEDX_RHO)
+    call write2dVar('Crs_LEDY_RHO.nc','Crs_LEDY_RHO', Crs_LEDY_RHO)
+    call write2dVar('Crs_REDY_RHO.nc','Crs_REDY_RHO', Crs_REDY_RHO)
+    call write2dVar('Crs_AREA.nc','Crs_AREA', Crs_AREA)
+
+
 
 
     deallocate(padded_LNDX_RHO, &
@@ -135,7 +161,15 @@ program forTestMain
             &  Crs_DY_RHO, &
             &  Crs_AREA, &
             &  Crs_LAT_RHO, &
-            &  Crs_LON_RHO )
+            &  Crs_LON_RHO, &
+            &  Crs_uvel, &  
+            &  Crs_vvel, &
+            &  Crs_curl, &
+            &  Crs_div)!, &
+        !     &  Crs_psi(:,:), &
+        !     &  Crs_phi(:,:), &
+        !     &  Crs_uvel_pol(:,:), &
+        !     &  Crs_uvel_tor(:,:) )
 
 
 

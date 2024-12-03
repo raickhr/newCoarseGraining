@@ -35,7 +35,7 @@ program gather_vector
  
    ! Create vector x
    call VecCreate(PETSC_COMM_WORLD, x, ierr)
-   call VecSetFromOptions(x, ierr)
+   !call VecSetFromOptions(x, ierr)
    call VecSetSizes(x, PETSC_DECIDE, N, ierr)
    call VecGetOwnershipRange(x, low, high, ierr)
    call PetscObjectSetName(x, "x", ierr)

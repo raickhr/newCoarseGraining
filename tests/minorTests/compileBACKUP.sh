@@ -1,20 +1,28 @@
 set -ex
 FC=mpiifort
-INCLUDE=-I/home/shikhar.rai/myLibraries/petsc/include
-LIBS="-L/home/shikhar.rai/myLibraries/petsc/lib -lpetsc"
 
 PETSC_DIR=/home/shikhar.rai/myLibraries/petsc
 PETSC_ARCH=
 
-# INCLUDE+=$(nf-config --fflags)
-# LIBS+=$(nf-config --flibs)
+PETSC_INCLUDE=-I${PETSC_DIR}/include
+PETSC_LIBS="-L${PETSC_DIR}/lib -lpetsc"
 
-FLAGS=-qopenmp
+NC_INCLUDE=$(nf-config --fflags)
+NC_LIBS=$(nf-config --flibs)
 
-# ${FC} ${FLAGS} -c kinds.F90 ${INCLUDE}
-# ${FC} ${FLAGS} -c forTestReadWrite.F90 ${INCLUDE}
-${FC} ${FLAGS} -c backUPsolvePoission.F90 ${INCLUDE}
+FLAGS= #-qopenmp
 
-${FC} ${FLAGS} *.o -o test.exe ${LIBS}
+${FC} ${FLAGS} -c kinds.F90 
+${FC} ${FLAGS} -c operator.F90 
+${FC} ${FLAGS} -c coarsening.F90 
+${FC} ${FLAGS} -c interpolation.F90 
+${FC} ${FLAGS} -c forTestReadWrite.F90 ${NC_INCLUDE}
+${FC} ${FLAGS} -c forTestMain.F90 ${NC_INCLUDE}
+#${FC} ${FLAGS} -c solvePoission.F90 ${PETSC_INCLUDE} ${NC_INCLUDE}
+
+${FC} ${FLAGS} *.o -o test.exe ${PETSC_LIBS} ${NC_LIBS}
+
+# ${FC} ${FLAGS} -c gather_vector.F90 ${PETSC_INCLUDE} #${NC_INCLUDE}
+# ${FC} ${FLAGS} *.o -o test.exe ${PETSC_LIBS} #${NC_LIBS}
 
 rm -rf *.o *.mod

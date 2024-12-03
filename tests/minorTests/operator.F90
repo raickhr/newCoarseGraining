@@ -17,18 +17,17 @@ module operators
         nx = shapeArr(1)
         ny = shapeArr(2)
 
-        if (.NOT. allocated(leftEdgePhi)) then
-            allocate(leftEdgePhi(nx, ny), stat= ierr)
+        if (allocated(leftEdgePhi)) then
+            deallocate(leftEdgePhi)    
+            deallocate(rightEdgePhi)    
+            deallocate(bottomEdgePhi)    
+            deallocate(topEdgePhi)    
         endif
-        if (.NOT. allocated(rightEdgePhi)) then
-            allocate(rightEdgePhi(nx, ny), stat= ierr)
-        endif
-        if (.NOT. allocated(bottomEdgePhi)) then
-            allocate(bottomEdgePhi(nx, ny), stat= ierr)
-        endif
-        if (.NOT. allocated(topEdgePhi)) then
-            allocate(topEdgePhi(nx, ny), stat= ierr)
-        endif
+
+        allocate(leftEdgePhi(nx, ny), stat= ierr)
+        allocate(rightEdgePhi(nx, ny), stat= ierr)
+        allocate(bottomEdgePhi(nx, ny), stat= ierr)
+        allocate(topEdgePhi(nx, ny), stat= ierr)
 
         allocate(dummy(nx, ny), stat= ierr)
 
@@ -111,7 +110,86 @@ module operators
         
     end subroutine
 
-    subroutine calcGradFV(phi, dxBottom, dxTop, dyLeft, dyRight)
+    subroutine calcGradFV(phi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX, grady)
+        real(kind=real_kind), intent(in), dimension(:,:) :: phi, dxBottom, dxTop, dyLeft, dyRight, cellArea
+        real(kind=real_kind), intent(out), allocatable, dimension(:,:) :: gradX, grady
+
+        integer :: nx, ny, ierr, shapeArr(2)
+        real(kind=real_kind), allocatable, dimension(:,:) :: leftEdgePhi, rightEdgePhi, bottomEdgePhi, topEdgePhi
+
+        shapeArr = shape(phi)
+
+        nx = shapeArr(1)
+        ny = shapeArr(2)
+
+        !Make sure the shape of the arrays match
+
+        if (.NOT. all(shape(dxBottom) .EQ. shapeArr) .OR. &
+            .NOT. all(shape(dxTop) .EQ. shapeArr) .OR. & 
+            .NOT. all(shape(dyLeft) .EQ. shapeArr) .OR. &
+            .NOT. all(shape(dyRight) .EQ. shapeArr) .OR. &
+            .NOT. all(shape(cellArea) .EQ.shapeArr)) then
+
+                stop "calcGradFV:: shape of array inconsistent"
+        endif
+
+        if (allocated(gradX)) then
+            deallocate(gradX)
+            deallocate(gradY)
+        endif
+
+        allocate(gradX(nx, ny), stat = ierr)
+        allocate(gradY(nx, ny), stat = ierr)
+
+        call fromFaceCenterToEdge(phi, leftEdgePhi, rightEdgePhi, bottomEdgePhi, topEdgePhi)
+
+        gradX = (rightEdgePhi * dyRight - leftEdgePhi * dyLeft)/cellArea
+        gradY = (topEdgePhi * dxTop - bottomEdgePhi * dxBottom)/cellArea
+
+        deallocate (leftEdgePhi, rightEdgePhi, bottomEdgePhi, topEdgePhi)
+    end subroutine
+
+    subroutine calcHozDivVertCurl(uvel, vvel, dxBottom, dxTop, dyLeft, dyRight, cellArea, horzDiv, vertCurl)
+        real(kind=real_kind), intent(in), dimension(:,:) :: uvel, vvel, dxBottom, dxTop, dyLeft, dyRight, cellArea
+        real(kind=real_kind), intent(out), allocatable, dimension(:,:) :: horzDiv, vertCurl
+
+        real(kind=real_kind), allocatable, dimension(:,:) :: gradX_uvel, gradY_uvel, gradX_vvel, gradY_vvel
+        integer :: nx, ny, ierr, shapeArr(2)
+
+        shapeArr = shape(uvel)
+
+        nx = shapeArr(1)
+        ny = shapeArr(2)
+
+        !Make sure the shape of the arrays match
+
+        if (.NOT. all(shape(vvel) .EQ. shapeArr) .OR. &
+            .NOT. all(shape(dxBottom) .EQ. shapeArr) .OR. &
+            .NOT. all(shape(dxTop) .EQ. shapeArr) .OR. & 
+            .NOT. all(shape(dyLeft) .EQ. shapeArr) .OR. &
+            .NOT. all(shape(dyRight) .EQ. shapeArr) .OR. &
+            .NOT. all(shape(cellArea) .EQ.shapeArr)) then
+
+                stop "calcHozDivVertCurl:: shape of array inconsistent"
+        endif
+
+        if (allocated(horzDiv)) then
+            deallocate(horzDiv)
+        endif
+
+        if (allocated(vertCurl)) then
+            deallocate(vertCurl)
+        endif
+
+        allocate(horzDiv(nx, ny), stat = ierr)
+        allocate(vertCurl(nx, ny), stat = ierr)
+
+        call calcGradFV(uvel, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_uvel, gradY_uvel)
+        call calcGradFV(vvel, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_vvel, gradY_vvel)
+
+        horzDiv = gradX_uvel + gradY_vvel
+        vertCurl = gradX_vvel - gradY_uvel
         
+        deallocate(gradX_uvel, gradY_uvel, gradX_vvel, gradY_vvel, stat=ierr)
     end subroutine
 end module
