@@ -192,4 +192,20 @@ module operators
         
         deallocate(gradX_uvel, gradY_uvel, gradX_vvel, gradY_vvel, stat=ierr)
     end subroutine
+
+    subroutine getPolTorVel(psi, phi, dxBottom, dxTop, dyLeft, dyRight, cellArea, polUvel, torUvel, polVvel, torVvel)
+        real(kind=real_kind), intent(in), dimension(:,:) :: psi, phi, dxBottom, dxTop, dyLeft, dyRight, cellArea
+        real(kind=real_kind), intent(out), dimension(:,:) :: polUvel, torUvel, polVvel, torVvel
+
+        real(kind=real_kind), allocatable, dimension(:,:) :: gradX_psi, gradY_psi, gradX_phi, gradY_phi
+
+        call calcGradFV(psi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_psi, gradY_psi)
+        call calcGradFV(phi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_phi, gradY_phi)
+
+        polUvel = -gradX_phi
+        polVvel = -gradY_phi
+
+        torUvel = gradY_phi
+        torVvel = -gradX_phi
+    end subroutine
 end module
