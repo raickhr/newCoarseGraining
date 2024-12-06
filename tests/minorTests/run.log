@@ -16,8 +16,8 @@
  complete reading vvel
  COARSENING THE GRID VARIABLES
  Original field size        2597         597
- Coarsening by factor           8
- Coarsening to         325          75
+ Coarsening by factor           2
+ Coarsening to        1299         299
  deltax_lon -6.5734863E-02 -6.5734863E-02 -6.5734863E-02 -6.5734863E-02
  -6.5734863E-02 -6.5734863E-02 -6.5734863E-02 -6.5734863E-02 -6.5734863E-02
  -6.5734863E-02
@@ -25,37 +25,37 @@
  -6.2440872E-02 -6.2440872E-02 -6.2440872E-02 -6.2440872E-02 -6.2440872E-02
  -6.2440872E-02
  Original field size        2597         597
- Coarsening by factor           8
- Coarsening to         325          75
+ Coarsening by factor           2
+ Coarsening to        1299         299
  Original cellArea size        2597         597
- Coarsening by factor           8
- pad_x1, pad_x2, pad_y1, pad_y2           1           2           1           2
- Coarsening to         325          75
+ Coarsening by factor           2
+ pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
+ Coarsening to        1299         299
  Original field size        2597         597
- Coarsening by factor           8
- Coarsening to         325          75
+ Coarsening by factor           2
+ Coarsening to        1299         299
  Original field size        2597         597
- Coarsening by factor           8
- Coarsening to         325          75
+ Coarsening by factor           2
+ Coarsening to        1299         299
  Original field size        2597         597
- Coarsening by factor           8
- Coarsening to         325          75
+ Coarsening by factor           2
+ Coarsening to        1299         299
  Original field size        2597         597
- Coarsening by factor           8
- Coarsening to         325          75
+ Coarsening by factor           2
+ Coarsening to        1299         299
  COARSENING THE FIELD VARIABLES
  Original field size        2597         597
- Coarsening by factor           8
- pad_x1, pad_x2, pad_y1, pad_y2           1           2           1           2
- Coarsening to         325          75
+ Coarsening by factor           2
+ pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
+ Coarsening to        1299         299
  Original field size        2597         597
- Coarsening by factor           8
- pad_x1, pad_x2, pad_y1, pad_y2           1           2           1           2
- Coarsening to         325          75
+ Coarsening by factor           2
+ pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
+ Coarsening to        1299         299
  COARSENING COMPLETE
  solving poission equation
            0
- creating vectors of size         325 x          75
+ creating vectors of size        1299 x         299
  LHS and RHS vectors assigned values Set
  creating vector for distributing across processors
  creating vector for distributing across processors COMPLETE
@@ -64,11 +64,11 @@
  scattering RHS vector  ... 
  scattering RHS vectors COMPLETE
  Creating matrix for linear problem  ... 
- Matrix Memory Allocated       48750 x       48750
+ Matrix Memory Allocated     1553604 x      776802
  Matrix assembly complete
-  0 KSP Residual norm 1.274706965017e+06
- Solution vector 2-norm:                Infinity
+ Solution vector 2-norm:   32028129.7767510     
  gather complete
+ array_allocated
  solving poission equation complete
  Decomposition complete
  gradients psi calculation complete
