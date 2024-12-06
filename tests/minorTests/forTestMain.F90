@@ -172,6 +172,9 @@ program forTestMain
                 call write2dVar('crs_vvel_pol.nc', 'crs_vvel_pol',crs_vvel_pol )
                 call write2dVar('crs_vvel_tor.nc', 'crs_vvel_tor',crs_vvel_tor )
 
+                call write2dVar('crs_uvel_tol.nc', 'crs_uvel_tot',crs_uvel_tor + crs_uvel_pol )
+                call write2dVar('crs_vvel_tol.nc', 'crs_vvel_tot',crs_vvel_tor + crs_vvel_pol )
+
                 call write2dVar('crs_psi.nc', 'crs_psi', crs_psi )
                 call write2dVar('crs_phi.nc', 'crs_phi', crs_phi )
         endif
