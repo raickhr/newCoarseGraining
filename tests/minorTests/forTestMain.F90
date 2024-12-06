@@ -153,21 +153,30 @@ program forTestMain
 
         call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
-        call decomposeHelmholtz(crs_uvel, crs_vvel, crs_psi, crs_phi, &
+        call decomposeHelmholtz_2(crs_uvel, crs_vvel, crs_psi, crs_phi, &
                                 & crs_DEDX_RHO, crs_UEDX_RHO, crs_LEDY_RHO, crs_REDY_RHO, &
                                 & crs_LNDX_RHO, crs_RNDX_RHO, crs_DNDY_RHO, crs_UNDY_RHO, crs_AREA)
         
         if (taskid == 0 ) print *, 'Decomposition complete'
 
         if (taskid == 0) then
-                call getPolTorVel(crs_psi, crs_phi, crs_DEDX_RHO, crs_UEDX_RHO, crs_LEDY_RHO, crs_REDY_RHO, crs_AREA, crs_uvel_pol, crs_uvel_tor, crs_uvel_pol, crs_uvel_tor)
+                call getPolTorVel(crs_psi, crs_phi, crs_DEDX_RHO, crs_UEDX_RHO, crs_LEDY_RHO, crs_REDY_RHO, crs_AREA, &
+                                 crs_uvel_pol, crs_uvel_tor, crs_vvel_pol, crs_vvel_tor)
+
+                call write2dVar('crs_uvel.nc', 'crs_uvel',crs_uvel )
+                call write2dVar('crs_vvel.nc', 'crs_vvel',crs_vvel )
+
                 call write2dVar('crs_uvel_pol.nc', 'crs_uvel_pol',crs_uvel_pol )
                 call write2dVar('crs_uvel_tor.nc', 'crs_uvel_tor',crs_uvel_tor )
+                
                 call write2dVar('crs_vvel_pol.nc', 'crs_vvel_pol',crs_vvel_pol )
-                call write2dVar('crs_uvel_tor.nc', 'crs_uvel_tor',crs_uvel_tor )
-                call write2dVar('crs_psi.nc', 'crs_psi',crs_psi )
-                call write2dVar('crs_phi.nc', 'crs_phi',crs_phi )
+                call write2dVar('crs_vvel_tor.nc', 'crs_vvel_tor',crs_vvel_tor )
+
+                call write2dVar('crs_psi.nc', 'crs_psi', crs_psi )
+                call write2dVar('crs_phi.nc', 'crs_phi', crs_phi )
         endif
+
+        call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
         if (allocated(padded_LNDX_RHO)) deallocate(padded_LNDX_RHO)
         if (allocated(padded_DNDY_RHO)) deallocate(padded_DNDY_RHO)
@@ -205,5 +214,7 @@ program forTestMain
         if (allocated(Crs_phi)) deallocate(Crs_phi)
         if (allocated(Crs_uvel_pol)) deallocate(Crs_uvel_pol)
         if (allocated(Crs_uvel_tor)) deallocate(Crs_uvel_tor)
+
+        call stopMPI()
 
 end program

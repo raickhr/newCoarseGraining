@@ -200,12 +200,15 @@ module operators
         real(kind=real_kind), allocatable, dimension(:,:) :: gradX_psi, gradY_psi, gradX_phi, gradY_phi
 
         call calcGradFV(psi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_psi, gradY_psi)
+        print*, 'gradients psi calculation complete'
         call calcGradFV(phi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_phi, gradY_phi)
+
+        print*, 'gradients calculation complete'
 
         polUvel = -gradX_phi
         polVvel = -gradY_phi
 
-        torUvel = gradY_phi
-        torVvel = -gradX_phi
+        torUvel = gradY_psi
+        torVvel = -gradX_psi
     end subroutine
 end module
