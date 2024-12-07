@@ -10,8 +10,8 @@ if (solve_normal) {
       These calls are optional, since both will be called within
       KSPSolve() if they haven't been called already.
    */
-   PetscCall(KSPSetUp(ksp));
-   PetscCall(KSPSetUpOnBlocks(ksp));
+   
+   
 
    /*
                           Solve system

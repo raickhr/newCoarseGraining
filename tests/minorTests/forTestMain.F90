@@ -89,8 +89,7 @@ program forTestMain
 
                 call read2Dvar('test.nc', 'uvel', nx, ny, uvel)
                 call read2Dvar('test.nc', 'vvel', nx, ny, vvel)
-
-                factor = 2
+                factor = 8
                 print *, 'COARSENING THE GRID VARIABLES'
                 call coarsenLatLon(nx, ny, factor, LAT_RHO, LON_RHO, crs_LAT_RHO, crs_LON_RHO, padded_LAT_RHO, padded_LON_RHO)
                 call coarsenDXDY(nx, ny, factor, DX_RHO, DY_RHO, crs_DX_RHO, crs_DY_RHO, padded_DX_RHO, padded_DY_RHO, 0)
