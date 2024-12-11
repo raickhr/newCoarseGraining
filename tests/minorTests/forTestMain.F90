@@ -12,13 +12,13 @@ program forTestMain
         integer, parameter :: nx = 2597, ny = 597                 ! Dimensions of the array
 
         real :: LNDX_RHO(nx, ny), &
-                & DNDY_RHO(nx, ny), &
                 & RNDX_RHO(nx, ny), &
+                & DNDY_RHO(nx, ny), &
                 & UNDY_RHO(nx, ny), &
-                & DEDX_RHO(nx, ny), &
-                & LEDY_RHO(nx, ny), &
                 & UEDX_RHO(nx, ny), &
+                & DEDX_RHO(nx, ny), &
                 & REDY_RHO(nx, ny), &
+                & LEDY_RHO(nx, ny), &
                 & DX_RHO(nx, ny), &
                 & DY_RHO(nx, ny), &
                 & AREA(nx, ny), &
@@ -39,7 +39,9 @@ program forTestMain
 
         call startMPI()
 
+        if (taskid == 0) print *,'factorList', factorList
         factorList = (/ 8, 4, 2/)
+        
 
         if (taskid == 0) then
                 print *, 'READING VARIABLES ...'
