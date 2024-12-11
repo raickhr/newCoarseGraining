@@ -16,7 +16,8 @@ module interpolation
                                                            & bottomLeft_lon, bottomRight_lon, topRight_lon, topLeft_lon, &
                                                            & bottomLeft_field, bottomRight_field, topRight_field, topLeft_field 
 
-        logical(kind=log_kind), allocatable, dimension(:,:) :: insideBox, nearestBox, leftOfEdge1, leftOfEdge2, leftOfEdge3, leftOfEdge4
+        logical(kind=log_kind), allocatable, dimension(:,:) :: insideBox, nearestBox, leftOfEdge1, &
+                                                               leftOfEdge2, leftOfEdge3, leftOfEdge4
         real(kind=real_kind) :: x1, y1, x2, y2       
         integer :: i, j
         real(kind=real_kind) :: counter
@@ -31,7 +32,8 @@ module interpolation
 
         allocate(bottomLeft_lat(fnx, fny), bottomRight_lat(fnx, fny), topRight_lat(fnx, fny), topLeft_lat(fnx, fny), &
                & bottomLeft_lon(fnx, fny), bottomRight_lon(fnx, fny), topRight_lon(fnx, fny), topLeft_lon(fnx, fny), &
-               & bottomLeft_field(fnx, fny), bottomRight_field(fnx, fny), topRight_field(fnx, fny), topLeft_field(fnx, fny), stat=ierr)
+               & bottomLeft_field(fnx, fny), bottomRight_field(fnx, fny), topRight_field(fnx, fny), &
+               & topLeft_field(fnx, fny), stat=ierr)
 
         allocate(leftOfEdge1(fnx, fny), leftOfEdge2(fnx, fny), leftOfEdge3(fnx, fny), leftOfEdge4(fnx, fny), &
                & insideBox(fnx, fny), nearestBox(fnx, fny), stat=ierr)
@@ -108,7 +110,7 @@ module interpolation
 
                 !insideBox = leftOfEdge1 .AND. leftOfEdge2 .AND. leftOfEdge3 .AND. leftOfEdge4
                 
-                where (insideBox == .TRUE. )
+                where (insideBox .EQV. .TRUE. )
                     fine_field = i+j
                 end where
 

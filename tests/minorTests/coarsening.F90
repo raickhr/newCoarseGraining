@@ -3,7 +3,7 @@ module coarsening
     implicit none
 
     contains
-    subroutine coarsenField(nx, ny, factor, field, cellArea, outField, fieldWithPadding, cellAreaWithPadding)
+    subroutine coarsenField(nx, ny, factor, field, cellArea, outField, fieldWithPadding_out, cellAreaWithPadding_out)
         integer, intent(in):: nx, ny, factor
         real(kind=real_kind), intent(in) :: field(nx,  ny), cellArea(nx, ny)
         real(kind=real_kind), allocatable, intent(out) :: outField(:,:)
@@ -11,10 +11,13 @@ module coarsening
         ! local variables
         integer :: coarse_nx, coarse_ny, pad_x1, pad_x2, pad_y1, pad_y2, ierr
         integer :: i,j, dummy, is, ie, js, je
-        real(kind=real_kind), allocatable, intent(inout) :: fieldWithPadding(:,:) , cellAreaWithPadding(:,:)
+        real(kind=real_kind), allocatable, intent(inout), optional :: fieldWithPadding_out(:,:) , &
+                                                                      cellAreaWithPadding_out(:,:)
+
+        real(kind=real_kind), allocatable :: fieldWithPadding(:,:) , &
+                                             cellAreaWithPadding(:,:)
 
         print *, 'Original field size', nx, ny
-
         print *, 'Coarsening by factor', factor
 
         coarse_nx = nx/factor
@@ -36,6 +39,7 @@ module coarsening
 
         print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
         print *, 'Coarsening to', coarse_nx, coarse_ny
+        if (allocated(outField)) deallocate(outField)
         allocate(outField(coarse_nx, coarse_ny), stat=ierr)
         
 
@@ -79,9 +83,20 @@ module coarsening
             is = ie + 1
         end do
 
+        if (present(fieldWithPadding_out) .and. present(cellAreaWithPadding_out)) then
+            if (allocated(fieldWithPadding_out)) deallocate(fieldWithPadding_out)
+            if (allocated(cellAreaWithPadding_out)) deallocate(cellAreaWithPadding_out)
+            allocate(fieldWithPadding_out(nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2), &
+                    &cellAreaWithPadding_out(nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2),  stat=ierr)
+            fieldWithPadding_out = fieldWithPadding
+            cellAreaWithPadding_out = cellAreaWithPadding
+        endif
+
+        deallocate(fieldWithPadding, cellAreaWithPadding)
+
     end subroutine
 
-    subroutine coarsenLatLon(nx, ny, factor, LAT, LON, cLAT, cLON, latWithPadding, lonWithPadding)
+    subroutine coarsenLatLon(nx, ny, factor, LAT, LON, cLAT, cLON, latWithPadding_out, lonWithPadding_out)
         integer, intent(in):: nx, ny, factor
         real(kind=real_kind), intent(in) :: LAT(nx,  ny), LON(nx, ny)
         real(kind=real_kind), allocatable, intent(out) :: cLAT(:,:), cLON(:,:)
@@ -89,8 +104,10 @@ module coarsening
         ! local variables
         integer :: coarse_nx, coarse_ny, pad_x1, pad_x2, pad_y1, pad_y2, ierr
         integer :: i,j, dummy, is, ie, js, je
-        real(kind=real_kind), allocatable, intent(inout) :: latWithPadding(:,:) , lonWithPadding(:,:)
-        real(kind=real_kind), allocatable ::  weightsWithPadding(:,:), deltax_lon(:), deltay_lon(:), deltax_lat(:), deltay_lat(:)
+        real(kind=real_kind), allocatable, optional, intent(inout) :: latWithPadding_out(:,:) , lonWithPadding_out(:,:)
+        real(kind=real_kind), allocatable ::  weightsWithPadding(:,:), deltax_lon(:), &
+                                              deltay_lon(:), deltax_lat(:), deltay_lat(:), &
+                                              latWithPadding(:,:) , lonWithPadding(:,:)
 
         print *, 'Original field size', nx, ny
 
@@ -115,6 +132,8 @@ module coarsening
 
         !print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
         print *, 'Coarsening to', coarse_nx, coarse_ny
+        if (allocated(cLAT) ) deallocate(cLAT)
+        if (allocated(cLON) ) deallocate(cLON)
         allocate(cLAT(coarse_nx, coarse_ny),cLON(coarse_nx, coarse_ny), stat=ierr)
         
 
@@ -191,9 +210,20 @@ module coarsening
             is = ie + 1
         end do
 
+        if (present(latWithPadding_out).and. present(lonWithPadding_out)) then
+            if (allocated(latWithPadding_out)) deallocate(latWithPadding_out)
+            if (allocated(lonWithPadding_out)) deallocate(lonWithPadding_out)
+            allocate(latWithPadding_out(nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2), &
+            &    lonWithPadding_out(nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2))
+            latWithPadding_out = latWithPadding
+            lonWithPadding_out = lonWithPadding
+        endif
+
+        deallocate(latWithPadding, lonWithPadding, weightsWithPadding)
+
     end subroutine
 
-    subroutine coarsenDXDY(nx, ny, factor, DX, DY, cDX, cDY, dxWithPadding, dyWithPadding, downCenterUp)
+    subroutine coarsenDXDY(nx, ny, factor, DX, DY, cDX, cDY, dxWithPadding_out, dyWithPadding_out, downCenterUp)
         integer, intent(in):: nx, ny, factor, &
                               & downCenterUp       ! this variable is for location of the grid Distances
                                                    ! up(1) will sum the top edges, down(-1) will sum with bottom edges, center(0) will average the edges.
@@ -206,7 +236,8 @@ module coarsening
         ! local variables
         integer :: coarse_nx, coarse_ny, pad_x1, pad_x2, pad_y1, pad_y2, ierr
         integer :: i,j, dummy, is, ie, js, je
-        real(kind=real_kind), allocatable, intent(inout) :: dyWithPadding(:,:) , dxWithPadding(:,:)
+        real(kind=real_kind), allocatable, optional, intent(inout) :: dyWithPadding_out(:,:) , dxWithPadding_out(:,:)
+        real(kind=real_kind), allocatable :: dyWithPadding(:,:) , dxWithPadding(:,:)
         real(kind=real_kind), allocatable ::  weightsWithPadding(:,:)
 
         print *, 'Original field size', nx, ny
@@ -232,7 +263,10 @@ module coarsening
 
         !print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
         print *, 'Coarsening to', coarse_nx, coarse_ny
-        allocate(cDX(coarse_nx, coarse_ny),cDY(coarse_nx, coarse_ny), stat=ierr)
+        if (allocated(cDX) ) deallocate(cDX)
+        if (allocated(cDY) ) deallocate(cDY)
+
+        allocate(cDX(coarse_nx, coarse_ny), cDY(coarse_nx, coarse_ny), stat=ierr)
         
 
         !print *,' padded field size' , nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2
@@ -298,9 +332,21 @@ module coarsening
             is = ie + 1
         end do
 
+        if (present(dyWithPadding_out) .and. present(dxWithPadding_out)) then
+            if (allocated(dyWithPadding_out)) deallocate(dyWithPadding_out)
+            if (allocated(dxWithPadding_out)) deallocate(dxWithPadding_out)
+
+            allocate(dyWithPadding_out(nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2), &
+            &    dxWithPadding_out(nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2), stat=ierr)
+            
+            dxWithPadding_out = dxWithPadding
+            dyWithPadding_out = dyWithPadding
+        endif
+        deallocate(dxWithPadding, dyWithPadding, weightsWithPadding)
+
     end subroutine
 
-    subroutine coarsenAREA(nx, ny, factor, cellArea, coarseCellArea, cellAreaWithPadding)
+    subroutine coarsenAREA(nx, ny, factor, cellArea, coarseCellArea, cellAreaWithPadding_out)
         integer, intent(in):: nx, ny, factor
         real(kind=real_kind), intent(in) :: cellArea(nx,  ny)
         real(kind=real_kind), allocatable, intent(out) :: coarseCellArea(:,:)
@@ -308,7 +354,8 @@ module coarsening
         ! local variables
         integer :: coarse_nx, coarse_ny, pad_x1, pad_x2, pad_y1, pad_y2, ierr
         integer :: i,j, dummy, is, ie, js, je
-        real(kind=real_kind), allocatable, intent(inout) :: cellAreaWithPadding(:,:)
+        real(kind=real_kind), allocatable, optional, intent(inout) :: cellAreaWithPadding_out(:,:)
+        real(kind=real_kind), allocatable :: cellAreaWithPadding(:,:)
     
         print *, 'Original cellArea size', nx, ny
     
@@ -333,6 +380,7 @@ module coarsening
     
         print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
         print *, 'Coarsening to', coarse_nx, coarse_ny
+        if (allocated(coarseCellArea)) deallocate(coarseCellArea)
         allocate(coarseCellArea(coarse_nx, coarse_ny), stat=ierr)
         
     
@@ -368,7 +416,15 @@ module coarsening
             end do
             is = ie + 1
         end do
+
+        if (present(cellAreaWithPadding_out)) then
+            if (allocated(cellAreaWithPadding_out)) deallocate(cellAreaWithPadding_out)
+            allocate(cellAreaWithPadding_out(nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2),  stat=ierr)
+            cellAreaWithPadding_out = cellAreaWithPadding
+        endif
+        deallocate(cellAreaWithPadding)
     
     end subroutine
 
+    
 end module

@@ -1,7 +1,7 @@
 set -ex
-FC=mpiifort
+FC=mpif90
 
-PETSC_DIR=/home/shikhar.rai/myLibraries/petsc
+PETSC_DIR="/opt/anaconda3/envs/fortran/"
 PETSC_ARCH=
 
 PETSC_INCLUDE=-I${PETSC_DIR}/include
@@ -19,6 +19,7 @@ ${FC} ${FLAGS} -c coarsening.F90
 ${FC} ${FLAGS} -c mpiwrapper.F90
 ${FC} ${FLAGS} -c forTestReadWrite.F90 ${NC_INCLUDE}
 ${FC} ${FLAGS} -c helmHoltzDecomp.F90 ${PETSC_INCLUDE} ${NC_INCLUDE}
+${FC} ${FLAGS} -c multiGridHelmHoltz.F90 ${PETSC_INCLUDE} ${NC_INCLUDE}
 ${FC} ${FLAGS} -c forTestMain.F90 ${PETSC_INCLUDE} ${NC_INCLUDE}
 
 ${FC} ${FLAGS} *.o -o test.exe ${PETSC_LIBS} ${NC_LIBS}
