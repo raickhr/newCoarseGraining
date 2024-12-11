@@ -11,7 +11,23 @@ program forTestMain
         implicit none
         integer, parameter :: nx = 2597, ny = 597                 ! Dimensions of the array
 
-        real :: LNDX_RHO(nx, ny), &
+        real, allocatable :: LNDX_RHO, RNDX_RHO, DNDY_RHO, UNDY_RHO, &
+                        & UEDX_RHO, DEDX_RHO, REDY_RHO, LEDY_RHO, &
+                        & DX_RHO, DY_RHO, AREA, LAT_RHO, LON_RHO, &
+                        & uvel, vvel, phi, psi, &
+                        & uvel_pol, uvel_tor, vvel_pol, vvel_tor, &  
+                        & uvel_tot, vvel_tot      
+
+        integer:: factorList(3), cnx, cny, shapeArr(2), ierr
+
+        call startMPI()
+
+        if (taskid == 0) print *,'factorList', factorList
+        factorList = (/ 8, 4, 2/)
+        
+
+        if (taskid == 0) then
+                allocate(LNDX_RHO(nx, ny), &
                 & RNDX_RHO(nx, ny), &
                 & DNDY_RHO(nx, ny), &
                 & UNDY_RHO(nx, ny), &
@@ -33,17 +49,7 @@ program forTestMain
                 & vvel_pol(nx, ny), &
                 & vvel_tor(nx, ny), &  
                 & uvel_tot(nx, ny), &
-                & vvel_tot(nx, ny)      
-
-        integer:: factorList(3), cnx, cny, shapeArr(2), ierr
-
-        call startMPI()
-
-        if (taskid == 0) print *,'factorList', factorList
-        factorList = (/ 8, 4, 2/)
-        
-
-        if (taskid == 0) then
+                & vvel_tot(nx, ny) )
                 print *, 'READING VARIABLES ...'
                 call read2Dvar('WPE_ROMS_grid.nc', 'LNDX_RHO', nx, ny, LNDX_RHO)
                 call read2Dvar('WPE_ROMS_grid.nc', 'DNDY_RHO', nx, ny, DNDY_RHO)
@@ -87,6 +93,12 @@ program forTestMain
 
                 call write2dVar('psi.nc', 'psi', psi )
                 call write2dVar('phi.nc', 'phi', phi )
+                deallocate(LNDX_RHO, RNDX_RHO, DNDY_RHO, UNDY_RHO, &
+                & UEDX_RHO, DEDX_RHO, REDY_RHO, LEDY_RHO, &
+                & DX_RHO, DY_RHO, AREA, LAT_RHO, LON_RHO, &
+                & uvel, vvel, phi, psi, &
+                & uvel_pol, uvel_tor, vvel_pol, vvel_tor, &  
+                & uvel_tot, vvel_tot )
         endif
 
         call MPI_Barrier(MPI_COMM_WORLD, i_err)

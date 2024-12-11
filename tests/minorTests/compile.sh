@@ -1,7 +1,7 @@
 set -ex
 FC=mpif90
 
-PETSD_DIR="/home/shikhar.rai/myLibraries/petsc"
+PETSC_DIR="/home/shikhar.rai/myLibraries/petsc"
 PETSC_DIR="/opt/anaconda3/envs/fortran/"
 PETSC_ARCH=
 
