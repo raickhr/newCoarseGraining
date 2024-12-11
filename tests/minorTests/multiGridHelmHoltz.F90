@@ -126,6 +126,9 @@ module multiGridHelmHoltz
                     wrk_psi(:,:) = 0.0
                     wrk_phi(:,:) = 0.0
                 else
+                    print *, 'Interpolating '
+                    print *, 'crs_lat', crs_lat(1,:)
+                    print *, 'crs_lon', crs_lon(:,1)
                     call blinearInterpolationLatLon(crs_lat(1,:), crs_lon(:,1), wrk_lat(1,:), wrk_lon(:,1), crs_psi, wrk_psi)
                     call blinearInterpolationLatLon(crs_lat(1,:), crs_lon(:,1), wrk_lat(1,:), wrk_lon(:,1), crs_phi, wrk_phi)
                 endif
@@ -168,12 +171,12 @@ module multiGridHelmHoltz
 
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
-            ! call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, &
-            !                         & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
-            !                         & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
-            !                         & wrk_cellArea)
+            call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, &
+                                    & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
+                                    & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
+                                    & wrk_cellArea)
             
-            ! if (taskid == 0 ) print *, 'Decomposition complete'
+            if (taskid == 0 ) print *, 'Decomposition complete'
 
         enddo
         if (taskid == 0) then

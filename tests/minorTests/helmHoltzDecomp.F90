@@ -357,6 +357,8 @@ module helmHoltzDecomp
         call MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr)
         call MPI_Comm_size(PETSC_COMM_WORLD, size, ierr)
 
+        print * ,'PETSC initialized'
+
         if (rank == 0) call calcHozDivVertCurl(uvel, vvel, dxBottomE, dxTopE, dyLeftE, dyRightE, cellArea, divU, curlU)
 
         shapeArr = shape(cellArea)
