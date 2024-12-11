@@ -903,15 +903,12 @@ module helmHoltzDecomp
         endif
 
         ! Clean up
-        call KSPDestroy(ksp, ierr)
-        call VecDestroy(x_local, ierr)
         call VecDestroy(x_globalOnZero, ierr)
-        call VecDestroy(y_local, ierr)
+        call VecDestroy(x_local, ierr)
         call VecDestroy(y_globalOnZero, ierr)
+        call VecDestroy(y_local, ierr)
         call VecDestroy(sol_globalOnZero, ierr)
         call VecDestroy(Ay, ierr)
-        call MatDestroy(A, ierr)
-        call MatDestroy(N, ierr)
         call VecScatterDestroy(scatterx, ierr)
         call VecScatterDestroy(scattery, ierr)
         call VecScatterDestroy(gather, ierr)
@@ -919,6 +916,10 @@ module helmHoltzDecomp
         call ISDestroy(xis_globalVec, ierr)
         call ISDestroy(yis_localVec, ierr)
         call ISDestroy(yis_globalVec, ierr)
+        call MatDestroy(A, ierr) 
+        call MatDestroy(N, ierr)
+        call KSPDestroy(ksp, ierr)
+
         call PetscFinalize(ierr)
     end subroutine
 

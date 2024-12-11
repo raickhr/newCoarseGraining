@@ -11,7 +11,7 @@ program forTestMain
         implicit none
         integer, parameter :: nx = 2597, ny = 597                 ! Dimensions of the array
 
-        real, allocatable :: LNDX_RHO, RNDX_RHO, DNDY_RHO, UNDY_RHO, &
+        real, allocatable, dimension(:,:) :: LNDX_RHO, RNDX_RHO, DNDY_RHO, UNDY_RHO, &
                         & UEDX_RHO, DEDX_RHO, REDY_RHO, LEDY_RHO, &
                         & DX_RHO, DY_RHO, AREA, LAT_RHO, LON_RHO, &
                         & uvel, vvel, phi, psi, &
