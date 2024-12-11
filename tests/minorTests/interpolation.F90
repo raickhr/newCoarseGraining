@@ -214,6 +214,8 @@ module interpolation
             y1(:, i) = coarse_LAT1d(bottomTopIndex(i,1))
             y2(:, i) = coarse_LAT1d(bottomTopIndex(i,2))
             if ((y2(1,i) - y1(1,i)) < 0.0000001 ) then
+                print *, 'i, bottomTopIndex(i,1), bottomTopIndex(i,1)', i, bottomTopIndex(i,1), bottomTopIndex(i,2)
+                print *, 'y1(:, i), y2(:, i)', y1(:, i), y2(:, i)
                 print *, 'check lat vals'
                 stop
             endif
