@@ -336,7 +336,7 @@ module helmHoltzDecomp
         PetscMPIInt :: rank, size
         Vec :: x_globalOnZero, x_local, y_globalOnZero, y_local, sol_globalOnZero , Ay
         VecScatter :: scatterx, scattery, gather
-        IS :: xis_localVec, xis_globalVec, yis_localVec, yis_globalVec
+        IS :: xis_localVec, xis_globalVec, yis_localVec !yis_globalVec
         Mat :: A , N
         KSP :: ksp
         PetscInt :: Istart, Iend, Jstart, Jend, Ii, Ji, i, j, mx, my, &
@@ -353,11 +353,13 @@ module helmHoltzDecomp
         logical :: inColRange
 
         ! Initialize PETSc
+        if (rank == 0) print * ,'is inside before PETSC initialized'
+
         call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
         call MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr)
         call MPI_Comm_size(PETSC_COMM_WORLD, size, ierr)
 
-        print * ,'PETSC initialized'
+        if (rank == 0) print * ,'PETSC initialized'
 
         if (rank == 0) call calcHozDivVertCurl(uvel, vvel, dxBottomE, dxTopE, dyLeftE, dyRightE, cellArea, divU, curlU)
 
@@ -894,6 +896,7 @@ module helmHoltzDecomp
         
         if (rank == 0) then
             allocate(collected_xarray(2*mx*my))
+            allocate(collected_xPointer(2*mx*my))
             print *, 'array_allocated'
             print *, 'shape collected pointer', shape(collected_xPointer)
             print *, 'global size of solution vec', globalSize
@@ -902,6 +905,8 @@ module helmHoltzDecomp
             phi = reshape(collected_xarray(1:mx*my), (/mx, my/))
             psi = reshape(collected_xarray(mx*my:2*mx*my), (/mx, my/))
             deallocate(collected_xarray)
+            deallocate(collected_xPointer)
+            nullify(collected_xPointer)
         endif
 
         ! Clean up
@@ -917,7 +922,7 @@ module helmHoltzDecomp
         call ISDestroy(xis_localVec, ierr)
         call ISDestroy(xis_globalVec, ierr)
         call ISDestroy(yis_localVec, ierr)
-        call ISDestroy(yis_globalVec, ierr)
+        ! call ISDestroy(yis_globalVec, ierr)
         call MatDestroy(A, ierr) 
         call MatDestroy(N, ierr)
         call KSPDestroy(ksp, ierr)
