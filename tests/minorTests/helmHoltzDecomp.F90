@@ -896,7 +896,7 @@ module helmHoltzDecomp
         
         if (rank == 0) then
             allocate(collected_xarray(2*mx*my))
-            allocate(collected_xPointer(2*mx*my))
+            !allocate(collected_xPointer(2*mx*my))
             print *, 'array_allocated'
             print *, 'shape collected pointer', shape(collected_xPointer)
             print *, 'global size of solution vec', globalSize

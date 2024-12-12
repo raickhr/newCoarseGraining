@@ -214,8 +214,13 @@ module interpolation
             y1(:, i) = coarse_LAT1d(bottomTopIndex(i,1))
             y2(:, i) = coarse_LAT1d(bottomTopIndex(i,2))
             if ((y2(1,i) - y1(1,i)) < 0.0000001 ) then
-                print *, 'i, bottomTopIndex(i,1), bottomTopIndex(i,1)', i, bottomTopIndex(i,1), bottomTopIndex(i,2)
-                print *, 'y1(:, i), y2(:, i)', y1(:, i), y2(:, i)
+                print *, coarse_LAT1d
+                print *, 'size(coarse_LAT1d)', size(coarse_LAT1d)
+                do j = bottomTopIndex(i,1) -2 + bottomTopIndex(i,2) + 2
+                    print j, coarse_LAT1d(j)
+                end do
+                print *, 'i, bottomTopIndex(i,1), bottomTopIndex(i,2)', i, bottomTopIndex(i,1), bottomTopIndex(i,2)
+                print *, 'y1(1, i), y2(1, i)', y1(1, i), y2(1, i)
                 print *, 'check lat vals'
                 stop
             endif
@@ -288,6 +293,19 @@ module interpolation
                 enclosingTwoIndices(2) = nearestIndex+1
             endif
         endif
+
+        if (enclosingTwoIndices(1) < 1) then
+            enclosingTwoIndices(1) = 1
+            enclosingTwoIndices(2) = 2
+        endif
+
+        if (enclosingTwoIndices(2) > lenCoord) then
+            enclosingTwoIndices(1) = lenCoord-1
+            enclosingTwoIndices(2) = lenCoord
+        endif
+
+
+
 
     end function
 
