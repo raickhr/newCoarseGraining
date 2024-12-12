@@ -203,16 +203,25 @@ module multiGridHelmHoltz
             phi = wrk_phi
         endif
 
-        deallocate(crs_lat, crs_lon, &
-                   crs_psi, crs_phi, &
-                   wrk_uvel, wrk_vvel, &
-                   wrk_lat, wrk_lon, &
-                   wrk_topEdx, wrk_bottomEdx, &
-                   wrk_leftEdy, wrk_rightEdy, &
-                   wrk_topNdy, wrk_bottomNdy, &
-                   wrk_leftNdx, wrk_rightNdx, &
-                   wrk_cellArea, &
-                   wrk_psi, wrk_phi)
+        if (allocated(crs_lat)) deallocate(crs_lat) 
+        if (allocated(crs_lon)) deallocate(crs_lon)
+        if (allocated(crs_psi)) deallocate(crs_psi)
+        if (allocated(crs_phi)) deallocate(crs_phi)
+        if (allocated(wrk_uvel)) deallocate(wrk_uvel)
+        if (allocated(wrk_vvel)) deallocate(wrk_vvel)
+        if (allocated(wrk_lat)) deallocate(wrk_lat)
+        if (allocated(wrk_lon)) deallocate(wrk_lon)
+        if (allocated(wrk_topEdx)) deallocate(wrk_topEdx)
+        if (allocated(wrk_bottomEdx)) deallocate(wrk_bottomEdx)
+        if (allocated(wrk_leftEdy)) deallocate(wrk_leftEdy)
+        if (allocated(wrk_rightEdy)) deallocate(wrk_rightEdy)
+        if (allocated(wrk_topNdy)) deallocate(wrk_topNdy)
+        if (allocated(wrk_bottomNdy)) deallocate(wrk_bottomNdy)
+        if (allocated(wrk_leftNdx)) deallocate(wrk_leftNdx)
+        if (allocated(wrk_rightNdx)) deallocate(wrk_rightNdx)
+        if (allocated(wrk_cellArea)) deallocate(wrk_cellArea)
+        if (allocated(wrk_psi)) deallocate(wrk_psi)
+        if (allocated(wrk_phi)) deallocate(wrk_phi)
         
     end subroutine
 
