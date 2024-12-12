@@ -63,12 +63,13 @@ module multiGridHelmHoltz
                     crs_lon = wrk_lon
                     crs_phi = wrk_phi
                     crs_psi = wrk_psi
+                    print *, 'allocated size ', cnx, cny
                 endif
 
                 if (i <= nfactors) then
-                    print *. '' 
-                    print *. '' 
-                    print *. '' 
+                    print *, '' 
+                    print *, '' 
+                    print *, '' 
                     print *, 'COARSENING THE GRID VARIABLES'
                     call coarsenLatLon(nx, ny, factor, lat, lon, wrk_lat, wrk_lon)
                     call coarsenDXDY(nx, ny, factor, centerDx, centerDy, wrk_centerDx, wrk_centerDy, downCenterUp = 0)
@@ -177,12 +178,12 @@ module multiGridHelmHoltz
 
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
-            call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, &
-                                    & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
-                                    & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
-                                    & wrk_cellArea)
+            ! call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, &
+            !                         & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
+            !                         & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
+            !                         & wrk_cellArea)
             
-            if (taskid == 0 ) print *, 'Decomposition complete'
+            ! if (taskid == 0 ) print *, 'Decomposition complete'
 
         enddo
         if (taskid == 0) then
