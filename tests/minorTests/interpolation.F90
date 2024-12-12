@@ -216,8 +216,8 @@ module interpolation
             if ((y2(1,i) - y1(1,i)) < 0.0000001 ) then
                 print *, coarse_LAT1d
                 print *, 'size(coarse_LAT1d)', size(coarse_LAT1d)
-                do j = bottomTopIndex(i,1) -2 + bottomTopIndex(i,2) + 2
-                    print j, coarse_LAT1d(j)
+                do j = bottomTopIndex(i,1) -2,  bottomTopIndex(i,2) + 2
+                    print *, j, coarse_LAT1d(j)
                 end do
                 print *, 'i, bottomTopIndex(i,1), bottomTopIndex(i,2)', i, bottomTopIndex(i,1), bottomTopIndex(i,2)
                 print *, 'y1(1, i), y2(1, i)', y1(1, i), y2(1, i)

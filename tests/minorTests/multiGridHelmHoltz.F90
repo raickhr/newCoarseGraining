@@ -66,6 +66,9 @@ module multiGridHelmHoltz
                 endif
 
                 if (i <= nfactors) then
+                    print *. '' 
+                    print *. '' 
+                    print *. '' 
                     print *, 'COARSENING THE GRID VARIABLES'
                     call coarsenLatLon(nx, ny, factor, lat, lon, wrk_lat, wrk_lon)
                     call coarsenDXDY(nx, ny, factor, centerDx, centerDy, wrk_centerDx, wrk_centerDy, downCenterUp = 0)
@@ -127,10 +130,13 @@ module multiGridHelmHoltz
                     wrk_phi(:,:) = 0.0
                 else
                     print *, 'Interpolating '
-                    print *, 'crs_lat', crs_lat(1,:)
-                    print *, 'crs_lon', crs_lon(:,1)
+                    !print *, 'crs_lat', crs_lat(1,:)
+                    !print *, 'crs_lon', crs_lon(:,1)
                     call blinearInterpolationLatLon(crs_lat(1,:), crs_lon(:,1), wrk_lat(1,:), wrk_lon(:,1), crs_psi, wrk_psi)
                     call blinearInterpolationLatLon(crs_lat(1,:), crs_lon(:,1), wrk_lat(1,:), wrk_lon(:,1), crs_phi, wrk_phi)
+                    print *, 'Interpolation complete '
+                    print *, ' '
+                    print *, ' '
                 endif
             endif
 

@@ -905,7 +905,7 @@ module helmHoltzDecomp
             phi = reshape(collected_xarray(1:mx*my), (/mx, my/))
             psi = reshape(collected_xarray(mx*my:2*mx*my), (/mx, my/))
             deallocate(collected_xarray)
-            deallocate(collected_xPointer)
+            !deallocate(collected_xPointer)
             nullify(collected_xPointer)
         endif
 
