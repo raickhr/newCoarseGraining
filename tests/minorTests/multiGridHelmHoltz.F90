@@ -72,7 +72,7 @@ module multiGridHelmHoltz
                     print *, '' 
                     print *, 'COARSENING THE GRID VARIABLES'
                     call coarsenLatLon(nx, ny, factor, lat, lon, wrk_lat, wrk_lon)
-                    call coarsenDXDY(nx, ny, factor, centerDx, centerDy, wrk_centerDx, wrk_centerDy, downCenterUp = 0)
+                    !call coarsenDXDY(nx, ny, factor, centerDx, centerDy, wrk_centerDx, wrk_centerDy, downCenterUp = 0)
                     call coarsenAREA(nx, ny, factor, cellArea, wrk_cellArea)
                     call coarsenDXDY(nx, ny, factor, leftNdx, bottomNdy, wrk_leftNdx, wrk_bottomNdy, downCenterUp = 0)
                     call coarsenDXDY(nx, ny, factor, rightNdx, topNdy, wrk_rightNdx, wrk_topNdy, downCenterUp = 0)
@@ -92,6 +92,7 @@ module multiGridHelmHoltz
                     endif
                     allocate(wrk_psi(cnx, cny), wrk_phi(cnx, cny), stat=ierr)
                 else
+                    print *, 'copyng original grid for final time decomposition'
                     if (allocated(wrk_leftNdx)) then
                         deallocate(wrk_leftNdx, wrk_bottomNdy, wrk_rightNdx, wrk_topNdy, &
                         wrk_bottomEdx, wrk_leftEdy, wrk_topEdx, wrk_rightEdy, &
@@ -148,6 +149,15 @@ module multiGridHelmHoltz
 
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
             if (taskid .NE. MASTER) then 
+                if (allocated(wrk_leftEdy)) then
+                    deallocate(wrk_uvel, wrk_vvel, &
+                   wrk_topEdx, wrk_bottomEdx, &
+                   wrk_leftEdy, wrk_rightEdy, &
+                   wrk_topNdy, wrk_bottomNdy, &
+                   wrk_leftNdx, wrk_rightNdx, &
+                   wrk_cellArea, &
+                   wrk_psi, wrk_phi)
+                endif
                     allocate( wrk_leftNdx(cnx, cny), stat=ierr)
                     allocate( wrk_bottomNdy(cnx, cny), stat=ierr)
                     allocate( wrk_rightNdx(cnx, cny), stat=ierr)
@@ -178,6 +188,8 @@ module multiGridHelmHoltz
 
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
+
+            if (taskid == 0 ) print *, 'Starting Helmholtz Decomposition'
             ! call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, &
             !                         & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
             !                         & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
@@ -195,7 +207,6 @@ module multiGridHelmHoltz
                    crs_psi, crs_phi, &
                    wrk_uvel, wrk_vvel, &
                    wrk_lat, wrk_lon, &
-                   wrk_centerDx, wrk_centerDy, &
                    wrk_topEdx, wrk_bottomEdx, &
                    wrk_leftEdy, wrk_rightEdy, &
                    wrk_topNdy, wrk_bottomNdy, &
