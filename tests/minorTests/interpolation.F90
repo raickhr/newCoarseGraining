@@ -334,7 +334,7 @@ module interpolation
 
         allocate(fine_dummy(nx, ny))
         allocate(crs_dummy(cnx, cny))
-        if (allocated(file_residual)) deallocate(fine_residual)
+        if (allocated(fine_residual)) deallocate(fine_residual)
         allocate(fine_residual(4*nx*ny))
 
         print *, 'shape of coarse residual ', size(coarse_residual)
