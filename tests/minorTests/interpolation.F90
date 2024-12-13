@@ -322,14 +322,20 @@ module interpolation
 
         integer :: nx, ny, cnx, cny
 
+        print *, 'interpolating residual'
+
         cny = size(coarse_LAT1d)
         cnx = size(coarse_LON1d)
 
         ny = size(fine_LAT1d)
         nx = size(fine_LON1d)
 
+        print *, 'from ', cnx, 'x', cny, ' to ', nx, 'x' ny
+
         allocate(fine_dummy(nx, ny))
         allocate(crs_dummy(cnx, cny))
+
+        print *, 'shape of coarse residual ', size(coarse_residual)
 
         crs_dummy = reshape(coarse_residual(1:cnx* cny), (/cnx, cny/))
         call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
