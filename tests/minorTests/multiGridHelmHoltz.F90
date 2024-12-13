@@ -385,7 +385,7 @@ module multiGridHelmHoltz
                                                                 wrk_RHS, fine_RHS)
                                                                 
                                                                 
-                    call biliearInterpolationLatLonResidual(wrk_lat(1,:), wrk_lon(:,1), &
+                    call biliearInterpolationLatLonLHS(wrk_lat(1,:), wrk_lon(:,1), &
                                                                 lat(1,:), lon(:,1), &
                                                                 wrk_LHS, fine_LHS)
                     residual = RHS_orig - fine_RHS

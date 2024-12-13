@@ -371,4 +371,55 @@ module interpolation
 
     end subroutine
 
+    subroutine biliearInterpolationLatLonLHS(coarse_LAT1d, coarse_LON1d, &
+        fine_LAT1d, fine_LON1d, coarse_LHS, fine_LHS)
+
+        real(kind=real_kind), intent(in) :: coarse_LAT1d(:), coarse_LON1d(:), &
+                                    fine_LAT1d(:), fine_LON1d(:), coarse_LHS(:)
+
+        real(kind=real_kind), allocatable, intent(out) :: fine_LHS(:)
+
+        real(kind=real_kind), allocatable :: crs_dummy(:,:), fine_dummy(:, :)
+
+
+        integer :: nx, ny, cnx, cny
+
+        print *, 'interpolating residual'
+
+        cny = size(coarse_LAT1d)
+        cnx = size(coarse_LON1d)
+
+        ny = size(fine_LAT1d)
+        nx = size(fine_LON1d)
+
+        print *, 'from ', cnx, 'x', cny, ' to ', nx, 'x', ny
+
+        allocate(fine_dummy(nx, ny))
+        allocate(crs_dummy(cnx, cny))
+        if (allocated(fine_LHS)) deallocate(fine_LHS)
+        allocate(fine_LHS(2*nx*ny))
+
+        print *, 'shape of coarse LHS ', size(coarse_LHS)
+
+        crs_dummy = reshape(coarse_residual(1 : cnx* cny), (/cnx, cny/))
+        print *, 'reshaped phi'
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                fine_LAT1d, fine_LON1d, &
+                                crs_dummy, fine_dummy)
+        print *, 'interpolation phi complete'
+        print *, 'shape phi', shape(fine_dummy)
+        fine_residual(1:nx*ny) = pack(fine_dummy, .TRUE.)
+        print *, 'flattening phi complete'
+
+        crs_dummy = reshape(coarse_residual(cnx* cny+1:2*cnx* cny), (/cnx, cny/))
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                fine_LAT1d, fine_LON1d, &
+                                crs_dummy, fine_dummy)
+        fine_LHS(nx*ny+1: 2*nx*ny) = pack(fine_dummy, .TRUE.)
+
+        deallocate(fine_dummy, crs_dummy)
+
+        end subroutine
+
+
 end module
