@@ -28,6 +28,9 @@ module coarsening
             dummy = coarse_nx * factor - nx
             pad_x1 = dummy/2 
             pad_x2 = dummy - pad_x1
+        else
+            pad_x1 = 0
+            pad_x2 = 0
         endif
 
         if (mod(ny,factor) > 0) then
@@ -35,6 +38,9 @@ module coarsening
             dummy = coarse_ny * factor - ny
             pad_y1 = dummy/2
             pad_y2 = dummy - pad_y1
+        else
+            pad_y1 = 0
+            pad_y2 = 0
         endif
 
         print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
@@ -123,6 +129,9 @@ module coarsening
             dummy = coarse_nx * factor - nx
             pad_x1 = dummy/2 
             pad_x2 = dummy - pad_x1
+        else
+            pad_x1 = 0
+            pad_x2 = 0
         endif
 
         if (mod(ny,factor) > 0) then
@@ -130,6 +139,9 @@ module coarsening
             dummy = coarse_ny * factor - ny
             pad_y1 = dummy/2
             pad_y2 = dummy - pad_y1
+        else
+            pad_y1 = 0
+            pad_y2 = 0
         endif
 
         print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
@@ -234,6 +246,9 @@ module coarsening
             dummy = coarse_nx * factor - nx
             pad_x1 = dummy/2 
             pad_x2 = dummy - pad_x1
+        else
+            pad_x1 = 0
+            pad_x2 = 0
         endif
 
         if (mod(ny,factor) > 0) then
@@ -241,6 +256,9 @@ module coarsening
             dummy = coarse_ny * factor - ny
             pad_y1 = dummy/2
             pad_y2 = dummy - pad_y1
+        else
+            pad_y1 = 0
+            pad_y2 = 0
         endif
 
         print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
@@ -365,6 +383,9 @@ module coarsening
             dummy = coarse_nx * factor - nx
             pad_x1 = dummy/2 
             pad_x2 = dummy - pad_x1
+        else
+            pad_x1 = 0
+            pad_x2 = 0
         endif
 
         if (mod(ny,factor) > 0) then
@@ -372,6 +393,9 @@ module coarsening
             dummy = coarse_ny * factor - ny
             pad_y1 = dummy/2
             pad_y2 = dummy - pad_y1
+        else
+            pad_y1 = 0
+            pad_y2 = 0
         endif
 
         !print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
@@ -482,13 +506,19 @@ module coarsening
             dummy = coarse_nx * factor - nx
             pad_x1 = dummy/2 
             pad_x2 = dummy - pad_x1
+        else
+            pad_x1 = 0
+            pad_x2 = 0
         endif
-    
+
         if (mod(ny,factor) > 0) then
             coarse_ny = coarse_ny + 1
             dummy = coarse_ny * factor - ny
             pad_y1 = dummy/2
             pad_y2 = dummy - pad_y1
+        else
+            pad_y1 = 0
+            pad_y2 = 0
         endif
     
         print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
