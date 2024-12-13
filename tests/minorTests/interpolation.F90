@@ -401,17 +401,17 @@ module interpolation
 
         print *, 'shape of coarse LHS ', size(coarse_LHS)
 
-        crs_dummy = reshape(coarse_residual(1 : cnx* cny), (/cnx, cny/))
+        crs_dummy = reshape(coarse_LHS(1 : cnx* cny), (/cnx, cny/))
         print *, 'reshaped phi'
         call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
                                 fine_LAT1d, fine_LON1d, &
                                 crs_dummy, fine_dummy)
         print *, 'interpolation phi complete'
         print *, 'shape phi', shape(fine_dummy)
-        fine_residual(1:nx*ny) = pack(fine_dummy, .TRUE.)
+        fine_LHS(1:nx*ny) = pack(fine_dummy, .TRUE.)
         print *, 'flattening phi complete'
 
-        crs_dummy = reshape(coarse_residual(cnx* cny+1:2*cnx* cny), (/cnx, cny/))
+        crs_dummy = reshape(coarse_LHS(cnx* cny+1:2*cnx* cny), (/cnx, cny/))
         call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
                                 fine_LAT1d, fine_LON1d, &
                                 crs_dummy, fine_dummy)
