@@ -293,6 +293,9 @@ module multiGridHelmHoltz
             if (taskid == 0) then
                 if (i > 0) then
                     factor = coarsenList(i)
+                    print *, ''
+                    print *, ''
+                    print *, ' in loop ', i
                     call coarsenLatLon(nx, ny, factor, lat, lon, wrk_lat, wrk_lon)
                     call coarsenAREA(nx, ny, factor, cellArea, wrk_cellArea)
                     call coarsenDXDY(nx, ny, factor, leftNdx, bottomNdy, wrk_leftNdx, wrk_bottomNdy, downCenterUp = 0)
