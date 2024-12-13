@@ -289,7 +289,7 @@ module multiGridHelmHoltz
 
         
 
-        do i = 0, nfactors-1
+        do i = 0, nfactors
             if (taskid == 0) then
                 if (i > 0) then
                     factor = coarsenList(i)
@@ -397,6 +397,7 @@ module multiGridHelmHoltz
                     residual = RHS_orig - wrk_RHS
                     solution = solution + wrk_LHS
                 endif
+                print * , 'finished loop ', i
             endif
         end do
 
