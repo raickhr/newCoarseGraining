@@ -1360,6 +1360,8 @@ module helmHoltzDecomp
             nullify(collected_xPointer)
         endif
 
+        if (rank == 0) print *, 'cleaning up PETSC'
+
         ! Clean up
         call VecDestroy(x_globalOnZero, ierr)
         call VecDestroy(x_local, ierr)
@@ -1379,6 +1381,7 @@ module helmHoltzDecomp
         call KSPDestroy(ksp, ierr)
 
         call PetscFinalize(ierr)
+        if (rank == 0) print *, 'PETSC FINALIZED'
     end subroutine
 
 
