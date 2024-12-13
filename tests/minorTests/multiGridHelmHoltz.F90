@@ -190,12 +190,12 @@ module multiGridHelmHoltz
 
 
             if (taskid == 0 ) print *, 'Starting Helmholtz Decomposition'
-            ! call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, &
-            !                         & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
-            !                         & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
-            !                         & wrk_cellArea)
+            call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, &
+                                    & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
+                                    & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
+                                    & wrk_cellArea)
             
-            ! if (taskid == 0 ) print *, 'Decomposition complete'
+            if (taskid == 0 ) print *, 'Decomposition complete'
 
         enddo
         if (taskid == 0) then
@@ -222,6 +222,208 @@ module multiGridHelmHoltz
         if (allocated(wrk_cellArea)) deallocate(wrk_cellArea)
         if (allocated(wrk_psi)) deallocate(wrk_psi)
         if (allocated(wrk_phi)) deallocate(wrk_phi)
+        
+    end subroutine
+
+    subroutine doMultiGridHelmHoltzRes(uvel, vvel, &
+                                    lat, lon,&
+                                    centerDx, centerDy, &
+                                    topEdx, bottomEdx, &
+                                    leftEdy, rightEdy, &
+                                    topNdy, bottomNdy, &
+                                    leftNdx, rightNdx, &
+                                    cellArea, &
+                                    coarsenList, psi, phi)
+
+        real (kind=real_kind), intent(in), dimension(:,:) :: uvel, vvel, &
+                    lat, lon, &
+                    centerDx, centerDy, &
+                    topEdx, bottomEdx, &
+                    leftEdy, rightEdy, &
+                    topNdy, bottomNdy, &
+                    leftNdx, rightNdx, &
+                    cellArea
+
+        integer, intent(in), dimension(:) :: coarsenList
+
+        real (kind=real_kind), intent(out), dimension(:,:) ::psi, phi
+
+        real(kind=real_kind), allocatable :: RHS_orig(:), fine_RHS(:), &
+                                            wrk_RHS(:), wrk_LHS(:), fine_LHS(:), &
+                                            solution(:), residual(:)
+        integer :: i, j,  factor, nfactors, nx, ny, cnx, cny, shapeArr(2), ierr
+
+        real(kind=real_kind), allocatable, dimension(:,:) ::wrk_lat, wrk_lon, &
+                                                            wrk_topEdx, wrk_bottomEdx, &
+                                                            wrk_leftEdy, wrk_rightEdy, &
+                                                            wrk_topNdy, wrk_bottomNdy, &
+                                                            wrk_leftNdx, wrk_rightNdx, &
+                                                            wrk_cellArea, divU, curlU
+                
+
+        shapeArr = shape(uvel)
+        nx = shapeArr(1)
+        ny = shapeArr(2)
+
+        nfactors = size(coarsenList)
+
+        if (taskid == 0) then
+            allocate(solution(2*nx*ny))
+            allocate(RHS_orig(4*nx*ny))
+            allocate(divU(nx, ny), curlU(nx, ny))
+            call calcHozDivVertCurl(uvel, vvel, bottomEdx, topEdx, leftEdy, rightEdy, &
+                                    cellArea, divU, curlU)
+            do i = 0, nx-1
+                do j = 0, ny-1
+                    RHS_orig(i + j*nx + 1) = uvel(i+1, j+1)
+                    RHS_orig(i + j*nx + 1 + nx * ny ) = vvel(i+1, j+1)
+                    if (i == 0 .or. i ==  nx-1 .or. j == 0 .or. j == ny-1) then
+                        RHS_orig(i + j*nx + 1 + 2 * nx * ny ) = 0
+                        RHS_orig(i + j*nx + 1 + 3 * nx * ny ) = 0
+                    else
+                        RHS_orig(i + j*nx + 1 + 2 * nx * ny ) = -divU(i+1,j+1)
+                        RHS_orig(i + j*nx + 1 + 3 * nx * ny ) = -curlU(i+1,j+1)
+                    endif
+                enddo
+            enddo
+        endif
+
+        
+
+        do i = 0, nfactors-1
+            if (taskid == 0) then
+                if (i > 0) then
+                    factor = coarsenList(i)
+                    call coarsenLatLon(nx, ny, factor, lat, lon, wrk_lat, wrk_lon)
+                    call coarsenAREA(nx, ny, factor, cellArea, wrk_cellArea)
+                    call coarsenDXDY(nx, ny, factor, leftNdx, bottomNdy, wrk_leftNdx, wrk_bottomNdy, downCenterUp = 0)
+                    call coarsenDXDY(nx, ny, factor, rightNdx, topNdy, wrk_rightNdx, wrk_topNdy, downCenterUp = 0)
+                    call coarsenDXDY(nx, ny, factor, bottomEdx, leftEdy, wrk_bottomEdx, wrk_leftEdy, downCenterUp = -1)
+                    call coarsenDXDY(nx, ny, factor, topEdx, rightEdy, wrk_topEdx, wrk_rightEdy, downCenterUp =  1)
+                    
+                    
+                    call coarsen_residual(nx, ny, factor, residual, cellArea, wrk_RHS)
+                    deallocate(wrk_LHS)
+                    shapeArr = shape(wrk_cellArea)
+                    cnx = shapeArr(1)
+                    cny = shapeArr(2)
+                    allocate(wrk_LHS(2 * cnx * cny))
+                else
+                    cnx = nx
+                    cny = ny 
+                    allocate( wrk_leftNdx(cnx, cny), stat=ierr)
+                    allocate( wrk_bottomNdy(cnx, cny), stat=ierr)
+                    allocate( wrk_rightNdx(cnx, cny), stat=ierr)
+                    allocate( wrk_topNdy(cnx, cny), stat=ierr)
+                    allocate( wrk_bottomEdx(cnx, cny), stat=ierr)
+                    allocate( wrk_leftEdy(cnx, cny), stat=ierr)
+                    allocate( wrk_topEdx(cnx, cny), stat=ierr)
+                    allocate( wrk_rightEdy(cnx, cny), stat=ierr)
+                    allocate( wrk_cellArea(cnx, cny), stat=ierr)
+
+                    allocate(wrk_RHS(4*nx*ny))
+                    allocate(wrk_LHS(2*nx*ny))
+
+                    
+
+                    wrk_RHS = RHS_orig
+                    wrk_LHS(:) = 0.0
+
+                    wrk_leftNdx = leftNdx
+                    wrk_bottomNdy = bottomNdy
+                    wrk_rightNdx = rightNdx
+                    wrk_topNdy = topNdy
+                    wrk_bottomEdx = bottomEdx
+                    wrk_leftEdy = leftEdy
+                    wrk_topEdx = topEdx
+                    wrk_rightEdy = rightEdy
+                    wrk_cellArea = cellArea
+                endif
+            endif
+
+            call MPI_BCAST(cnx, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(cny, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+            if (taskid .NE. MASTER) then 
+                if (allocated(wrk_leftEdy)) then
+                    deallocate(wrk_topEdx, wrk_bottomEdx, &
+                    wrk_leftEdy, wrk_rightEdy, &
+                    wrk_topNdy, wrk_bottomNdy, &
+                    wrk_leftNdx, wrk_rightNdx, &
+                    wrk_cellArea)
+                endif
+                    allocate( wrk_leftNdx(cnx, cny), stat=ierr)
+                    allocate( wrk_bottomNdy(cnx, cny), stat=ierr)
+                    allocate( wrk_rightNdx(cnx, cny), stat=ierr)
+                    allocate( wrk_topNdy(cnx, cny), stat=ierr)
+                    allocate( wrk_bottomEdx(cnx, cny), stat=ierr)
+                    allocate( wrk_leftEdy(cnx, cny), stat=ierr)
+                    allocate( wrk_topEdx(cnx, cny), stat=ierr)
+                    allocate( wrk_rightEdy(cnx, cny), stat=ierr)
+                    allocate( wrk_cellArea(cnx, cny), stat=ierr)
+            endif
+
+            call MPI_BCAST(wrk_leftNdx, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(wrk_bottomNdy, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(wrk_rightNdx, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(wrk_topNdy, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(wrk_bottomEdx, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(wrk_leftEdy, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(wrk_topEdx, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(wrk_rightEdy, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(wrk_cellArea, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+            call solvepoissionBig_LHSRHS(wrk_LHS, wrk_RHS, wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
+                                        wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
+                                        wrk_cellArea, maxIti = 1000)
+            if (taskid == 0) then
+                if (i > 0) then
+                    call biliearInterpolationLatLonResidual(wrk_lat(1,:), wrk_lon(:,1), &
+                                                                lat(1,:), lon(:,1), &
+                                                                wrk_RHS, fine_RHS)
+                                                                
+                                                                
+                    call biliearInterpolationLatLonResidual(wrk_lat(1,:), wrk_lon(:,1), &
+                                                                lat(1,:), lon(:,1), &
+                                                                wrk_LHS, fine_LHS)
+                    residual = RHS_orig - fine_RHS
+                    solution = solution + fine_LHS
+                else
+                    residual = RHS_orig - wrk_RHS
+                    solution = solution + wrk_LHS
+                endif
+            endif
+        end do
+
+        call solvepoissionBig_LHSRHS(solution, RHS_orig, bottomEdx, topEdx, leftEdy, rightEdy, &
+                                    leftNdx, rightNdx, bottomNdy, topNdy, cellArea, maxIti = 50)
+
+        phi = reshape(solution(1:nx*ny), shape=(/nx, ny/))
+        psi = reshape(solution(nx*ny + 1:2 * nx * ny), shape=(/nx, ny/))
+
+        if (allocated(RHS_orig)) deallocate(RHS_orig) 
+        if (allocated(fine_RHS)) deallocate(fine_RHS)
+        if (allocated(wrk_RHS)) deallocate(wrk_RHS) 
+        if (allocated(wrk_LHS)) deallocate(wrk_LHS) 
+        if (allocated(fine_LHS)) deallocate(fine_LHS)
+        if (allocated(wrk_lat)) deallocate(wrk_lat)
+        if (allocated(wrk_lon)) deallocate(wrk_lon)
+        if (allocated(wrk_topEdx)) deallocate(wrk_topEdx)
+        if (allocated(wrk_bottomEdx)) deallocate(wrk_bottomEdx)
+        if (allocated(wrk_leftEdy)) deallocate(wrk_leftEdy)
+        if (allocated(wrk_rightEdy)) deallocate(wrk_rightEdy)
+        if (allocated(wrk_topNdy)) deallocate(wrk_topNdy)
+        if (allocated(wrk_bottomNdy)) deallocate(wrk_bottomNdy)
+        if (allocated(wrk_leftNdx)) deallocate(wrk_leftNdx)
+        if (allocated(wrk_rightNdx)) deallocate(wrk_rightNdx)
+        if (allocated(wrk_cellArea)) deallocate(wrk_cellArea)
+        if (allocated(residual)) deallocate(residual)
+        if (allocated(divU)) deallocate(divU)
+        if (allocated(curlU)) deallocate(curlU)
+        
         
     end subroutine
 

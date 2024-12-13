@@ -68,15 +68,25 @@ program forTestMain
                 call read2Dvar('test.nc', 'vvel', nx, ny, vvel)         
         endif
 
-        call doMultiGridHelmHoltz(uvel, vvel, &
-                                  LAT_RHO, LON_RHO,&
-                                  DX_RHO, DY_RHO, &
-                                  UEDX_RHO, DEDX_RHO, &
-                                  LEDY_RHO, REDY_RHO, &
-                                  UNDY_RHO, DNDY_RHO, &
-                                  LNDX_RHO, RNDX_RHO, &
-                                  AREA, &
-                                  factorList, psi, phi)
+        ! call doMultiGridHelmHoltz(uvel, vvel, &
+        !                           LAT_RHO, LON_RHO,&
+        !                           DX_RHO, DY_RHO, &
+        !                           UEDX_RHO, DEDX_RHO, &
+        !                           LEDY_RHO, REDY_RHO, &
+        !                           UNDY_RHO, DNDY_RHO, &
+        !                           LNDX_RHO, RNDX_RHO, &
+        !                           AREA, &
+        !                           factorList, psi, phi)
+
+        call doMultiGridHelmHoltzRes(uvel, vvel, &
+                                LAT_RHO, LON_RHO,&
+                                DX_RHO, DY_RHO, &
+                                UEDX_RHO, DEDX_RHO, &
+                                LEDY_RHO, REDY_RHO, &
+                                UNDY_RHO, DNDY_RHO, &
+                                LNDX_RHO, RNDX_RHO, &
+                                AREA, &
+                                factorList, psi, phi)
 
         if (taskid == 0) then
                 call getPolTorVel(psi, phi, DEDX_RHO, UEDX_RHO, LEDY_RHO, REDY_RHO, AREA, &
@@ -88,8 +98,8 @@ program forTestMain
                 call write2dVar('vvel_pol.nc', 'vvel_pol', vvel_pol )
                 call write2dVar('vvel_tor.nc', 'vvel_tor', vvel_tor )
 
-                call write2dVar('uvel_tol.nc', 'uvel_tot', uvel_tor + uvel_pol )
-                call write2dVar('vvel_tol.nc', 'vvel_tot', vvel_tor + vvel_pol )
+                call write2dVar('uvel_tot.nc', 'uvel_tot', uvel_tor + uvel_pol )
+                call write2dVar('vvel_tot.nc', 'vvel_tot', vvel_tor + vvel_pol )
 
                 call write2dVar('psi.nc', 'psi', psi )
                 call write2dVar('phi.nc', 'phi', phi )

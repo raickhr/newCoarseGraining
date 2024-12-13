@@ -309,4 +309,54 @@ module interpolation
 
     end function
 
+    subroutine biliearInterpolationLatLonResidual(coarse_LAT1d, coarse_LON1d, &
+                        fine_LAT1d, fine_LON1d, coarse_residual, fine_residual)
+
+        real(kind=real_kind), intent(in) :: coarse_LAT1d(:), coarse_LON1d(:), &
+                                            fine_LAT1d(:), fine_LON1d(:), coarse_residual(:)
+
+        real(kind=real_kind), intent(out) :: fine_residual(:)
+
+        real(kind=real_kind), allocatable :: crs_dummy(:,:), fine_dummy(:, :)
+
+
+        integer :: nx, ny, cnx, cny
+
+        cny = size(coarse_LAT1d)
+        cnx = size(coarse_LON1d)
+
+        ny = size(fine_LAT1d)
+        nx = size(fine_LON1d)
+
+        allocate(fine_dummy(nx, ny))
+        allocate(crs_dummy(cnx, cny))
+
+        crs_dummy = reshape(coarse_residual(1:cnx* cny), (/cnx, cny/))
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                        fine_LAT1d, fine_LON1d, &
+                                        crs_dummy, fine_dummy)
+        fine_residual(1:nx*ny) = pack(fine_dummy(:,:), .TRUE.)
+
+        crs_dummy = reshape(coarse_residual(cnx* cny+1:2*cnx* cny), (/cnx, cny/))
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                        fine_LAT1d, fine_LON1d, &
+                                        crs_dummy, fine_dummy)
+        fine_residual(nx*ny+1: 2*nx*ny) = pack(fine_dummy(:,:), .TRUE.)
+
+        crs_dummy = reshape(coarse_residual(2*cnx* cny+1:3*cnx* cny), (/cnx, cny/))
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                        fine_LAT1d, fine_LON1d, &
+                                        crs_dummy, fine_dummy)
+        fine_residual(2*nx*ny+1: 3*nx*ny) = pack(fine_dummy(:,:), .TRUE.)
+
+        crs_dummy = reshape(coarse_residual(3*cnx* cny+1:4*cnx* cny), (/cnx, cny/))
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                        fine_LAT1d, fine_LON1d, &
+                                        crs_dummy, fine_dummy)
+        fine_residual(3*nx*ny+1: 4*nx*ny) = pack(fine_dummy(:,:), .TRUE.)
+
+        deallocate(fine_dummy, crs_dummy)
+
+    end subroutine
+
 end module
