@@ -78,7 +78,7 @@ program forTestMain
         !                           AREA, &
         !                           factorList, psi, phi)
 
-        call doMultiGridHelmHoltzRes(uvel, vvel, &
+        call doMultiGridHelmHoltz(uvel, vvel, &
                                 LAT_RHO, LON_RHO,&
                                 DX_RHO, DY_RHO, &
                                 UEDX_RHO, DEDX_RHO, &

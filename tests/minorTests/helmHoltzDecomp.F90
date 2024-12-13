@@ -958,7 +958,7 @@ module helmHoltzDecomp
         real(kind=8), pointer :: collected_xPointer(:)
         
         ! Initialize PETSc
-        if (rank == 0) print * ,'is inside before PETSC initialized'
+        ! if (rank == 0) print * ,'is inside before PETSC initialized'
 
         call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
         call MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr)
