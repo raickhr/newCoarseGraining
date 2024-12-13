@@ -992,6 +992,8 @@ module helmHoltzDecomp
         call VecSetSizes(x_globalOnZero, PETSC_DECIDE, 2*mx * my, ierr)
         call VecSetSizes(y_globalOnZero, PETSC_DECIDE, 4*mx * my, ierr)
 
+        print *, 'vectors for LHS and RHS created'
+
         derFac = 1 !/dxRightN(1,1)
         if (rank == 0) then
             print *, taskid
