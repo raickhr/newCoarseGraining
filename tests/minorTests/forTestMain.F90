@@ -23,7 +23,8 @@ program forTestMain
         call startMPI()
 
         if (taskid == 0) print *,'factorList', factorList
-        factorList = (/ 8, 4, 2/)
+        !factorList = (/ 8, 4, 2/)
+        factorList = (/ 3, 5, 9/)
         
 
         if (taskid == 0) then
@@ -78,7 +79,7 @@ program forTestMain
         !                           AREA, &
         !                           factorList, psi, phi)
 
-        call doMultiGridHelmHoltz(uvel, vvel, &
+        call doMultiGridHelmHoltzRes(uvel, vvel, &
                                 LAT_RHO, LON_RHO,&
                                 DX_RHO, DY_RHO, &
                                 UEDX_RHO, DEDX_RHO, &

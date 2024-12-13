@@ -224,7 +224,7 @@ module coarsening
 
         print *, 'Original field size', nx, ny
 
-        print *, 'Coarsening by factor', factor
+        print *, 'Coarsening lat lon by factor', factor
 
         coarse_nx = nx/factor
         coarse_ny = ny/factor
@@ -243,14 +243,14 @@ module coarsening
             pad_y2 = dummy - pad_y1
         endif
 
-        !print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
+        print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
         print *, 'Coarsening to', coarse_nx, coarse_ny
         if (allocated(cLAT) ) deallocate(cLAT)
         if (allocated(cLON) ) deallocate(cLON)
         allocate(cLAT(coarse_nx, coarse_ny),cLON(coarse_nx, coarse_ny), stat=ierr)
         
 
-        !print *,' padded field size' , nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2
+        print *,' padded field size' , nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2
         allocate(latWithPadding(nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2), &
             &    lonWithPadding(nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2), &
             &    weightsWithPadding(nx + pad_x1 + pad_x2, ny+ pad_y1 + pad_y2), stat=ierr)

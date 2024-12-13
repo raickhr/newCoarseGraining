@@ -270,7 +270,6 @@ module multiGridHelmHoltz
         if (taskid == 0) then
             allocate(solution(2*nx*ny))
             allocate(RHS_orig(4*nx*ny))
-            allocate(divU(nx, ny), curlU(nx, ny))
             call calcHozDivVertCurl(uvel, vvel, bottomEdx, topEdx, leftEdy, rightEdy, &
                                     cellArea, divU, curlU)
             do i = 0, nx-1
