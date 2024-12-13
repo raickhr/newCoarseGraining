@@ -377,7 +377,7 @@ module multiGridHelmHoltz
 
             call solvepoissionBig_LHSRHS(wrk_LHS, wrk_RHS, wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
                                         wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
-                                        wrk_cellArea, maxIti = 1000)
+                                        wrk_cellArea, maxIti = 100)
             if (taskid == 0) then
                 if (i > 0) then
                     call biliearInterpolationLatLonResidual(wrk_lat(1,:), wrk_lon(:,1), &
@@ -398,7 +398,7 @@ module multiGridHelmHoltz
         end do
 
         call solvepoissionBig_LHSRHS(solution, RHS_orig, bottomEdx, topEdx, leftEdy, rightEdy, &
-                                    leftNdx, rightNdx, bottomNdy, topNdy, cellArea, maxIti = 50)
+                                    leftNdx, rightNdx, bottomNdy, topNdy, cellArea, maxIti = 10)
 
         phi = reshape(solution(1:nx*ny), shape=(/nx, ny/))
         psi = reshape(solution(nx*ny + 1:2 * nx * ny), shape=(/nx, ny/))
