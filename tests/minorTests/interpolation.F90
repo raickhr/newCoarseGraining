@@ -315,7 +315,7 @@ module interpolation
         real(kind=real_kind), intent(in) :: coarse_LAT1d(:), coarse_LON1d(:), &
                                             fine_LAT1d(:), fine_LON1d(:), coarse_residual(:)
 
-        real(kind=real_kind), intent(out) :: fine_residual(:)
+        real(kind=real_kind), allocatable, intent(out) :: fine_residual(:)
 
         real(kind=real_kind), allocatable :: crs_dummy(:,:), fine_dummy(:, :)
 
@@ -334,6 +334,8 @@ module interpolation
 
         allocate(fine_dummy(nx, ny))
         allocate(crs_dummy(cnx, cny))
+        if (allocated(file_residual)) deallocate(fine_residual)
+        allocate(fine_residual(4*nx*ny))
 
         print *, 'shape of coarse residual ', size(coarse_residual)
 
