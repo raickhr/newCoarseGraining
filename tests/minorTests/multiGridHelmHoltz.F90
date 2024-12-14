@@ -252,6 +252,7 @@ module multiGridHelmHoltz
                                             wrk_RHS(:), wrk_LHS(:), fine_LHS(:), &
                                             solution(:), residual(:)
         integer :: i, j,  factor, nfactors, nx, ny, cnx, cny, shapeArr(2), ierr
+        real(kind=real_kind) ::derFac 
 
         real(kind=real_kind), allocatable, dimension(:,:) ::wrk_lat, wrk_lon, &
                                                             wrk_topEdx, wrk_bottomEdx, &
@@ -270,12 +271,15 @@ module multiGridHelmHoltz
         if (taskid == 0) then
             allocate(solution(2*nx*ny))
             allocate(RHS_orig(4*nx*ny))
+            allocate(divU(nx, ny))
+            allocate(curlU(nx, ny))
             call calcHozDivVertCurl(uvel, vvel, bottomEdx, topEdx, leftEdy, rightEdy, &
                                     cellArea, divU, curlU)
+            derFac = 1.0
             do i = 0, nx-1
                 do j = 0, ny-1
-                    RHS_orig(i + j*nx + 1) = uvel(i+1, j+1)
-                    RHS_orig(i + j*nx + 1 + nx * ny ) = vvel(i+1, j+1)
+                    RHS_orig(i + j*nx + 1) = uvel(i+1, j+1) * cellArea(i+1, j+1) * derFac
+                    RHS_orig(i + j*nx + 1 + nx * ny ) = vvel(i+1, j+1) * cellArea(i+1, j+1) * derFac
                     if (i == 0 .or. i ==  nx-1 .or. j == 0 .or. j == ny-1) then
                         RHS_orig(i + j*nx + 1 + 2 * nx * ny ) = 0
                         RHS_orig(i + j*nx + 1 + 3 * nx * ny ) = 0
