@@ -403,9 +403,15 @@ module multiGridHelmHoltz
             
         end do
 
-        if (rank == 0) then
-            print * , 'size(solution)', size(solution), 4* size(solution)
+        if (taskid == 0) then
+            print * , 'size(solution)', size(solution), 2* size(solution)
             print * , 'size(RHS_orig)', size(RHS_orig)
+            if (allocated(wrk_RHS)) deallocate(wrk_RHS)
+            if (allocated(wrk_LHS)) deallocate(wrk_LHS)
+            allocate(wrk_RHS(4*nx*ny))
+            allocate(wrk_LHS(2*nx*ny))
+            wrk_RHS = RHS_orig
+            wrk_LHS = solution
         endif
 
         call solvepoissionBig_LHSRHS(solution, RHS_orig, bottomEdx, topEdx, leftEdy, rightEdy, &
