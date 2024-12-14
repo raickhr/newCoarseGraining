@@ -378,6 +378,10 @@ module multiGridHelmHoltz
 
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
+            if (taskid == 0) then
+                print * , 'size(solution)', size(wrk_LHS), 2* size(wrk_LHS)
+                print * , 'size(RHS_orig)', size(wrk_RHS)
+            endif
             call solvepoissionBig_LHSRHS(wrk_LHS, wrk_RHS, wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
                                         wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
                                         wrk_cellArea, maxIti = 100)
@@ -403,13 +407,14 @@ module multiGridHelmHoltz
             
         end do
 
+        if (allocated(wrk_RHS)) deallocate(wrk_RHS)
+        if (allocated(wrk_LHS)) deallocate(wrk_LHS)
+        allocate(wrk_RHS(4*nx*ny))
+        allocate(wrk_LHS(2*nx*ny))
+
         if (taskid == 0) then
             print * , 'size(solution)', size(solution), 2* size(solution)
             print * , 'size(RHS_orig)', size(RHS_orig)
-            if (allocated(wrk_RHS)) deallocate(wrk_RHS)
-            if (allocated(wrk_LHS)) deallocate(wrk_LHS)
-            allocate(wrk_RHS(4*nx*ny))
-            allocate(wrk_LHS(2*nx*ny))
             wrk_RHS = RHS_orig
             wrk_LHS = solution
         endif
