@@ -381,6 +381,7 @@ module multiGridHelmHoltz
             call solvepoissionBig_LHSRHS(wrk_LHS, wrk_RHS, wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
                                         wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
                                         wrk_cellArea, maxIti = 100)
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
             if (taskid == 0) then
                 if (i > 0) then
                     call biliearInterpolationLatLonResidual(wrk_lat(1,:), wrk_lon(:,1), &
@@ -399,7 +400,13 @@ module multiGridHelmHoltz
                 endif
                 print * , 'finished loop ', i
             endif
+            
         end do
+
+        if (rank == 0) then
+            print * , 'size(solution)', size(solution), 4* size(solution)
+            print * , 'size(RHS_orig)', size(RHS_orig)
+        endif
 
         call solvepoissionBig_LHSRHS(solution, RHS_orig, bottomEdx, topEdx, leftEdy, rightEdy, &
                                     leftNdx, rightNdx, bottomNdy, topNdy, cellArea, maxIti = 10)
