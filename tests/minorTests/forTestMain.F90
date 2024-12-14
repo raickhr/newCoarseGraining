@@ -69,25 +69,25 @@ program forTestMain
                 call read2Dvar('test.nc', 'vvel', nx, ny, vvel)         
         endif
 
-        ! call doMultiGridHelmHoltz(uvel, vvel, &
-        !                           LAT_RHO, LON_RHO,&
-        !                           DX_RHO, DY_RHO, &
-        !                           UEDX_RHO, DEDX_RHO, &
-        !                           LEDY_RHO, REDY_RHO, &
-        !                           UNDY_RHO, DNDY_RHO, &
-        !                           LNDX_RHO, RNDX_RHO, &
-        !                           AREA, &
-        !                           factorList, psi, phi)
+        call doMultiGridHelmHoltz(uvel, vvel, &
+                                  LAT_RHO, LON_RHO,&
+                                  DX_RHO, DY_RHO, &
+                                  UEDX_RHO, DEDX_RHO, &
+                                  LEDY_RHO, REDY_RHO, &
+                                  UNDY_RHO, DNDY_RHO, &
+                                  LNDX_RHO, RNDX_RHO, &
+                                  AREA, &
+                                  factorList, psi, phi)
 
-        call doMultiGridHelmHoltzRes(uvel, vvel, &
-                                LAT_RHO, LON_RHO,&
-                                DX_RHO, DY_RHO, &
-                                UEDX_RHO, DEDX_RHO, &
-                                LEDY_RHO, REDY_RHO, &
-                                UNDY_RHO, DNDY_RHO, &
-                                LNDX_RHO, RNDX_RHO, &
-                                AREA, &
-                                factorList, psi, phi)
+        ! call doMultiGridHelmHoltzRes(uvel, vvel, &
+        !                         LAT_RHO, LON_RHO,&
+        !                         DX_RHO, DY_RHO, &
+        !                         UEDX_RHO, DEDX_RHO, &
+        !                         LEDY_RHO, REDY_RHO, &
+        !                         UNDY_RHO, DNDY_RHO, &
+        !                         LNDX_RHO, RNDX_RHO, &
+        !                         AREA, &
+        !                         factorList, psi, phi)
 
         if (taskid == 0) then
                 call getPolTorVel(psi, phi, DEDX_RHO, UEDX_RHO, LEDY_RHO, REDY_RHO, AREA, &
