@@ -291,7 +291,7 @@ module multiGridHelmHoltz
 
         do i = 0, nfactors
             if (taskid == 0) then
-                if (i > 0) then
+                if (i > 0 .and. i < nfactors + 1) then
                     factor = coarsenList(i)
                     print *, ''
                     print *, ''
@@ -313,6 +313,19 @@ module multiGridHelmHoltz
                 else
                     cnx = nx
                     cny = ny 
+                    if (allocated(wrk_leftNdx)) deallocate( wrk_leftNdx) 
+                    if (allocated(wrk_bottomNdy)) deallocate( wrk_bottomNdy) 
+                    if (allocated(wrk_rightNdx)) deallocate( wrk_rightNdx) 
+                    if (allocated(wrk_topNdy)) deallocate( wrk_topNdy) 
+                    if (allocated(wrk_bottomEdx)) deallocate( wrk_bottomEdx) 
+                    if (allocated(wrk_leftEdy)) deallocate( wrk_leftEdy) 
+                    if (allocated(wrk_topEdx)) deallocate( wrk_topEdx) 
+                    if (allocated(wrk_rightEdy)) deallocate( wrk_rightEdy) 
+                    if (allocated(wrk_cellArea)) deallocate( wrk_cellArea) 
+
+                    if (allocated(wrk_RHS)) deallocate( wrk_RHS) 
+                    if (allocated(wrk_LHS)) deallocate( wrk_LHS) 
+
                     allocate( wrk_leftNdx(cnx, cny), stat=ierr)
                     allocate( wrk_bottomNdy(cnx, cny), stat=ierr)
                     allocate( wrk_rightNdx(cnx, cny), stat=ierr)
@@ -326,10 +339,12 @@ module multiGridHelmHoltz
                     allocate(wrk_RHS(4*nx*ny))
                     allocate(wrk_LHS(2*nx*ny))
 
-                    
-
                     wrk_RHS = RHS_orig
-                    wrk_LHS(:) = 0.0
+                    if (i == (nfactors + 1)) then
+                        wrk_LHS = solution
+                    else
+                        wrk_LHS(:) = 0.0
+                    endif
 
                     wrk_leftNdx = leftNdx
                     wrk_bottomNdy = bottomNdy
@@ -407,23 +422,10 @@ module multiGridHelmHoltz
             
         end do
 
-        if (allocated(wrk_RHS)) deallocate(wrk_RHS)
-        if (allocated(wrk_LHS)) deallocate(wrk_LHS)
-        allocate(wrk_RHS(4*nx*ny))
-        allocate(wrk_LHS(2*nx*ny))
-
         if (taskid == 0) then
-            print * , 'size(solution)', size(solution), 2* size(solution)
-            print * , 'size(RHS_orig)', size(RHS_orig)
-            wrk_RHS = RHS_orig
-            wrk_LHS = solution
+            phi = reshape(solution(1:nx*ny), shape=(/nx, ny/))
+            psi = reshape(solution(nx*ny + 1:2 * nx * ny), shape=(/nx, ny/))
         endif
-
-        call solvepoissionBig_LHSRHS(solution, RHS_orig, bottomEdx, topEdx, leftEdy, rightEdy, &
-                                    leftNdx, rightNdx, bottomNdy, topNdy, cellArea, maxIti = 10)
-
-        phi = reshape(solution(1:nx*ny), shape=(/nx, ny/))
-        psi = reshape(solution(nx*ny + 1:2 * nx * ny), shape=(/nx, ny/))
 
         if (allocated(RHS_orig)) deallocate(RHS_orig) 
         if (allocated(fine_RHS)) deallocate(fine_RHS)
