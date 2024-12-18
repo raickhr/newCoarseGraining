@@ -1,8 +1,8 @@
 set -ex
-FC=mpif90
+FC=mpiifort
 
 PETSC_DIR="/home/shikhar.rai/myLibraries/petsc"
-PETSC_DIR="/opt/anaconda3/envs/fortran/"
+# PETSC_DIR="/opt/anaconda3/envs/fortran/"
 PETSC_ARCH=
 
 PETSC_INCLUDE=-I${PETSC_DIR}/include

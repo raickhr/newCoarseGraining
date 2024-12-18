@@ -149,6 +149,78 @@ module operators
         deallocate (leftEdgePhi, rightEdgePhi, bottomEdgePhi, topEdgePhi)
     end subroutine
 
+    subroutine calcGradFD(phi, dx, dy, gradX, grady)
+        real(kind=real_kind), intent(in), dimension(:,:) :: phi, dx, dy
+        real(kind=real_kind), intent(out), allocatable, dimension(:,:) :: gradX, grady
+
+        real(kind=real_kind), allocatable, dimension(:,:) :: dummy
+
+        integer :: nx, ny, ierr, shapeArr(2)
+
+
+        shapeArr = shape(phi)
+
+        nx = shapeArr(1)
+        ny = shapeArr(2)
+
+        !Make sure the shape of the arrays match
+
+        if (.NOT. all(shape(dx) .EQ. shapeArr) .OR. &
+            .NOT. all(shape(dy) .EQ. shapeArr)) then
+                stop "calcGradFD:: shape of array inconsistent"
+        endif
+
+        if (allocated(gradX)) then
+            deallocate(gradX)
+            deallocate(gradY)
+        endif
+
+        allocate(gradX(nx, ny), stat = ierr)
+        allocate(gradY(nx, ny), stat = ierr)
+        
+        allocate(dummy(nx, ny), stat = ierr)
+        
+        gradX = 1/12 * cshift(phi, shift = -2, dim=1) &
+               -2/3  * cshift(phi, shift = -1, dim=1) &
+               +2/3  * cshift(phi, shift =  1, dim=1) &
+               -1/12 * cshift(phi, shift =  2, dim=1) 
+
+        dummy = -1/2 * cshift(phi, shift = -1, dim=1) &
+                +1/2  * cshift(phi, shift =  1, dim=1) 
+        
+        gradX(2,:) = dummy(2,:)
+        gradX(nx-2, :) = dummy(nx-2,:)
+
+        dummy = phi - cshift(phi, shift = -1, dim=1) 
+        gradX(nx,:) = dummy(nx,:)
+
+        dummy = cshift(phi, shift = 1, dim=1) - phi
+        gradX(1,:) = dummy(1,:)
+
+        gradX = gradX/dx
+
+        gradY = 1/12 * cshift(phi, shift = -2, dim=2) &
+               -2/3  * cshift(phi, shift = -1, dim=2) &
+               +2/3  * cshift(phi, shift =  1, dim=2) &
+               -1/12 * cshift(phi, shift =  2, dim=2) 
+        
+        dummy = -1/2 * cshift(phi, shift = -1, dim=2) &
+                +1/2  * cshift(phi, shift =  1, dim=2) 
+       
+        gradY(:, 2) = dummy(:, 2)
+        gradY(:, ny-2) = dummy(:, ny-2)
+
+        dummy = phi - cshift(phi, shift = -1, dim=2) 
+        gradY(:, ny) = dummy(:, ny)
+
+        dummy = cshift(phi, shift = 1, dim=2) - phi
+        gradY(:, 1) = dummy(:, 1)
+
+        gradY = gradY/dy
+
+        deallocate(dummy)
+    end subroutine
+
     subroutine calcHozDivVertCurl(uvel, vvel, dxBottom, dxTop, dyLeft, dyRight, cellArea, horzDiv, vertCurl)
         real(kind=real_kind), intent(in), dimension(:,:) :: uvel, vvel, dxBottom, dxTop, dyLeft, dyRight, cellArea
         real(kind=real_kind), intent(out), allocatable, dimension(:,:) :: horzDiv, vertCurl
@@ -186,6 +258,47 @@ module operators
 
         call calcGradFV(uvel, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_uvel, gradY_uvel)
         call calcGradFV(vvel, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_vvel, gradY_vvel)
+
+        horzDiv = gradX_uvel + gradY_vvel
+        vertCurl = gradX_vvel - gradY_uvel
+        
+        deallocate(gradX_uvel, gradY_uvel, gradX_vvel, gradY_vvel, stat=ierr)
+    end subroutine
+
+
+    subroutine calcHozDivVertCurlFD(uvel, vvel, dx, dy, horzDiv, vertCurl)
+        real(kind=real_kind), intent(in), dimension(:,:) :: uvel, vvel, dx, dy
+        real(kind=real_kind), intent(out), allocatable, dimension(:,:) :: horzDiv, vertCurl
+
+        real(kind=real_kind), allocatable, dimension(:,:) :: gradX_uvel, gradY_uvel, gradX_vvel, gradY_vvel
+        integer :: nx, ny, ierr, shapeArr(2)
+
+        shapeArr = shape(uvel)
+
+        nx = shapeArr(1)
+        ny = shapeArr(2)
+
+        !Make sure the shape of the arrays match
+
+        if (.NOT. all(shape(vvel) .EQ. shapeArr) .OR. &
+            .NOT. all(shape(dx) .EQ. shapeArr) .OR. &
+            .NOT. all(shape(dy) .EQ.shapeArr)) then
+                stop "calcHozDivVertCurl:: shape of array inconsistent"
+        endif
+
+        if (allocated(horzDiv)) then
+            deallocate(horzDiv)
+        endif
+
+        if (allocated(vertCurl)) then
+            deallocate(vertCurl)
+        endif
+
+        allocate(horzDiv(nx, ny), stat = ierr)
+        allocate(vertCurl(nx, ny), stat = ierr)
+
+        call calcGradFD(uvel, dx, dy, gradX_uvel, gradY_uvel)
+        call calcGradFD(vvel, dx, dy, gradX_vvel, gradY_vvel)
 
         horzDiv = gradX_uvel + gradY_vvel
         vertCurl = gradX_vvel - gradY_uvel

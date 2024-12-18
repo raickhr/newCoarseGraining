@@ -403,7 +403,7 @@ module multiGridHelmHoltz
             endif
             call solvepoissionBig_LHSRHS(wrk_LHS, wrk_RHS, wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
                                         wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
-                                        wrk_cellArea, maxIti = 5000)
+                                        wrk_cellArea, maxIti = 2000)
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
             if (taskid == 0) then
                 if (i > 0) then

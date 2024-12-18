@@ -18,13 +18,13 @@ program forTestMain
                         & uvel_pol, uvel_tor, vvel_pol, vvel_tor, &  
                         & uvel_tot, vvel_tot      
 
-        integer:: factorList(3), cnx, cny, shapeArr(2), ierr
+        integer:: factorList(0), cnx, cny, shapeArr(2), ierr
 
         call startMPI()
 
         if (taskid == 0) print *,'factorList', factorList
-        !factorList = (/ 8, 4, 2/)
-        factorList = (/ 3, 5, 9/)
+        !factorList = (/ 9, 5, 3/)
+        !factorList = (/ 3, 5, 9/)
         
 
         if (taskid == 0) then
