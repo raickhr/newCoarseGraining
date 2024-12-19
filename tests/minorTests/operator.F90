@@ -171,7 +171,10 @@ module operators
         endif
 
         if (allocated(gradX)) then
-            deallocate(gradX)
+            deallocate(gradY)
+        endif
+
+        if (allocated(gradY)) then
             deallocate(gradY)
         endif
 
@@ -180,13 +183,23 @@ module operators
         
         allocate(dummy(nx, ny), stat = ierr)
         
-        gradX = 1/12 * cshift(phi, shift = -2, dim=1) &
-               -2/3  * cshift(phi, shift = -1, dim=1) &
-               +2/3  * cshift(phi, shift =  1, dim=1) &
-               -1/12 * cshift(phi, shift =  2, dim=1) 
+        gradX = 1./12. * cshift(phi, shift = -2, dim=1)
+        gradX = gradX - 2./3.  * cshift(phi, shift = -1, dim=1)
+        gradX = gradX + 2./3.  * cshift(phi, shift =  1, dim=1)
+        gradX = gradX - 1./12. * cshift(phi, shift =  2, dim=1) 
+        
+        dummy = -1./2. * cshift(phi, shift = -1, dim=1)
+        dummy = dummy +1./2.  * cshift(phi, shift =  1, dim=1) 
 
-        dummy = -1/2 * cshift(phi, shift = -1, dim=1) &
-                +1/2  * cshift(phi, shift =  1, dim=1) 
+        ! gradX = 1./12. * cshift(phi, shift = -2, dim=1) &
+        !      & -2./3.  * cshift(phi, shift = -1, dim=1) &
+        !      & +2./3.  * cshift(phi, shift =  1, dim=1) &
+        !      & -1./12. * cshift(phi, shift =  2, dim=1) 
+        
+        ! dummy = -1./2. * cshift(phi, shift = -1, dim=1) &
+        !        & +1./2.  * cshift(phi, shift =  1, dim=1) 
+
+        print *, 'aaaa'
         
         gradX(2,:) = dummy(2,:)
         gradX(nx-2, :) = dummy(nx-2,:)
@@ -199,13 +212,14 @@ module operators
 
         gradX = gradX/dx
 
-        gradY = 1/12 * cshift(phi, shift = -2, dim=2) &
-               -2/3  * cshift(phi, shift = -1, dim=2) &
-               +2/3  * cshift(phi, shift =  1, dim=2) &
-               -1/12 * cshift(phi, shift =  2, dim=2) 
         
-        dummy = -1/2 * cshift(phi, shift = -1, dim=2) &
-                +1/2  * cshift(phi, shift =  1, dim=2) 
+        gradY = 1./12. * cshift(phi, shift = -2, dim=2) &
+               -2./3.  * cshift(phi, shift = -1, dim=2) &
+               +2./3.  * cshift(phi, shift =  1, dim=2) &
+               -1./12. * cshift(phi, shift =  2, dim=2) 
+        
+        dummy = -1./2. * cshift(phi, shift = -1, dim=2) &
+                +1./2.  * cshift(phi, shift =  1, dim=2) 
        
         gradY(:, 2) = dummy(:, 2)
         gradY(:, ny-2) = dummy(:, ny-2)
@@ -297,8 +311,11 @@ module operators
         allocate(horzDiv(nx, ny), stat = ierr)
         allocate(vertCurl(nx, ny), stat = ierr)
 
+        
+
         call calcGradFD(uvel, dx, dy, gradX_uvel, gradY_uvel)
         call calcGradFD(vvel, dx, dy, gradX_vvel, gradY_vvel)
+        print *, 'okay here'
 
         horzDiv = gradX_uvel + gradY_vvel
         vertCurl = gradX_vvel - gradY_uvel

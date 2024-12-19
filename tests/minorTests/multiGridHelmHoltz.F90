@@ -54,6 +54,7 @@ module multiGridHelmHoltz
             factor = coarsenList(i)
             if (taskid == MASTER) then
                 if (i > 1) then
+                    print *, 'copyng solution from coarser grid'
                     if (allocated(crs_lat)) deallocate(crs_lat, crs_lon, crs_psi, crs_phi)
                     allocate(crs_lat(cnx, cny), &
                              crs_lon(cnx, cny), &
@@ -66,13 +67,13 @@ module multiGridHelmHoltz
                     print *, 'allocated size ', cnx, cny
                 endif
 
-                if (i <= nfactors) then
+                if (i < nfactors + 1) then
                     print *, '' 
                     print *, '' 
                     print *, '' 
                     print *, 'COARSENING THE GRID VARIABLES'
                     call coarsenLatLon(nx, ny, factor, lat, lon, wrk_lat, wrk_lon)
-                    !call coarsenDXDY(nx, ny, factor, centerDx, centerDy, wrk_centerDx, wrk_centerDy, downCenterUp = 0)
+                    call coarsenDXDY(nx, ny, factor, centerDx, centerDy, wrk_centerDx, wrk_centerDy, downCenterUp = 0)
                     call coarsenAREA(nx, ny, factor, cellArea, wrk_cellArea)
                     call coarsenDXDY(nx, ny, factor, leftNdx, bottomNdy, wrk_leftNdx, wrk_bottomNdy, downCenterUp = 0)
                     call coarsenDXDY(nx, ny, factor, rightNdx, topNdy, wrk_rightNdx, wrk_topNdy, downCenterUp = 0)
@@ -94,12 +95,17 @@ module multiGridHelmHoltz
                 else
                     print *, 'copyng original grid for final time decomposition'
                     if (allocated(wrk_leftNdx)) then
-                        deallocate(wrk_leftNdx, wrk_bottomNdy, wrk_rightNdx, wrk_topNdy, &
+                        deallocate(wrk_centerDx, wrk_centerDy, wrk_leftNdx, wrk_bottomNdy, wrk_rightNdx, wrk_topNdy, &
                         wrk_bottomEdx, wrk_leftEdy, wrk_topEdx, wrk_rightEdy, &
-                        wrk_cellArea, wrk_uvel, wrk_vvel, wrk_psi, wrk_phi)
+                        wrk_cellArea, wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, wrk_lat, wrk_lon)
                     endif
                     cnx = nx
                     cny = ny
+
+                    allocate(wrk_lat(cnx, cny))
+                    allocate(wrk_lon(cnx, cny))
+                    allocate(wrk_centerDx(cnx, cny))
+                    allocate(wrk_centerDy(cnx, cny))
                     allocate(wrk_leftNdx(cnx, cny))
                     allocate(wrk_bottomNdy(cnx, cny))
                     allocate(wrk_rightNdx(cnx, cny))
@@ -114,6 +120,10 @@ module multiGridHelmHoltz
                     allocate(wrk_psi(cnx, cny))
                     allocate(wrk_phi(cnx, cny))
 
+                    wrk_lat = lat
+                    wrk_lon = lon
+                    wrk_centerDx= centerDx
+                    wrk_centerDy= centerDy
                     wrk_leftNdx= leftNdx
                     wrk_bottomNdy= bottomNdy
                     wrk_rightNdx= rightNdx
@@ -151,6 +161,7 @@ module multiGridHelmHoltz
             if (taskid .NE. MASTER) then 
                 if (allocated(wrk_leftEdy)) then
                     deallocate(wrk_uvel, wrk_vvel, &
+                   wrk_centerDx, wrk_centerDy, &
                    wrk_topEdx, wrk_bottomEdx, &
                    wrk_leftEdy, wrk_rightEdy, &
                    wrk_topNdy, wrk_bottomNdy, &
@@ -158,6 +169,8 @@ module multiGridHelmHoltz
                    wrk_cellArea, &
                    wrk_psi, wrk_phi)
                 endif
+                    allocate( wrk_centerDx(cnx, cny), stat = ierr)
+                    allocate( wrk_centerDy(cnx, cny), stat = ierr)
                     allocate( wrk_leftNdx(cnx, cny), stat=ierr)
                     allocate( wrk_bottomNdy(cnx, cny), stat=ierr)
                     allocate( wrk_rightNdx(cnx, cny), stat=ierr)
@@ -173,6 +186,8 @@ module multiGridHelmHoltz
                     allocate( wrk_phi(cnx, cny),stat =ierr)
             endif
 
+            call MPI_BCAST(wrk_centerDx, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(wrk_centerDy, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
             call MPI_BCAST(wrk_leftNdx, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
             call MPI_BCAST(wrk_bottomNdy, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
             call MPI_BCAST(wrk_rightNdx, cnx*cny, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
@@ -190,7 +205,7 @@ module multiGridHelmHoltz
 
 
             if (taskid == 0 ) print *, 'Starting Helmholtz Decomposition'
-            call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, &
+            call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, wrk_centerDx, wrk_centerDy, &
                                     & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
                                     & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
                                     & wrk_cellArea)
@@ -250,8 +265,8 @@ module multiGridHelmHoltz
 
         real(kind=real_kind), allocatable :: RHS_orig(:), fine_RHS(:), &
                                             wrk_RHS(:), wrk_LHS(:), fine_LHS(:), &
-                                            solution(:), residual(:)
-        integer :: i, j,  factor, nfactors, nx, ny, cnx, cny, shapeArr(2), ierr
+                                            solution(:), residual(:), dummy(:)
+        integer :: i, j,II,  factor, nfactors, nx, ny, cnx, cny, shapeArr(2), ierr
         real(kind=real_kind) ::derFac 
 
         real(kind=real_kind), allocatable, dimension(:,:) ::wrk_lat, wrk_lon, &
@@ -276,16 +291,17 @@ module multiGridHelmHoltz
             call calcHozDivVertCurl(uvel, vvel, bottomEdx, topEdx, leftEdy, rightEdy, &
                                     cellArea, divU, curlU)
             derFac = 1.0
-            do i = 0, nx-1
-                do j = 0, ny-1
-                    RHS_orig(i + j*nx + 1) = uvel(i+1, j+1) * cellArea(i+1, j+1) * derFac
-                    RHS_orig(i + j*nx + 1 + nx * ny ) = vvel(i+1, j+1) * cellArea(i+1, j+1) * derFac
+            do i = 1, nx
+                do j = 1, ny
+                    II = (j-1)*nx + i
+                    RHS_orig(II) = uvel(i, j) * cellArea(i, j) * derFac
+                    RHS_orig(II + nx*ny) = vvel(i, j) * cellArea(i, j) * derFac
                     if (i == 0 .or. i ==  nx-1 .or. j == 0 .or. j == ny-1) then
-                        RHS_orig(i + j*nx + 1 + 2 * nx * ny ) = 0
-                        RHS_orig(i + j*nx + 1 + 3 * nx * ny ) = 0
+                        RHS_orig(II + 2*nx*ny) = 0
+                        RHS_orig(II + 3*nx*ny) = 0
                     else
-                        RHS_orig(i + j*nx + 1 + 2 * nx * ny ) = -divU(i+1,j+1)
-                        RHS_orig(i + j*nx + 1 + 3 * nx * ny ) = -curlU(i+1,j+1)
+                        RHS_orig(II + 2*nx*ny) = -divU(i,j)
+                        RHS_orig(II + 3*nx*ny) = -curlU(i,j)
                     endif
                 enddo
             enddo
@@ -293,7 +309,7 @@ module multiGridHelmHoltz
 
         
 
-        do i = 0, nfactors
+        do i = 0, nfactors !+ 1
             if (taskid == 0) then
                 if (i > 0 .and. i < nfactors + 1) then
                     factor = coarsenList(i)
@@ -317,6 +333,8 @@ module multiGridHelmHoltz
                 else
                     cnx = nx
                     cny = ny 
+                    if (allocated(wrk_lat)) deallocate( wrk_lat) 
+                    if (allocated(wrk_lon)) deallocate( wrk_lon) 
                     if (allocated(wrk_leftNdx)) deallocate( wrk_leftNdx) 
                     if (allocated(wrk_bottomNdy)) deallocate( wrk_bottomNdy) 
                     if (allocated(wrk_rightNdx)) deallocate( wrk_rightNdx) 
@@ -329,6 +347,9 @@ module multiGridHelmHoltz
 
                     if (allocated(wrk_RHS)) deallocate( wrk_RHS) 
                     if (allocated(wrk_LHS)) deallocate( wrk_LHS) 
+
+                    allocate( wrk_lat(cnx, cny), stat=ierr)
+                    allocate( wrk_lon(cnx, cny), stat=ierr)
 
                     allocate( wrk_leftNdx(cnx, cny), stat=ierr)
                     allocate( wrk_bottomNdy(cnx, cny), stat=ierr)
@@ -347,9 +368,12 @@ module multiGridHelmHoltz
                     if (i == (nfactors + 1)) then
                         wrk_LHS = solution
                     else
+                        solution(:) = 0
                         wrk_LHS(:) = 0.0
                     endif
 
+                    wrk_lat = lat
+                    wrk_lon = lon
                     wrk_leftNdx = leftNdx
                     wrk_bottomNdy = bottomNdy
                     wrk_rightNdx = rightNdx
@@ -403,10 +427,10 @@ module multiGridHelmHoltz
             endif
             call solvepoissionBig_LHSRHS(wrk_LHS, wrk_RHS, wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
                                         wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
-                                        wrk_cellArea, maxIti = 2000)
+                                        wrk_cellArea, maxIti = 500)
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
             if (taskid == 0) then
-                if (i > 0) then
+                if (i > 0 .and. i < nfactors + 1) then
                     call biliearInterpolationLatLonResidual(wrk_lat(1,:), wrk_lon(:,1), &
                                                                 lat(1,:), lon(:,1), &
                                                                 wrk_RHS, fine_RHS)
@@ -419,7 +443,11 @@ module multiGridHelmHoltz
                     solution = solution + fine_LHS
                 else
                     residual = RHS_orig - wrk_RHS
-                    solution = solution + wrk_LHS
+                    if (i < nfactors +1 ) then
+                        solution = solution + wrk_LHS
+                    else
+                        solution = wrk_LHS
+                    endif
                 endif
                 print * , 'finished loop ', i
             endif
@@ -427,8 +455,12 @@ module multiGridHelmHoltz
         end do
 
         if (taskid == 0) then
-            phi = reshape(solution(1:nx*ny), shape=(/nx, ny/))
-            psi = reshape(solution(nx*ny + 1:2 * nx * ny), shape=(/nx, ny/))
+            allocate(dummy(nx*ny))
+            dummy = solution(1:nx*ny)
+            phi = reshape(dummy, (/nx, ny/))
+            dummy = solution(nx*ny+1:nx*ny*2)
+            psi = reshape(dummy, (/nx, ny/))
+            deallocate(dummy)
         endif
 
         if (allocated(RHS_orig)) deallocate(RHS_orig) 
