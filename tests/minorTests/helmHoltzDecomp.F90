@@ -2,6 +2,7 @@ module helmHoltzDecomp
 #include "petsc/finclude/petscdmda.h"
 #include "petsc/finclude/petscksp.h"
 #include "petsc/finclude/petscsys.h"
+
     use kinds
     use mpiwrapper
     use operators
@@ -317,7 +318,7 @@ module helmHoltzDecomp
         call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
 
         if (rank == 0) print *, 'solving poission equation'
-        call solvepoissionBig(psi, phi, uvel, vvel, dxBottomE, dxTopE, dyLeftE, dyRightE, &
+        call solvepoissionBig(psi, phi, uvel, vvel, centerDx, centerDy, dxBottomE, dxTopE, dyLeftE, dyRightE, &
                                 &dxLeftN, dxRightN, dyBottomN, dyTopN,cellArea)
 
         !if (rank == 0) print *, shape(psi), shape(phi), shape(uvel), shape(vvel), shape(dxLeftN), shape(dyBottomN)
@@ -328,9 +329,10 @@ module helmHoltzDecomp
     end subroutine
 
     
-    subroutine solvepoissionBig(psi, phi, uvel, vvel, dxBottomE, dxTopE, dyLeftE, dyRightE, &
+    subroutine solvepoissionBig(psi, phi, uvel, vvel, centerDx, centerDy, dxBottomE, dxTopE, dyLeftE, dyRightE, &
         dxLeftN, dxRightN, dyBottomN, dyTopN, cellArea)
         real(kind=real_kind), intent(in), dimension(:,:) :: uvel, vvel, &  ! RHS of the poission equation
+                                    centerDx, centerDy, &
                                     dxBottomE, dxTopE, dyLeftE, dyRightE, & !at cell edges
                                     dxLeftN, dxRightN, dyBottomN, dyTopN, cellArea  ! stencil joining nodes
         real(kind=real_kind), intent(inout), dimension(:,:) :: phi, psi
@@ -347,17 +349,20 @@ module helmHoltzDecomp
                     localSize, globalSize, low, high
         PetscInt :: indx_phi, indx_psi, indx_u, indx_v, indx_div, indx_curl, colIndex, colIndex2
         PetscScalar :: leftCoeff, rightCoeff, topCoeff, bottomCoeff, centerCoeff, &
-                       lleftCoeff, rrightCoeff, ttopCoeff, bbottomCoeff
+                       lleftCoeff, rrightCoeff, ttopCoeff, bbottomCoeff, &
+                       llleftCoeff, rrrightCoeff, tttopCoeff, bbbottomCoeff 
         PetscScalar :: leftGradCoeff, rightGradCoeff, topGradCoeff, bottomGradCoeff, &
                        centerGradXCoeff, centerGradYCoeff, centerXCoeff, centerYCoeff
         PetscScalar :: val, norm, rel_tol, abs_tol, div_tol, derFac, tikhov
         PetscInt :: max_iter
 
         real(kind=8), pointer :: collected_xPointer(:)
-        real(kind=real_kind), allocatable :: collected_xarray(:), divU(:,:), curlU(:,:)
+        real(kind=real_kind), allocatable :: collected_xarray(:), divU(:,:), curlU(:,:)!, &
+                                             !uvel_res(:,:), vvel_res(:,:), phi_seed(:,:), psi_seed(:,:), &
+                                             !uvel_tor(:,:), uvel_pol(:,:), vvel_tor(:,:), vvel_pol(:,:) 
         logical :: inColRange
 
-        tikhov = 0.3
+        tikhov = 0.1
 
         ! Initialize PETSc
         if (rank == 0) print * ,'is inside before PETSC initialized'
@@ -368,11 +373,34 @@ module helmHoltzDecomp
 
         if (rank == 0) print * ,'PETSC initialized'
 
-        if (rank == 0) call calcHozDivVertCurl(uvel, vvel, dxBottomE, dxTopE, dyLeftE, dyRightE, cellArea, divU, curlU)
-
         shapeArr = shape(cellArea)
         mx = shapeArr(1)
         my = shapeArr(2)
+
+        !if (rank == 0) call calcHozDivVertCurl(uvel, vvel, dxBottomE, dxTopE, dyLeftE, dyRightE, cellArea, divU, curlU)
+
+        if (rank == 0) then
+            ! allocate(uvel_res(mx, my), vvel_res(mx, my), phi_seed(mx, my), psi_seed(mx, my), &
+            !          uvel_tor(mx, my), uvel_pol(mx, my), vvel_tor(mx, my), vvel_pol(mx, my), stat=ierr)
+
+            ! call getPolTorVel(psi, phi, centerDx, centerDy, dxBottomE, dxTopE, dyLeftE, dyRightE, cellArea, &
+            !                   uvel_pol, uvel_tor, vvel_pol, vvel_tor)
+
+            ! phi_seed = phi
+            ! psi_seed = psi
+            
+            ! phi = 0
+            ! psi = 0
+
+            ! uvel_res = uvel - uvel_pol - uvel_tor
+            ! vvel_res = vvel - vvel_pol - vvel_tor
+
+            call calcHozDivVertCurlFD(uvel, vvel, centerDx, centerDy, divU, CurlU)
+
+            ! deallocate(uvel_tor, uvel_pol, vvel_tor, vvel_pol)
+        endif
+
+        
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SYSTEM OF EQUATIONS !!!!!!!!!!!!!!!!!!!!!!!!!!!
         !          
@@ -415,19 +443,12 @@ module helmHoltzDecomp
                 if (i == mx/2 .and. j == my/2 ) print *, 'psi, phi', psi(i+1, j+1), phi(i+1, j+1)
 
                 !!!!!!!!!!!!!!!!!!!!!!!!!! setting RHS !!!!!!!!!!!!!!!!!!!!!!!
-                val = uvel(i+1, j+1) * cellArea(i+1, j+1) * derFac
-                ! if ((i == 0) .or. &
-                !    &(j == 0) .or. &
-                !    &(i == mx -1) .or. &
-                !    &(j == my -1)) val = val * 0.5
-                   
+                val = uvel(i+1, j+1) * cellArea(i+1, j+1) * derFac   
+                !val = uvel_res(i+1, j+1) * cellArea(i+1, j+1) * derFac   
                 call VecSetValue(y_globalOnZero, Ii, val, INSERT_VALUES, ierr)
                 
                 val = vvel(i+1, j+1) * cellArea(i+1, j+1) * derFac
-                ! if ((i == 0) .or. &
-                !    &(j == 0) .or. &
-                !    &(i == mx -1) .or. &
-                !    &(j == my -1)) val = val * 0.5
+                !val = vvel_res(i+1, j+1) * cellArea(i+1, j+1) * derFac
                 call VecSetValue(y_globalOnZero, Ii + (mx * my), val, INSERT_VALUES, ierr)
                 
 
@@ -436,21 +457,13 @@ module helmHoltzDecomp
                    &(j == 0) .or. &
                    &(i == mx -1) .or. &
                    &(j == my -1)) val = 0
-                ! if (i == 0) val = -divU(i+2, j+1)  * cellArea(i+2, j+1) 
-                ! if (j == 0) val = -divU(i+1, j+2)  * cellArea(i+1, j+2)
-                ! if (i == mx -1) val = -divU(i, j+1)  * cellArea(i, j+1)
-                ! if (j == my -1) val = -divU(i+1, j)  * cellArea(i+1, j)
                 call VecSetValue(y_globalOnZero, Ii + 2 * (mx * my), val, INSERT_VALUES, ierr)
 
                 val = -curlU(i+1, j+1) * cellArea(i+1, j+1)
-                 if ((i == 0) .or. &
+                if ((i == 0) .or. &
                    &(j == 0) .or. &
                    &(i == mx -1) .or. &
                    &(j == my -1)) val = 0
-                !if (i == 0) val = -curlU(i+2, j+1)  * cellArea(i+2, j+1) 
-                !if (j == 0) val = -curlU(i+1, j+2)  * cellArea(i+1, j+2)
-                !if (i == mx -1) val = -curlU(i, j+1)  * cellArea(i, j+1)
-                !if (j == my -1) val = -curlU(i+1, j)  * cellArea(i+1, j)
                 call VecSetValue(y_globalOnZero, Ii + 3 * (mx * my), val, INSERT_VALUES, ierr)
                 
 
@@ -629,76 +642,91 @@ module helmHoltzDecomp
             
             if (Ii < 2 * mx * my) then
                 if (i == 0) then
-                    !!! Setting gradient coefficients
-                    ! rightCoeff = 2 * dyRightE(i+1, j+1)/(cellArea(i+1,j+1))
-                    ! centerXCoeff = -3 * dyRightE(i+1, j+1)/(cellArea(i+1,j+1)) - dyLeftE(i+1, j+1)/(cellArea(i+1,j+1))
-                    ! leftCoeff = 0
+                    rrrightCoeff = 0
                     rrightCoeff = 0
                     rightCoeff = 1./dxRightN(i+1, j+1)
                     centerXCoeff = -1./dxRightN(i+1, j+1)
                     leftCoeff = 0
                     lleftCoeff = 0
+                    llleftCoeff = 0
 
                 else if (i == mx-1) then
-                    ! rightCoeff = 0
-                    ! centerXCoeff = 3 * dyLeftE(i+1, j+1)/(cellArea(i+1,j+1)) - dyRightE(i+1, j+1)/(cellArea(i+1,j+1))
-                    ! leftCoeff = -2 * dyLeftE(i+1, j+1)/(cellArea(i+1,j+1))
+                    rrrightCoeff = 0
                     rrightCoeff = 0
                     rightCoeff = 0
                     centerXCoeff = 1./dxLeftN(i+1, j+1)
                     leftCoeff = -1./dxLeftN(i+1, j+1)
                     lleftCoeff = 0
+                    llleftCoeff = 0
+
                 else if (i == 1 .or. i == mx-1) then
-                    ! rightCoeff = dyRightE(i+1, j+1)/(2*cellArea(i+1,j+1))
-                    ! centerXCoeff = (dyRightE(i+1, j+1) - dyLeftE(i+1, j+1))/(2*cellArea(i+1,j+1))
-                    ! leftCoeff =   -dyLeftE(i+1, j+1)/(2*cellArea(i+1,j+1))
+                    rrrightCoeff = 0
                     rrightCoeff = 0
                     rightCoeff = 1./(dxRightN(i+1, j+1) + dxLeftN(i+1, j+1))
                     centerXCoeff = 0
                     leftCoeff = -1./(dxRightN(i+1, j+1) + dxLeftN(i+1, j+1))
                     lleftCoeff = 0
-                else
+                    llleftCoeff = 0
+
+                else if (i == 2 .or. i == mx-2) then
+                    rrrightCoeff = 0
                     rrightCoeff = -1./(12 * dxRightN(i+1, j+1))
-                    rightCoeff = 2/(3 * dxRightN(i+1, j+1))
+                    rightCoeff = 2./(3 * dxRightN(i+1, j+1))
                     centerXCoeff = 0
-                    leftCoeff = -2/(3 * dxRightN(i+1, j+1))
+                    leftCoeff = -2./(3 * dxRightN(i+1, j+1))
                     lleftCoeff = 1./(12 * dxRightN(i+1, j+1))
+                    llleftCoeff = 0
+
+                else
+                    rrrightCoeff = 1./(60 * dxRightN(i+1, j+1))
+                    rrightCoeff = -3./(20 * dxRightN(i+1, j+1))
+                    rightCoeff = 3./(4 * dxRightN(i+1, j+1))
+                    centerXCoeff = 0
+                    leftCoeff = -3./(4 * dxRightN(i+1, j+1))
+                    lleftCoeff = 3./(20 * dxRightN(i+1, j+1))
+                    llleftCoeff = -1./(60 * dxRightN(i+1, j+1))
                 endif
 
                 if (j == 0 ) then
-                    !!! Setting gradient coefficients
-                    ! topCoeff = 2 * dxTopE(i+1, j+1)/(cellArea(i+1,j+1))
-                    ! centerYCoeff = -3 * dxTopE(i+1, j+1)/(cellArea(i+1,j+1)) - dxBottomE(i+1, j+1)/(cellArea(i+1,j+1))
-                    ! bottomCoeff = 0
+                    tttopCoeff = 0
                     ttopCoeff = 0
                     topCoeff = 1./dyTopN(i+1, j+1)
                     centerYCoeff = -1./dyTopN(i+1, j+1)
                     bottomCoeff = 0
                     bbottomCoeff = 0
+                    bbbottomCoeff = 0
                 else if (j == my-1 ) then
-                    ! topCoeff = 0
-                    ! centerYCoeff = 3 * dxBottomE(i+1, j+1)/(cellArea(i+1,j+1)) - dxTopE(i+1, j+1)/(cellArea(i+1,j+1))
-                    ! bottomCoeff = -2 * dxBottomE(i+1, j+1)/(cellArea(i+1,j+1))
+                    tttopCoeff = 0
                     ttopCoeff = 0
                     topCoeff = 0
                     centerYCoeff = 1./dyTopN(i+1, j+1)
                     bottomCoeff = -1./dyTopN(i+1, j+1)
                     bbottomCoeff = 0
+                    bbbottomCoeff = 0
                 else if (j == 1 .or. j == my-1) then
-                    ! topCoeff = dxTopE(i+1, j+1)/(2*cellArea(i+1,j+1))
-                    ! centerYCoeff = dxTopE(i+1, j+1)/(2*cellArea(i+1,j+1)) - dxBottomE(i+1, j+1)/(2*cellArea(i+1,j+1))
-                    ! bottomCoeff =   -dxBottomE(i+1, j+1)/(2*cellArea(i+1,j+1))
+                    tttopCoeff = 0 
                     ttopCoeff = 0 
                     topCoeff = 1./(dyTopN(i+1, j+1) + dyBottomN(i+1, j+1))
                     centerYCoeff = 0
                     bottomCoeff = -1./(dyTopN(i+1, j+1) + dyBottomN(i+1, j+1)) 
                     bbottomCoeff = 0
-                else
+                    bbbottomCoeff = 0
+                else if (j == 2 .or. j == my-2) then
+                    tttopCoeff = 0
                     ttopCoeff = -1./(12 * dyTopN(i+1, j+1))
-                    topCoeff = 2/(3* dyTopN(i+1, j+1))
+                    topCoeff = 2./(3* dyTopN(i+1, j+1))
                     centerYCoeff = 0
-                    bottomCoeff = -2/(3*dyTopN(i+1, j+1)) 
-                    bbottomCoeff = 1./(12 * dyTopN(i+1, j+1))          
+                    bottomCoeff = -2./(3*dyTopN(i+1, j+1)) 
+                    bbottomCoeff = 1./(12 * dyTopN(i+1, j+1)) 
+                    bbbottomCoeff = 0         
+                else
+                    tttopCoeff = 1./(60 * dyTopN(i+1, j+1))
+                    ttopCoeff = -3./(20 * dyTopN(i+1, j+1))
+                    topCoeff = 3./(4* dyTopN(i+1, j+1))
+                    centerYCoeff = 0
+                    bottomCoeff = -3./(4*dyTopN(i+1, j+1)) 
+                    bbottomCoeff = 3./(20 * dyTopN(i+1, j+1)) 
+                    bbbottomCoeff = -1./(60 * dyTopN(i+1, j+1))     
                 endif
 
             
@@ -716,6 +744,12 @@ module helmHoltzDecomp
                         call MatSetValue(A, Ii, colIndex , -lleftCoeff *derFac  * cellArea(i+1,j+1) , ADD_VALUES, ierr)
                     endif
 
+                    if (i > 2 )  then
+                        colIndex = Ii - 3
+                        if ( colIndex >= 2 *mx *my ) stop 'Here 01__'
+                        call MatSetValue(A, Ii, colIndex , -llleftCoeff *derFac  * cellArea(i+1,j+1) , ADD_VALUES, ierr)
+                    endif
+
                     if (i < mx -1 )  then
                         colIndex = Ii + 1
                         if ( colIndex >= 2 * mx *my ) stop 'Here 02'
@@ -726,6 +760,12 @@ module helmHoltzDecomp
                         colIndex = Ii + 2
                         if ( colIndex >= 2 * mx *my ) stop 'Here 02'
                         call MatSetValue(A, Ii, colIndex , -rrightCoeff *derFac * cellArea(i+1,j+1), ADD_VALUES, ierr)
+                    endif
+
+                    if (i < mx -3 )  then
+                        colIndex = Ii + 3
+                        if ( colIndex >= 2 * mx *my ) stop 'Here 02'
+                        call MatSetValue(A, Ii, colIndex , -rrrightCoeff *derFac * cellArea(i+1,j+1), ADD_VALUES, ierr)
                     endif
 
                     colIndex = Ii
@@ -744,6 +784,12 @@ module helmHoltzDecomp
                         if ( colIndex >= 2*mx *my ) stop 'Here 04'
                         call MatSetValue(A, Ii, colIndex, bbottomCoeff *derFac * cellArea(i+1,j+1), ADD_VALUES, ierr) 
                     endif
+
+                    if (j > 2 )   then
+                        colIndex = (Ii + mx * my) - mx - mx -mx
+                        if ( colIndex >= 2*mx *my ) stop 'Here 04'
+                        call MatSetValue(A, Ii, colIndex, bbbottomCoeff *derFac * cellArea(i+1,j+1), ADD_VALUES, ierr) 
+                    endif
                     
                     if (j< my -1 )   then
                         colIndex = (Ii + mx * my) + mx
@@ -757,15 +803,17 @@ module helmHoltzDecomp
                         call MatSetValue(A, Ii, colIndex, ttopCoeff *derFac * cellArea(i+1,j+1) , ADD_VALUES, ierr)
                     endif
 
+                    if (j< my -3 )   then
+                        colIndex = (Ii + mx * my) + mx + mx + mx
+                        if ( colIndex >= 2*mx *my ) stop 'Here 05'
+                        call MatSetValue(A, Ii, colIndex, tttopCoeff *derFac * cellArea(i+1,j+1) , ADD_VALUES, ierr)
+                    endif
+
                     colIndex = (Ii + mx * my)
                     if ( colIndex >= 2*mx *my ) stop 'Here 06'
                     call MatSetValue(A, Ii, colIndex, centerYCoeff *derFac * cellArea(i+1,j+1)-tikhov, ADD_VALUES, ierr)
 
                 else
-                    ! if ((Ii + (mx + my) + mx) > (2 *(mx + my)) )then
-                    !     print *, 'row ',Ii, 'column', Ii + (mx + my) + mx
-                    !     stop 
-                    ! endif
 
                     !!! Setting gradient coefficients for RHS u
                     if (j > 0 )    then
@@ -780,6 +828,12 @@ module helmHoltzDecomp
                         call MatSetValue(A, Ii, colIndex , -bbottomCoeff * derFac*cellArea(i+1,j+1), ADD_VALUES, ierr)
                     endif
 
+                    if (j > 2 )    then
+                        colIndex = Ii -(mx * my) - mx -mx -mx
+                        if ( colIndex >= 2*mx *my ) stop 'Here 07'
+                        call MatSetValue(A, Ii, colIndex , -bbbottomCoeff * derFac*cellArea(i+1,j+1), ADD_VALUES, ierr)
+                    endif
+
                     if ( j< my -1 )  then
                         colIndex = Ii -(mx * my) + mx
                         if ( colIndex >= 2*mx *my ) stop 'Here 08'
@@ -790,6 +844,12 @@ module helmHoltzDecomp
                         colIndex = Ii -(mx * my) + mx + mx
                         if ( colIndex >= 2*mx *my ) stop 'Here 08'
                         call MatSetValue(A, Ii, colIndex , -ttopCoeff  *derFac*cellArea(i+1,j+1)  , ADD_VALUES, ierr)
+                    endif
+
+                    if ( j< my -3 )  then
+                        colIndex = Ii -(mx * my) + mx + mx + mx
+                        if ( colIndex >= 2*mx *my ) stop 'Here 08'
+                        call MatSetValue(A, Ii, colIndex , -tttopCoeff  *derFac*cellArea(i+1,j+1)  , ADD_VALUES, ierr)
                     endif
 
                     colIndex = Ii -(mx * my)
@@ -804,10 +864,16 @@ module helmHoltzDecomp
                         call MatSetValue(A, Ii, colIndex , -leftCoeff   * derFac*cellArea(i+1,j+1), ADD_VALUES, ierr)
                     end if
 
-                    if (i > 0 )     then
+                    if (i > 1 )     then
                         colIndex = Ii  - 2
                         if ( colIndex >= 2*mx *my ) stop 'Here 010'
                         call MatSetValue(A, Ii, colIndex , -lleftCoeff   * derFac*cellArea(i+1,j+1), ADD_VALUES, ierr)
+                    end if
+
+                    if (i > 2 )     then
+                        colIndex = Ii  - 3
+                        if ( colIndex >= 2*mx *my ) stop 'Here 010'
+                        call MatSetValue(A, Ii, colIndex , -llleftCoeff   * derFac*cellArea(i+1,j+1), ADD_VALUES, ierr)
                     end if
 
                     if (i < mx -1)  then
@@ -820,6 +886,12 @@ module helmHoltzDecomp
                         colIndex = Ii  + 2
                         if ( colIndex >= 2*mx *my ) stop 'Here 011'
                         call MatSetValue(A, Ii, colIndex , -rrightCoeff  * derFac*cellArea(i+1,j+1), ADD_VALUES, ierr)
+                    endif
+
+                    if (i < mx -3)  then
+                        colIndex = Ii  + 3
+                        if ( colIndex >= 2*mx *my ) stop 'Here 011'
+                        call MatSetValue(A, Ii, colIndex , -rrrightCoeff  * derFac*cellArea(i+1,j+1), ADD_VALUES, ierr)
                     endif
 
                     colIndex = Ii
@@ -942,12 +1014,12 @@ module helmHoltzDecomp
 
         if (rank == 0 ) print *, 'Matrix assembly complete'
 
-        call MatCreateNormalHermitian(A, N, ierr)
+        !call MatCreateNormalHermitian(A, N, ierr)
         call VecDuplicate(x_local, Ay, ierr) ! just to have same config
-        call MatMultHermitianTranspose(A, y_local, Ay, ierr)
-        !call MatCreateNormal(A, N, ierr)
+        !call MatMultHermitianTranspose(A, y_local, Ay, ierr)
+        call MatCreateNormal(A, N, ierr)
         !call MatMatMultTranspose(A, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, N, ierr)
-        !call MatMultTranspose(A, y_local, Ay, ierr)
+        call MatMultTranspose(A, y_local, Ay, ierr)
 
         ! Create the KSP linear solver
         call KSPCreate(PETSC_COMM_WORLD, ksp, ierr)
@@ -960,8 +1032,8 @@ module helmHoltzDecomp
         call KSPSetFromOptions(ksp, ierr)
 
         ! Set solver tolerances: rel_tol, abs_tol, div_tol, and max iterations
-        max_iter = 50000
-        rel_tol = 1d-8
+        max_iter = 5000
+        rel_tol = 1d-6
         abs_tol = 1d-16
         div_tol = 1d10
         call KSPSetTolerances(ksp, rel_tol, abs_tol, div_tol,  max_iter, ierr)
@@ -996,9 +1068,12 @@ module helmHoltzDecomp
             collected_xarray = collected_xPointer
             phi = reshape(collected_xarray(1:mx*my), (/mx, my/))
             psi = reshape(collected_xarray(mx*my:2*mx*my), (/mx, my/))
+            !phi = phi + phi_seed
+            !psi = psi + psi_seed
             deallocate(collected_xarray)
             !deallocate(collected_xPointer)
             nullify(collected_xPointer)
+            !deallocate(uvel_res, vvel_res, phi_seed, psi_seed)
         endif
 
         ! Clean up
@@ -1286,7 +1361,7 @@ module helmHoltzDecomp
                     endif
 
                     if (j > 1 )   then
-                        colIndex = (Ii + mx * my) - 2 * mx
+                        colIndex = (Ii + mx * my) - mx - mx
                         if ( colIndex >= 2*mx *my ) stop 'Here 04_'
                         call MatSetValue(A, Ii, colIndex, bbottomCoeff, ADD_VALUES, ierr) 
                     endif
@@ -1298,7 +1373,7 @@ module helmHoltzDecomp
                     endif
 
                     if (j< my -2 )   then
-                        colIndex = (Ii + mx * my) + 2 * mx
+                        colIndex = (Ii + mx * my) + mx +  mx
                         if ( colIndex >= 2*mx *my ) stop 'Here 05_'
                         call MatSetValue(A, Ii, colIndex, ttopCoeff, ADD_VALUES, ierr)
                     endif
@@ -1316,7 +1391,7 @@ module helmHoltzDecomp
                     endif
 
                     if (j > 1 )    then
-                        colIndex = Ii -(mx * my) - 2 * mx 
+                        colIndex = Ii -(mx * my) - mx - mx 
                         if ( colIndex >= 2*mx *my ) stop 'Here 07_'
                         call MatSetValue(A, Ii, colIndex , -bbottomCoeff, ADD_VALUES, ierr)
                     endif
@@ -1328,7 +1403,7 @@ module helmHoltzDecomp
                     endif
 
                     if ( j< my -2 )  then
-                        colIndex = Ii -(mx * my) + 2*mx
+                        colIndex = Ii -(mx * my) + mx + mx
                         if ( colIndex >= 2*mx *my ) stop 'Here 08_'
                         call MatSetValue(A, Ii, colIndex , -ttopCoeff, ADD_VALUES, ierr)
                     endif
@@ -1400,9 +1475,10 @@ module helmHoltzDecomp
                 else
                     rrightCoeff = -1./12.0 * 1./dx(i+1, j+1)
                     rightCoeff = 4.0/3.0 * 1./dx(i+1, j+1)
+                    centerCoeff = -5./2.0 * 1./dx(i+1, j+1)
                     leftCoeff = 4.0/3.0 * 1./dx(i+1, j+1)
                     lleftCoeff = -1./12.0 * 1./dx(i+1, j+1)
-                    centerCoeff = -5./2.0 * 1./dx(i+1, j+1)
+                    
 
                 endif
                     
@@ -1469,7 +1545,7 @@ module helmHoltzDecomp
 
                 
                 if (j > 1) then 
-                    colIndex2 = colIndex  - 2* mx
+                    colIndex2 = colIndex  - mx -  mx
                     if ( colIndex2 >= 2*mx *my ) stop 'Here 15_'
                     call MatSetValue(A, Ii, colIndex2, bbottomCoeff , ADD_VALUES, ierr)
                 endif 
@@ -1490,7 +1566,7 @@ module helmHoltzDecomp
 
                 
                 if (j < my-2 ) then 
-                    colIndex2 = colIndex  + 2*mx
+                    colIndex2 = colIndex  + mx + mx
                     if ( colIndex2 >= 2*mx *my ) stop 'Here 16_'
                     call MatSetValue(A, Ii, colIndex2, ttopCoeff    , ADD_VALUES, ierr)
                 endif
@@ -1528,7 +1604,7 @@ module helmHoltzDecomp
         call KSPSetFromOptions(ksp, ierr)
 
         ! Set solver tolerances: rel_tol, abs_tol, div_tol, and max iterations
-        max_iter = 5000
+        max_iter = 2000
         rel_tol = 1d-10
         abs_tol = 1d-100
         div_tol = 1d10

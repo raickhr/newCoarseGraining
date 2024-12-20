@@ -49,6 +49,94 @@ module operators
         deallocate(dummy)
     end subroutine
 
+    ! subroutine fromFaceCenterToEdgeHermite(phi, dxLeftN, dxRightN, dyBottomN, dyTopN, latArr, lonArr, leftEdgePhi, rightEdgePhi, bottomEdgePhi, topEdgePhi)
+    !     real(kind = real_kind), dimension(:,:), intent(in) :: phi, dxLeftN, dxRightN, dyBottomN, dyTopN, &
+    !                                                        &  latArr, lonArr
+    !     real(kind = real_kind), allocatable, dimension(:,:), intent(out) :: leftEdgePhi, rightEdgePhi, &
+    !                                                                      &  bottomEdgePhi, topEdgePhi, 
+
+    !     real(kind = real_kind), allocatable, dimension(:,:) :: x, x1, x2, fx1, fx2, dfx1, dfx2, &
+    !                                                            h0, h1, h2, h3, t, dummy
+
+    !     integer :: nx, ny, ierr, shapeArr(2)
+
+    !     shapeArr = shape(phi)
+    !     nx = shapeArr(1)
+    !     ny = shapeArr(2)
+
+        
+    !     allocate(x(nx, ny), x1(nx, ny), x2(nx, ny), t(nx, ny), &
+    !             fx1(nx, ny), fx2(nx, ny), dfx1(nx, ny), dfx2(nx, ny), &
+    !             h0(nx, ny), h1(nx, ny), h2(nx, ny), h3(nx, ny), &
+    !             dummy1(nx, ny), dummy2(nx, ny), stat= ierr)
+
+    !     if (allocated(leftEdgePhi)) then
+    !         deallocate(leftEdgePhi)    
+    !         deallocate(rightEdgePhi)    
+    !         deallocate(bottomEdgePhi)    
+    !         deallocate(topEdgePhi)    
+    !     endif
+
+    !     allocate(leftEdgePhi(nx, ny), stat= ierr)
+    !     allocate(rightEdgePhi(nx, ny), stat= ierr)
+    !     allocate(bottomEdgePhi(nx, ny), stat= ierr)
+    !     allocate(topEdgePhi(nx, ny), stat= ierr)
+
+
+    !     ! interpolate for left Edge Value
+    !     x1 = cshift(lonArr, shift=-1, dim = 1)
+    !     x2 = lonArr
+    !     x = (x1 + x2)/2.0
+    !     x1(1,:) = lonArr(1,:)
+    !     x2(1,:) = lonArr(2,:)
+    !     x(1,:) = x1(1,:) - 0.5 *(x2(1,:) - x1(1,:))
+
+    !     fx1 = cshift(phi, shift=-1, dim = 1)
+    !     fx2 = phi
+    !     fx1(1,:) = phi(1,:)
+    !     fx2(1,:) = phi(2,:)
+
+    !     dummy = (cshift(phi, shift=1, dim =1) - cshift(phi, shift=-1, dim =1))/(dxLeftN + dxRightN)
+    !     dfx1 = cshift(dummy, shift=-1, dim =1)
+    !     dfx2 = dummy
+
+    !     t = (x - x1)/(x2 - x1)
+
+    !     h0 = 2*t**3 - 3*t**2 + 1
+    !     h1 = -2*t**3 + 3*t**2
+    !     h2 = t**3 - 2*t**2 + t
+    !     h3 = t**3 - t**2
+
+    !     leftEdgePhi = h0 * fx1  &
+    !                 + h1 * fx2  &
+    !                 + h2 * dfx1 &
+    !                 + h3 * dfx2
+
+
+
+        
+
+        
+
+    !     \
+    !     dummy = cshift(phi, shift=-1, dim=1) ! left values
+    !     call setBoundary(dummy, boundary='left', boundaryType='linear')
+    !     leftEdgePhi = 0.5 * (dummy + phi)
+
+    !     dummy = cshift(phi, shift=1, dim=1) ! right values
+    !     call setBoundary(dummy, boundary='right', boundaryType='linear')
+    !     rightEdgePhi = 0.5 * (dummy + phi)
+
+    !     dummy = cshift(phi, shift=-1, dim=2) ! bottom values
+    !     call setBoundary(dummy, boundary='left', boundaryType='linear')
+    !     bottomEdgePhi = 0.5 * (dummy + phi)
+
+    !     dummy = cshift(phi, shift=1, dim=2) ! top values
+    !     call setBoundary(dummy, boundary='right', boundaryType='linear')
+    !     topEdgePhi = 0.5 * (dummy + phi)
+    !     deallocate(dummy)
+    ! end subroutine
+
     subroutine setBoundary(phi, boundary, boundaryType)
         real(kind=real_kind), intent(inout) :: phi(:,:)
         character(len=*), optional, intent(in) :: boundary, boundaryType
@@ -199,7 +287,7 @@ module operators
         ! dummy = -1./2. * cshift(phi, shift = -1, dim=1) &
         !        & +1./2.  * cshift(phi, shift =  1, dim=1) 
 
-        print *, 'aaaa'
+        !print *, 'aaaa'
         
         gradX(2,:) = dummy(2,:)
         gradX(nx-2, :) = dummy(nx-2,:)
@@ -323,15 +411,20 @@ module operators
         deallocate(gradX_uvel, gradY_uvel, gradX_vvel, gradY_vvel, stat=ierr)
     end subroutine
 
-    subroutine getPolTorVel(psi, phi, dxBottom, dxTop, dyLeft, dyRight, cellArea, polUvel, torUvel, polVvel, torVvel)
-        real(kind=real_kind), intent(in), dimension(:,:) :: psi, phi, dxBottom, dxTop, dyLeft, dyRight, cellArea
+    subroutine getPolTorVel(psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea, polUvel, torUvel, polVvel, torVvel)
+        real(kind=real_kind), intent(in), dimension(:,:) :: psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea
         real(kind=real_kind), intent(out), dimension(:,:) :: polUvel, torUvel, polVvel, torVvel
 
         real(kind=real_kind), allocatable, dimension(:,:) :: gradX_psi, gradY_psi, gradX_phi, gradY_phi
 
-        call calcGradFV(psi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_psi, gradY_psi)
+        !call calcGradFV(psi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_psi, gradY_psi)
+
+        call calcGradFD(psi, centerDx, centerDy, gradX_psi, gradY_psi)
         print*, 'gradients psi calculation complete'
-        call calcGradFV(phi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_phi, gradY_phi)
+        
+        !call calcGradFV(phi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_phi, gradY_phi)
+
+        call calcGradFD(phi, centerDx, centerDy, gradX_phi, gradY_phi)
 
         print*, 'gradients calculation complete'
 

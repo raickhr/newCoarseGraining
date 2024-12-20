@@ -18,12 +18,12 @@ program forTestMain
                         & uvel_pol, uvel_tor, vvel_pol, vvel_tor, &  
                         & uvel_tot, vvel_tot      
 
-        integer:: factorList(5), cnx, cny, shapeArr(2), ierr
+        integer:: factorList(2), cnx, cny, shapeArr(2), ierr
 
         call startMPI()
 
         if (taskid == 0) print *,'factorList', factorList
-        factorList = (/ 20, 10, 5, 3, 2/)
+        factorList = (/5, 3 /)
         !factorList = (/ 3, 5, 9/)
         
 
@@ -90,7 +90,7 @@ program forTestMain
         !                         factorList, psi, phi)
 
         if (taskid == 0) then
-                call getPolTorVel(psi, phi, DEDX_RHO, UEDX_RHO, LEDY_RHO, REDY_RHO, AREA, &
+                call getPolTorVel(psi, phi, DX_RHO, DY_RHO, DEDX_RHO, UEDX_RHO, LEDY_RHO, REDY_RHO, AREA, &
                                  uvel_pol, uvel_tor, vvel_pol, vvel_tor)
 
                 call write2dVar('uvel_pol.nc', 'uvel_pol', uvel_pol )
