@@ -385,6 +385,7 @@ module operators
         if (.NOT. all(shape(vvel) .EQ. shapeArr) .OR. &
             .NOT. all(shape(dx) .EQ. shapeArr) .OR. &
             .NOT. all(shape(dy) .EQ.shapeArr)) then
+                print *, shapeArr, shape(vvel), shape(dx), shape(dy)
                 stop "calcHozDivVertCurl:: shape of array inconsistent"
         endif
 
@@ -413,6 +414,30 @@ module operators
 
     subroutine getPolTorVel(psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea, polUvel, torUvel, polVvel, torVvel)
         real(kind=real_kind), intent(in), dimension(:,:) :: psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea
+        real(kind=real_kind), intent(out), dimension(:,:) :: polUvel, torUvel, polVvel, torVvel
+
+        real(kind=real_kind), allocatable, dimension(:,:) :: gradX_psi, gradY_psi, gradX_phi, gradY_phi
+
+        !call calcGradFV(psi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_psi, gradY_psi)
+
+        call calcGradFD(psi, centerDx, centerDy, gradX_psi, gradY_psi)
+        print*, 'gradients psi calculation complete'
+        
+        !call calcGradFV(phi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_phi, gradY_phi)
+
+        call calcGradFD(phi, centerDx, centerDy, gradX_phi, gradY_phi)
+
+        print*, 'gradients calculation complete'
+
+        polUvel = -gradX_phi
+        polVvel = -gradY_phi
+
+        torUvel = gradY_psi
+        torVvel = -gradX_psi
+    end subroutine
+
+    subroutine getPolTorVelFD(psi, phi, centerDX, centerDy, polUvel, torUvel, polVvel, torVvel)
+        real(kind=real_kind), intent(in), dimension(:,:) :: psi, phi, centerDX, centerDy
         real(kind=real_kind), intent(out), dimension(:,:) :: polUvel, torUvel, polVvel, torVvel
 
         real(kind=real_kind), allocatable, dimension(:,:) :: gradX_psi, gradY_psi, gradX_phi, gradY_phi
