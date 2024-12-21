@@ -203,12 +203,18 @@ module multiGridHelmHoltz
 
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
-
             if (taskid == 0 ) print *, 'Starting Helmholtz Decomposition'
+
             call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, wrk_centerDx, wrk_centerDy, &
                                     & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
                                     & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
                                     & wrk_cellArea)
+
+
+            ! call decomposeHelmholtz(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, wrk_centerDx, wrk_centerDy, &
+            !                         & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
+            !                         & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
+            !                         & wrk_cellArea)
             
             if (taskid == 0 ) print *, 'Decomposition complete'
 

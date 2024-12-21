@@ -14,9 +14,10 @@ module helmHoltzDecomp
 
     contains
 
-    subroutine decomposeHelmholtz(uvel, vvel, psi, phi, dxBottomE, dxTopE, dyLeftE, dyRightE, &
+    subroutine decomposeHelmholtz(uvel, vvel, psi, phi, centerDx, centerDY, dxBottomE, dxTopE, dyLeftE, dyRightE, &
                                 & dxLeftN, dxRightN, dyBottomN, dyTopN, cellArea)
         real(kind=real_kind), intent(in), dimension(:,:) :: uvel, vvel, & ! For right hand side
+                                                            &  centerDx, centerDY, &
                                                             &  dxBottomE, dxTopE, dyLeftE, dyRightE, & !at cell edges
                                                             &  dxLeftN, dxRightN, dyBottomN, dyTopN, cellArea  ! stencil joining nodes
 
@@ -29,16 +30,22 @@ module helmHoltzDecomp
         call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
         call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
 
-        if (rank == 0) call calcHozDivVertCurl(uvel, vvel, dxBottomE, dxTopE, dyLeftE, dyRightE, cellArea, divU, curlU)
+        !if (rank == 0) call calcHozDivVertCurl(uvel, vvel, dxBottomE, dxTopE, dyLeftE, dyRightE, cellArea, divU, curlU)
+
+        if (rank == 0) call calcHozDivVertCurlFD(uvel, vvel, centerDx, centerDy, divU, curlU)
 
         if (rank == 0) print *, 'solving poission equation for toroidal part'
         call solvepoission(psi, uvel, vvel, -curlU, dxBottomE, dxTopE, dyLeftE, dyRightE, &
-                            &dxLeftN, dxRightN, dyBottomN, dyTopN,cellArea, isPoloidal= .FALSE. )
+                             &dxLeftN, dxRightN, dyBottomN, dyTopN,cellArea, isPoloidal= .FALSE. )
+
+        !call solvepoissionFD(psi, -curlU, centerDx, centerDy )
         if (rank == 0) print *, 'solving poission equation for toroidal part complete'
 
         if (rank == 0) print *, 'solving poission equation for poloidal part'
         call solvepoission(phi, uvel, vvel, -divU, dxBottomE, dxTopE, dyLeftE, dyRightE,&
-                        &  dxLeftN, dxRightN, dyBottomN, dyTopN, cellArea, isPoloidal= .TRUE.)
+                         &  dxLeftN, dxRightN, dyBottomN, dyTopN, cellArea, isPoloidal= .TRUE.)
+
+        !call solvepoissionFD(phi, -divU, centerDx, centerDy )
         if (rank == 0) print *, 'solving poission equation for poloidal part complete'
         if (rank == 0) deallocate(divU, curlU)
     end subroutine
@@ -113,12 +120,12 @@ module helmHoltzDecomp
 
                 val = RHS(i+1,j+1) * cellArea(i+1,j+1)
                 if (isPoloidal) then
-                    if (i == 0 .or. i == mx-1 ) val = uvel(i+1, j+1) * (dxLeftN(i+1, j+1) + dxRightN(i+1, j+1))/2
-                    if (j==0 .or. j == my -1 ) val = vvel(i+1, j+1) *(dyBottomN(i+1, j+1) + dyTopN(i+1, j+1))/2
+                    if (i == 0 .or. i == mx-1 ) val = uvel(i+1, j+1) 
+                    if (j==0 .or. j == my -1 ) val = vvel(i+1, j+1) 
                 !if (i == 0 .or. i == mx -1 .or. j == 0 .or. j == my -1) val = 0.0
                 else
-                    if (i == 0 .or. i == mx-1 ) val = -vvel(i+1, j+1) * (dxLeftN(i+1, j+1) + dxRightN(i+1, j+1))/2
-                    if (j==0 .or. j == my -1 ) val = uvel(i+1, j+1) *(dyBottomN(i+1, j+1) + dyTopN(i+1, j+1))/2
+                    if (i == 0 .or. i == mx-1 ) val = -vvel(i+1, j+1) 
+                    if (j==0 .or. j == my -1 ) val = uvel(i+1, j+1) 
                 endif
                 
                 call VecSetValue(y_globalOnZero, Ii, val, INSERT_VALUES, ierr)
@@ -214,23 +221,23 @@ module helmHoltzDecomp
 
 
             else if ((i == 0)) then
-                centerCoeff = 1
-                rightCoeff = -1
+                centerCoeff = 1/dxRightN(i+1, j+1)
+                rightCoeff = -1/dxRightN(i+1, j+1)
                 call MatSetValue(A, Ii, Ii, centerCoeff, ADD_VALUES, ierr)
                 call MatSetValue(A, Ii, Ii + 1, rightCoeff, ADD_VALUES, ierr)
             else if ((i == mx-1)) then
-                centerCoeff = 1
-                leftCoeff = -1
+                centerCoeff = 1/dxLeftN(i+1, j+1)
+                leftCoeff = -1/dxLeftN(i+1, j+1)
                 call MatSetValue(A, Ii, Ii, centerCoeff, ADD_VALUES, ierr)
                 call MatSetValue(A, Ii, Ii - 1, leftCoeff, ADD_VALUES, ierr)
             else if ((j == my-1)) then
-                centerCoeff = 1
-                bottomCoeff = -1
+                centerCoeff = 1/dyBottomN(i+1,j+1)
+                bottomCoeff = -1/dyBottomN(i+1,j+1)
                 call MatSetValue(A, Ii, Ii, centerCoeff, ADD_VALUES, ierr)
                 call MatSetValue(A, Ii, Ii -mx, rightCoeff, ADD_VALUES, ierr)
             else if ((j == 0)) then
-                centerCoeff = 1
-                topCoeff = -1
+                centerCoeff = 1/(dyTopN(i+1,j+1))
+                topCoeff = -1/(dyTopN(i+1,j+1))
                 call MatSetValue(A, Ii, Ii, centerCoeff, ADD_VALUES, ierr)
                 call MatSetValue(A, Ii, Ii +mx, topCoeff, ADD_VALUES, ierr)
             endif
@@ -246,10 +253,11 @@ module helmHoltzDecomp
         ! Create the KSP linear solver
         call KSPCreate(PETSC_COMM_WORLD, ksp, ierr)
         call KSPSetOperators(ksp, A, A, ierr)
+        call KSPSetInitialGuessNonzero(ksp, PETSC_TRUE, ierr)
         call KSPSetFromOptions(ksp, ierr)
 
         ! Set solver tolerances: rel_tol, abs_tol, div_tol, and max iterations
-        max_iter = 10000
+        max_iter = 2000
         rel_tol = 1d-4
         abs_tol = 1d-4
         div_tol = 1d5
@@ -300,6 +308,303 @@ module helmHoltzDecomp
         call PetscFinalize(ierr)
     end subroutine
 
+    subroutine solvepoissionFD(phi, RHS, dx, dy)
+        real(kind=real_kind), intent(in), dimension(:,:) :: RHS, &  ! RHS of the poission equation
+                                                            dx, dy
+        real(kind=real_kind), intent(inout), dimension(:,:) :: phi
+        integer :: shapeArr(2)
+
+        PetscErrorCode :: ierr
+        PetscMPIInt :: rank, size
+        Vec :: x_globalOnZero, x_local, y_globalOnZero, y_local, sol_globalOnZero
+        VecScatter :: scatterx, scattery, gather
+        IS :: xis_localVec, xis_globalVec, yis_localVec, yis_globalVec
+        Mat :: A, AtA
+        KSP :: ksp
+        PetscInt :: Istart, Iend, Ii, i, j, mx, my, localSize, globalSize, low, high
+        PetscScalar :: leftCoeff, rightCoeff, topCoeff, bottomCoeff, centerCoeff, &
+                &      lleftCoeff, rrightCoeff, ttopCoeff, bbottomCoeff
+        PetscScalar :: val, norm, rel_tol, abs_tol, div_tol
+        PetscInt :: max_iter, colIndex, colIndex2
+
+        real(kind=8), pointer :: collected_xPointer(:)
+        real(kind=real_kind), allocatable :: collected_xarray(:)
+
+        ! Initialize PETSc
+        call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
+        call MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr)
+        call MPI_Comm_size(PETSC_COMM_WORLD, size, ierr)
+
+        shapeArr = shape(phi)
+        mx = shapeArr(1)
+        my = shapeArr(2)
+
+        ! create a distributed vector for phi
+        ! Create the source vector (fully defined on rank 0)
+
+        ! The poission equation is solved in the matrix form as [ A ][x] = [y]
+
+        call VecCreate(PETSC_COMM_WORLD, x_globalOnZero,  ierr)
+        call VecSetFromOptions(x_globalOnZero, ierr)
+        call VecCreate(PETSC_COMM_WORLD, y_globalOnZero, ierr)
+        call VecSetFromOptions(y_globalOnZero, ierr)
+
+        call VecSetSizes(x_globalOnZero, PETSC_DECIDE, mx * my, ierr)
+        call VecSetSizes(y_globalOnZero, PETSC_DECIDE, mx * my, ierr)
+
+        if (rank == 0) then
+            print *, taskid
+            print *, 'creating vectors of size', mx,'x', my
+
+            do Ii = 0, mx * my - 1
+                i = mod(Ii, mx)
+                j = Ii / mx
+                val = phi(i+1,j+1)
+                call VecSetValue(x_globalOnZero, Ii, val, INSERT_VALUES, ierr)
+
+                val = RHS(i+1,j+1)
+                if (i < 2) val = 0 !RHS(i+2,j+1)
+                if (i > mx -2 ) val = 0 !RHS(mx-2,j+1)
+                if (j < 2) val = 0 !RHS(i+1,j+2)
+                if (j > my -2 ) val = 0 !RHS(i+1,my-2)
+                call VecSetValue(y_globalOnZero, Ii, val, INSERT_VALUES, ierr)
+            end do
+        end if
+
+        call VecAssemblyBegin(x_globalOnZero, ierr)
+        call VecAssemblyEnd(x_globalOnZero, ierr)
+
+        call VecAssemblyBegin(y_globalOnZero, ierr)
+        call VecAssemblyEnd(y_globalOnZero, ierr)
+
+
+
+
+        if (rank == 0) print *, 'End vector create'
+
+
+
+        ! Create the distributed destination vector
+        if (rank == 0) print *, 'creating vector for distributing'
+        call VecCreate(PETSC_COMM_WORLD, x_local, ierr)
+        call VecCreate(PETSC_COMM_WORLD, y_local, ierr)
+
+        call VecSetSizes(x_local, PETSC_DECIDE, mx * my, ierr)
+        call VecSetSizes(y_local, PETSC_DECIDE, mx * my, ierr)
+
+        call VecSetFromOptions(y_local, ierr)
+        call VecSetFromOptions(x_local, ierr)
+        if (rank == 0) print *, 'creating vector for distributing COMPLETE'
+
+
+        call VecGetOwnershipRange(x_local, low, high, ierr) ! /* low, high are global indices */
+        call ISCreateStride(PETSC_COMM_SELF, high - low, low, 1, xis_localVec, ierr)
+
+        call VecGetOwnershipRange(y_local, low, high, ierr) ! /* low, high are global indices */
+        call ISCreateStride(PETSC_COMM_SELF, high - low, low, 1, yis_localVec, ierr)
+
+        ! call VecGetOwnershipRange(vec_global, low, high, ierr) ! /* low, high are global indices */
+        ! call ISCreateStride(PETSC_COMM_SELF, high - low, low, 1, xis_globalVec, ierr)
+
+
+        ! Create scatter context
+        if (rank == 0) print *, 'scattering vectors'
+        call VecScatterCreate(x_globalOnZero, xis_localVec, x_local, xis_localVec, scatterx, ierr)
+
+        ! Perform the scatter operation
+        call VecScatterBegin(scatterx, x_globalOnZero, x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+        call VecScatterEnd(scatterx, x_globalOnZero, x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+        if (rank == 0) print *, 'scattering X vector COMPLETE'
+
+        ! Create scatter context
+        call VecScatterCreate(y_globalOnZero, yis_localVec, y_local, yis_localVec, scattery, ierr)
+
+        ! Perform the scatter operation
+        call VecScatterBegin(scattery, y_globalOnZero, y_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+        call VecScatterEnd(scattery, y_globalOnZero, y_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+        if (rank == 0) print *, 'scattering vectors COMPLETE'
+
+        ! NOW creating a coefficient distributed matrix A
+        call MatCreate(PETSC_COMM_WORLD, A, ierr)
+        call MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, mx * my, mx * my, ierr)
+        call MatSetFromOptions(A, ierr) ! commenting this because we are using the default sparse matrix config
+        call MatSetUp(A, ierr)
+
+        ! Get local ownership range of rows
+        call MatGetOwnershipRange(A, Istart, Iend, ierr)
+
+        if (rank == 0) print * , 'Creating Matrix'
+
+        ! Assemble the matrix A and vector b
+        do Ii = Istart, Iend - 1
+            i = mod(Ii, mx)
+            j = Ii / mx
+            colIndex = Ii
+
+            if (i == 0)  then
+                rrightCoeff = 1./dx(i+1, j+1)**2
+                rightCoeff = -2./dx(i+1, j+1)**2
+                centerCoeff = 1./dx(i+1, j+1)**2
+                leftCoeff = 0.0
+                lleftCoeff = 0.0
+        
+            elseif (i == 1 .or. mx -2 ) then
+                rrightCoeff = 0.0
+                rightCoeff = 1./dx(i+1, j+1)**2
+                centerCoeff = -2./dx(i+1, j+1)**2
+                leftCoeff = 1./dx(i+1, j+1)**2
+                lleftCoeff = 0.0
+        
+        
+            elseif (i == mx -1) then
+                rrightCoeff = 0.0
+                rightCoeff = 0.0
+                centerCoeff = 1./dx(i+1, j+1)**2
+                leftCoeff = -2./dx(i+1, j+1)**2
+                lleftCoeff = 1./dx(i+1, j+1)**2
+        
+            
+            else
+                rrightCoeff = -1./12.0 * 1./dx(i+1, j+1)**2
+                rightCoeff = 4.0/3.0 * 1./dx(i+1, j+1)**2
+                centerCoeff = -5./2.0 * 1./dx(i+1, j+1)**2
+                leftCoeff = 4.0/3.0 * 1./dx(i+1, j+1)**2
+                lleftCoeff = -1./12.0 * 1./dx(i+1, j+1)**2
+                
+        
+            endif
+                
+            if (j == 1) then
+                ttopCoeff = 1./dy(i+1, j+1)**2
+                topCoeff = -2./dy(i+1, j+1)**2
+                centerCoeff = centerCoeff + 1./dy(i+1, j+1)**2
+                bottomCoeff = 0
+                bbottomCoeff = 0
+        
+            elseif (j == 2 .or. j == my - 2) then
+                ttopCoeff = 0
+                topCoeff = 1./dy(i+1, j+1)**2
+                centerCoeff = centerCoeff -2./dy(i+1, j+1)**2
+                bottomCoeff = 1./dy(i+1, j+1)**2
+                bbottomCoeff = 0
+            
+            
+            elseif (j == my - 1) then
+                ttopCoeff = 0
+                topCoeff = 0
+                centerCoeff = centerCoeff + 1./dy(i+1, j+1)**2
+                bottomCoeff =  -2./dy(i+1, j+1)**2
+                bbottomCoeff =  1./dy(i+1, j+1)**2
+        
+            
+            else
+                !!! setting nine coefficients for each row based on Finite Volume Descretization in the center points
+                ttopCoeff = -1./12.0 * 1./dy(i+1, j+1)**2
+                topCoeff = 4.0/3.0 * 1./dy(i+1, j+1)**2
+                centerCoeff = centerCoeff -5.0/2.0 * 1./dy(i+1, j+1)**2
+                bottomCoeff = 4.0/3.0 * 1./dy(i+1, j+1)**2
+                bbottomCoeff = -1./12.0 * 1./dy(i+1, j+1)**2
+                
+            endif
+                            
+            ! if (i > 1 ) call MatSetValue(A, Ii, Ii - 2, lleftCoeff, ADD_VALUES, ierr)
+            ! if (i > 0 ) call MatSetValue(A, Ii, Ii - 1, leftCoeff, ADD_VALUES, ierr)
+            ! if (i < mx -1) call MatSetValue(A, Ii, Ii + 1, rightCoeff, ADD_VALUES, ierr)
+            ! if (i < mx -2) call MatSetValue(A, Ii, Ii + 2, rrightCoeff, ADD_VALUES, ierr)
+
+            ! if (j > 1) call MatSetValue(A, Ii, Ii - mx - mx, bbottomCoeff, ADD_VALUES, ierr) 
+            ! if (j > 0) call MatSetValue(A, Ii, Ii - mx, bottomCoeff, ADD_VALUES, ierr) 
+            ! if (j < my -1) call MatSetValue(A, Ii, Ii + mx, topCoeff, ADD_VALUES, ierr)
+            ! if (j < my -2) call MatSetValue(A, Ii, Ii + mx+ mx, ttopCoeff, ADD_VALUES, ierr)
+            if (i > 1 .and. j >1 .and. i < mx-2 .and.  j < my -2) then
+                call MatSetValue(A, Ii, Ii - 2, lleftCoeff, ADD_VALUES, ierr)
+                call MatSetValue(A, Ii, Ii - 1, leftCoeff, ADD_VALUES, ierr)
+                call MatSetValue(A, Ii, Ii + 1, rightCoeff, ADD_VALUES, ierr)
+                call MatSetValue(A, Ii, Ii + 2, rrightCoeff, ADD_VALUES, ierr)
+
+                call MatSetValue(A, Ii, Ii - mx - mx, bbottomCoeff, ADD_VALUES, ierr) 
+                call MatSetValue(A, Ii, Ii - mx, bottomCoeff, ADD_VALUES, ierr) 
+                call MatSetValue(A, Ii, Ii + mx, topCoeff, ADD_VALUES, ierr)
+                call MatSetValue(A, Ii, Ii + mx+ mx, ttopCoeff, ADD_VALUES, ierr)
+
+                call MatSetValue(A, Ii, Ii, centerCoeff, ADD_VALUES, ierr)
+            endif
+
+        
+        end do
+
+        ! Finalize assembly
+        call MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr)
+        call MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr)
+
+        if (rank == 0) print * , "Mat assembly complete"
+
+        !call MatView(A, PETSC_VIEWER_STDOUT_WORLD, ierr)
+
+        ! Create the KSP linear solver
+        call KSPCreate(PETSC_COMM_WORLD, ksp, ierr)
+        call KSPSetOperators(ksp, A, A, ierr)
+
+        call KSPSetInitialGuessNonzero(ksp, PETSC_TRUE, ierr)
+
+        call KSPSetFromOptions(ksp, ierr)
+
+
+
+        ! Set solver tolerances: rel_tol, abs_tol, div_tol, and max iterations
+        max_iter = 1000
+        rel_tol = 1d-8
+        abs_tol = 1d-20
+        div_tol = 1d5
+        call KSPSetTolerances(ksp, rel_tol, abs_tol, div_tol,  max_iter, ierr)
+
+        ! Solve the linear system A * u = b
+        call KSPSolve(ksp, y_local, x_local, ierr)
+
+        ! Output the solution norm as a summary
+
+        call VecNorm(x_local, NORM_2, norm, ierr)
+        if (rank == 0) then
+        write(*,*) 'Solution vector 2-norm:', norm
+        end if
+
+        ! Create a scatter context to gather the global vector to rank 0
+        call VecScatterCreateToZero(x_local, gather, sol_globalOnZero, ierr)
+        if (rank == 0) print *, 'gather created'
+        call VecScatterBegin(gather, x_local, sol_globalOnZero, INSERT_VALUES, SCATTER_FORWARD, ierr)
+        if (rank == 0) print *, 'gather began'
+        call VecScatterEnd(gather, x_local, sol_globalOnZero, INSERT_VALUES, SCATTER_FORWARD, ierr)
+
+        if (rank == 0) print *, 'gather complete'
+
+        if (rank == 0) then
+        allocate(collected_xarray(mx*my))
+        call VecGetArrayReadF90(sol_globalOnZero, collected_xPointer, ierr)
+        collected_xarray = collected_xPointer
+        phi = reshape(collected_xarray, (/mx, my/))
+        deallocate(collected_xarray)
+        endif
+
+        ! Clean up
+        call KSPDestroy(ksp, ierr)
+        call VecDestroy(x_local, ierr)
+        call VecDestroy(x_globalOnZero, ierr)
+        call VecDestroy(y_local, ierr)
+        call VecDestroy(y_globalOnZero, ierr)
+        call VecDestroy(sol_globalOnZero, ierr)
+        call MatDestroy(A, ierr)
+        call VecScatterDestroy(scatterx, ierr)
+        call VecScatterDestroy(scattery, ierr)
+        call VecScatterDestroy(gather, ierr)
+        call ISDestroy(xis_localVec, ierr)
+        call ISDestroy(xis_globalVec, ierr)
+        call ISDestroy(yis_localVec, ierr)
+        call ISDestroy(yis_globalVec, ierr)
+        call PetscFinalize(ierr)
+    end subroutine
+
+    
+
 
     subroutine decomposeHelmholtz_2(uvel, vvel, psi, phi, centerDx, centerDy, dxBottomE, dxTopE, dyLeftE, dyRightE, &
         & dxLeftN, dxRightN, dyBottomN, dyTopN, cellArea)
@@ -318,11 +623,11 @@ module helmHoltzDecomp
         call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
 
         if (rank == 0) print *, 'solving poission equation'
-        call solvepoissionBig(psi, phi, uvel, vvel, centerDx, centerDy, dxBottomE, dxTopE, dyLeftE, dyRightE, &
-                                &dxLeftN, dxRightN, dyBottomN, dyTopN,cellArea)
+        !call solvepoissionBig(psi, phi, uvel, vvel, centerDx, centerDy, dxBottomE, dxTopE, dyLeftE, dyRightE, &
+        !                        &dxLeftN, dxRightN, dyBottomN, dyTopN,cellArea)
 
         !if (rank == 0) print *, shape(psi), shape(phi), shape(uvel), shape(vvel), shape(dxLeftN), shape(dyBottomN)
-        !call solvepoissionBigFD(psi, phi, uvel, vvel, centerDx, centerDy)
+        call solvepoissionBigFD(psi, phi, uvel, vvel, centerDx, centerDy)
         if (rank == 0) print *, 'solving poission equation complete'
 
         !if (rank == 0) deallocate(divU, curlU)
@@ -1113,12 +1418,11 @@ module helmHoltzDecomp
         PetscInt :: Istart, Iend, Jstart, Jend, Ii, Ji, i, j, mx, my, &
                     localSize, globalSize, low, high
         PetscInt :: indx_phi, indx_psi, indx_u, indx_v, indx_div, indx_curl, colIndex, colIndex2
-        PetscScalar :: leftCoeff, lleftCoeff, rightCoeff, rrightCoeff, topCoeff, ttopCoeff,&
-                       bottomCoeff, bbottomCoeff, centerCoeff
-        PetscScalar :: leftGradCoeff, lleftGradCoeff, rightGradCoeff, rrightGradCoeff, topGradCoeff, &
-                       ttopGradCoeff, bottomGradCoeff, bbottomGradCoeff,  &
-                       centerGradXCoeff, centerGradYCoeff, centerXCoeff, centerYCoeff
-        PetscScalar :: val, norm, rel_tol, abs_tol, div_tol, derFac
+        PetscScalar :: leftCoeff, lleftCoeff, llleftCoeff, rightCoeff, rrightCoeff, rrrightCoeff, &
+                       topCoeff, ttopCoeff, tttopCoeff, bottomCoeff, bbottomCoeff, bbbottomCoeff, &
+                       centerCoeff, centerXCoeff, centerYCoeff
+
+        PetscScalar :: val, norm, rel_tol, abs_tol, div_tol, derFac , tikhov
         PetscInt :: max_iter
 
         real(kind=8), pointer :: collected_xPointer(:)
@@ -1163,18 +1467,18 @@ module helmHoltzDecomp
         call VecSetSizes(x_globalOnZero, PETSC_DECIDE, 2*mx * my, ierr)
         call VecSetSizes(y_globalOnZero, PETSC_DECIDE, 4*mx * my, ierr)
 
-        !derFac = dxRightN(1,1)
+        tikhov = 1e-8
         if (rank == 0) then
-            print *, taskid
+            print *, taskid, 'tikhov', tikhov
             print *, 'creating vectors of size', mx,'x', my
 
             do Ii = 0, mx * my - 1
                 i = mod(Ii, mx)
                 j = Ii / mx
-                !j = mod(j,my)
+                derFac = 1 !/dx(i+1,j+1)
         
                 !!!!!!!!!!!!!!!!!!!!!!!!!! setting phi and psi  !!!!!!!!!!!!!!!!!!!!!!!
-                val = phi(i+1,j+1)
+                val = phi(i+1,j+1) 
                 call VecSetValue(x_globalOnZero, Ii, val, INSERT_VALUES, ierr)
                 val = psi(i+1,j+1)
                 call VecSetValue(x_globalOnZero, Ii + (mx * my), val, INSERT_VALUES, ierr)
@@ -1183,14 +1487,14 @@ module helmHoltzDecomp
                 val = uvel(i+1, j+1) 
                 call VecSetValue(y_globalOnZero, Ii, val, INSERT_VALUES, ierr)
                 
-                val = vvel(i+1, j+1)
+                val = vvel(i+1, j+1) 
                 call VecSetValue(y_globalOnZero, Ii + (mx * my), val, INSERT_VALUES, ierr)
                 
 
-                val = -divU(i+1, j+1)
+                val = -divU(i+1, j+1) 
                 call VecSetValue(y_globalOnZero, Ii + 2 * (mx * my), val, INSERT_VALUES, ierr)
 
-                val = -curlU(i+1, j+1)
+                val = -curlU(i+1, j+1) 
                 call VecSetValue(y_globalOnZero, Ii + 3 * (mx * my), val, INSERT_VALUES, ierr)
                 
 
@@ -1266,181 +1570,265 @@ module helmHoltzDecomp
             i = mod(Ii, mx)
             j = Ii / mx
             j = mod(j, my)
+            derFac = 1 !/dx(i+1, j+1)
             
             if (Ii < 2 * mx * my) then
                 if (i == 0) then
-                    !!! Setting gradient coefficients
+                    rrrightCoeff = 0
                     rrightCoeff = 0
-                    rightCoeff = 1.0/dx(i+1, j+1)
-                    centerXCoeff = -1.0/dx(i+1, j+1)
+                    rightCoeff = 1./dx(i+1, j+1)
+                    centerXCoeff = -1./dx(i+1, j+1)
                     leftCoeff = 0
                     lleftCoeff = 0
+                    llleftCoeff = 0
+
                 else if (i == mx-1) then
+                    rrrightCoeff = 0
                     rrightCoeff = 0
                     rightCoeff = 0
                     centerXCoeff = 1./dx(i+1, j+1)
                     leftCoeff = -1./dx(i+1, j+1)
-                    lleftCoeff =0
-                else if (i==1 .or. i == mx-2) then
-                    rrightCoeff = 0
-                    rightCoeff = 0.5 * 1./dx(i+1, j+1)
-                    centerXCoeff = 0
-                    leftCoeff =  -0.5 * 1./dx(i+1, j+1)
                     lleftCoeff = 0
-                else
-                    rrightCoeff = -1./12.0 * 1./dx(i+1, j+1)
-                    rightCoeff = 2./3. * 1./dx(i+1, j+1)
+                    llleftCoeff = 0
+
+                else if (i == 1 .or. i == mx-1) then
+                    rrrightCoeff = 0
+                    rrightCoeff = 0
+                    rightCoeff = 1./(2.0 * dx(i+1, j+1))
                     centerXCoeff = 0
-                    leftCoeff =  -2./3. * 1./dx(i+1, j+1)
-                    lleftCoeff =  1./12.0 * 1./dx(i+1, j+1)
+                    leftCoeff = -1./(2.0* dx(i+1, j+1))
+                    lleftCoeff = 0
+                    llleftCoeff = 0
+
+                else if (i == 2 .or. i == mx-2) then
+                    rrrightCoeff = 0
+                    rrightCoeff = -1./(12 * dx(i+1, j+1))
+                    rightCoeff = 2./(3 * dx(i+1, j+1))
+                    centerXCoeff = 0
+                    leftCoeff = -2./(3 * dx(i+1, j+1))
+                    lleftCoeff = 1./(12 * dx(i+1, j+1))
+                    llleftCoeff = 0
+
+                else
+                    rrrightCoeff = 1./(60 * dx(i+1, j+1))
+                    rrightCoeff = -3./(20 * dx(i+1, j+1))
+                    rightCoeff = 3./(4 * dx(i+1, j+1))
+                    centerXCoeff = 0
+                    leftCoeff = -3./(4 * dx(i+1, j+1))
+                    lleftCoeff = 3./(20 * dx(i+1, j+1))
+                    llleftCoeff = -1./(60 * dx(i+1, j+1))
                 endif
 
                 if (j == 0 ) then
-                    !!! Setting gradient coefficients
+                    tttopCoeff = 0
                     ttopCoeff = 0
                     topCoeff = 1./dy(i+1, j+1)
                     centerYCoeff = -1./dy(i+1, j+1)
                     bottomCoeff = 0
-                    bbottomCoeff =0
+                    bbottomCoeff = 0
+                    bbbottomCoeff = 0
                 else if (j == my-1 ) then
+                    tttopCoeff = 0
                     ttopCoeff = 0
                     topCoeff = 0
                     centerYCoeff = 1./dy(i+1, j+1)
                     bottomCoeff = -1./dy(i+1, j+1)
                     bbottomCoeff = 0
-                else if (j ==1 .or. j==my-2) then
-                    ttopCoeff =0 
-                    topCoeff = 0.5 * 1./dy(i+1, j+1)
+                    bbbottomCoeff = 0
+                else if (j == 1 .or. j == my-1) then
+                    tttopCoeff = 0 
+                    ttopCoeff = 0 
+                    topCoeff = 1./(2.0 *dy(i+1, j+1) )
                     centerYCoeff = 0
-                    bottomCoeff =  -0.5 * 1./dy(i+1, j+1)  
-                    bbottomCoeff =0  
+                    bottomCoeff = -1./(2.0 *dy(i+1, j+1) ) 
+                    bbottomCoeff = 0
+                    bbbottomCoeff = 0
+                else if (j == 2 .or. j == my-2) then
+                    tttopCoeff = 0
+                    ttopCoeff = -1./(12 * dy(i+1, j+1))
+                    topCoeff = 2./(3* dy(i+1, j+1))
+                    centerYCoeff = 0
+                    bottomCoeff = -2./(3*dy(i+1, j+1)) 
+                    bbottomCoeff = 1./(12 * dy(i+1, j+1)) 
+                    bbbottomCoeff = 0         
                 else
-                    ttopCoeff = -1./12.0 * 1./dy(i+1, j+1)
-                    topCoeff = 2./3. * 1./dy(i+1, j+1)
+                    tttopCoeff = 1./(60 * dy(i+1, j+1))
+                    ttopCoeff = -3./(20 * dy(i+1, j+1))
+                    topCoeff = 3./(4* dy(i+1, j+1))
                     centerYCoeff = 0
-                    bottomCoeff =  -2./3. * 1./dy(i+1, j+1) 
-                    bbottomCoeff =  1./12.0 * 1./dy(i+1, j+1) 
+                    bottomCoeff = -3./(4*dy(i+1, j+1)) 
+                    bbottomCoeff = 3./(20 * dy(i+1, j+1)) 
+                    bbbottomCoeff = -1./(60 * dy(i+1, j+1))     
                 endif
 
             
                 if (Ii < mx *my) then
+
                     if (i > 0 )  then
                         colIndex = Ii - 1
                         if ( colIndex >= 2 *mx *my ) stop 'Here 01'
-                        call MatSetValue(A, Ii, colIndex , -leftCoeff, ADD_VALUES, ierr)
+                        call MatSetValue(A, Ii, colIndex , -leftCoeff  , ADD_VALUES, ierr)
                     endif
 
                     if (i > 1 )  then
                         colIndex = Ii - 2
-                        if ( colIndex >= 2 *mx *my ) stop 'Here 01_'
-                        call MatSetValue(A, Ii, colIndex , -lleftCoeff, ADD_VALUES, ierr)
+                        if ( colIndex >= 2 *mx *my ) stop 'Here 01'
+                        call MatSetValue(A, Ii, colIndex , -lleftCoeff  , ADD_VALUES, ierr)
+                    endif
+
+                    if (i > 2 )  then
+                        colIndex = Ii - 3
+                        if ( colIndex >= 2 *mx *my ) stop 'Here 01__'
+                        call MatSetValue(A, Ii, colIndex , -llleftCoeff  , ADD_VALUES, ierr)
                     endif
 
                     if (i < mx -1 )  then
                         colIndex = Ii + 1
                         if ( colIndex >= 2 * mx *my ) stop 'Here 02'
-                        call MatSetValue(A, Ii, colIndex , -rightCoeff, ADD_VALUES, ierr)
+                        call MatSetValue(A, Ii, colIndex , -rightCoeff , ADD_VALUES, ierr)
                     endif
 
                     if (i < mx -2 )  then
                         colIndex = Ii + 2
-                        if ( colIndex >= 2 * mx *my ) stop 'Here 02_'
-                        call MatSetValue(A, Ii, colIndex , -rrightCoeff, ADD_VALUES, ierr)
+                        if ( colIndex >= 2 * mx *my ) stop 'Here 02'
+                        call MatSetValue(A, Ii, colIndex , -rrightCoeff , ADD_VALUES, ierr)
                     endif
 
+                    if (i < mx -3 )  then
+                        colIndex = Ii + 3
+                        if ( colIndex >= 2 * mx *my ) stop 'Here 02'
+                        call MatSetValue(A, Ii, colIndex , -rrrightCoeff , ADD_VALUES, ierr)
+                    endif
 
                     colIndex = Ii
                     if ( colIndex >= 2 *mx *my ) stop 'Here 03'
-                    call MatSetValue(A, Ii, colIndex, -centerXCoeff, ADD_VALUES, ierr)
+                    call MatSetValue(A, Ii, colIndex, -centerXCoeff , ADD_VALUES, ierr)
 
 
                     if (j > 0 )   then
                         colIndex = (Ii + mx * my) - mx
                         if ( colIndex >= 2*mx *my ) stop 'Here 04'
-                        call MatSetValue(A, Ii, colIndex, bottomCoeff, ADD_VALUES, ierr) 
+                        call MatSetValue(A, Ii, colIndex, bottomCoeff , ADD_VALUES, ierr) 
                     endif
 
                     if (j > 1 )   then
                         colIndex = (Ii + mx * my) - mx - mx
-                        if ( colIndex >= 2*mx *my ) stop 'Here 04_'
-                        call MatSetValue(A, Ii, colIndex, bbottomCoeff, ADD_VALUES, ierr) 
+                        if ( colIndex >= 2*mx *my ) stop 'Here 04'
+                        call MatSetValue(A, Ii, colIndex, bbottomCoeff , ADD_VALUES, ierr) 
+                    endif
+
+                    if (j > 2 )   then
+                        colIndex = (Ii + mx * my) - mx - mx -mx
+                        if ( colIndex >= 2*mx *my ) stop 'Here 04'
+                        call MatSetValue(A, Ii, colIndex, bbbottomCoeff , ADD_VALUES, ierr) 
                     endif
                     
                     if (j< my -1 )   then
                         colIndex = (Ii + mx * my) + mx
                         if ( colIndex >= 2*mx *my ) stop 'Here 05'
-                        call MatSetValue(A, Ii, colIndex, topCoeff, ADD_VALUES, ierr)
+                        call MatSetValue(A, Ii, colIndex, topCoeff  , ADD_VALUES, ierr)
                     endif
 
                     if (j< my -2 )   then
-                        colIndex = (Ii + mx * my) + mx +  mx
-                        if ( colIndex >= 2*mx *my ) stop 'Here 05_'
-                        call MatSetValue(A, Ii, colIndex, ttopCoeff, ADD_VALUES, ierr)
+                        colIndex = (Ii + mx * my) + mx + mx
+                        if ( colIndex >= 2*mx *my ) stop 'Here 05'
+                        call MatSetValue(A, Ii, colIndex, ttopCoeff  , ADD_VALUES, ierr)
+                    endif
+
+                    if (j< my -3 )   then
+                        colIndex = (Ii + mx * my) + mx + mx + mx
+                        if ( colIndex >= 2*mx *my ) stop 'Here 05'
+                        call MatSetValue(A, Ii, colIndex, tttopCoeff  , ADD_VALUES, ierr)
                     endif
 
                     colIndex = (Ii + mx * my)
                     if ( colIndex >= 2*mx *my ) stop 'Here 06'
-                    call MatSetValue(A, Ii, colIndex, centerYCoeff, ADD_VALUES, ierr)
+                    call MatSetValue(A, Ii, colIndex, centerYCoeff , ADD_VALUES, ierr)
 
                 else
+
                     !!! Setting gradient coefficients for RHS u
                     if (j > 0 )    then
                         colIndex = Ii -(mx * my) - mx 
                         if ( colIndex >= 2*mx *my ) stop 'Here 07'
-                        call MatSetValue(A, Ii, colIndex , -bottomCoeff, ADD_VALUES, ierr)
+                        call MatSetValue(A, Ii, colIndex , -bottomCoeff , ADD_VALUES, ierr)
                     endif
 
                     if (j > 1 )    then
-                        colIndex = Ii -(mx * my) - mx - mx 
-                        if ( colIndex >= 2*mx *my ) stop 'Here 07_'
-                        call MatSetValue(A, Ii, colIndex , -bbottomCoeff, ADD_VALUES, ierr)
+                        colIndex = Ii -(mx * my) - mx -mx
+                        if ( colIndex >= 2*mx *my ) stop 'Here 07'
+                        call MatSetValue(A, Ii, colIndex , -bbottomCoeff , ADD_VALUES, ierr)
+                    endif
+
+                    if (j > 2 )    then
+                        colIndex = Ii -(mx * my) - mx -mx -mx
+                        if ( colIndex >= 2*mx *my ) stop 'Here 07'
+                        call MatSetValue(A, Ii, colIndex , -bbbottomCoeff , ADD_VALUES, ierr)
                     endif
 
                     if ( j< my -1 )  then
                         colIndex = Ii -(mx * my) + mx
                         if ( colIndex >= 2*mx *my ) stop 'Here 08'
-                        call MatSetValue(A, Ii, colIndex , -topCoeff, ADD_VALUES, ierr)
+                        call MatSetValue(A, Ii, colIndex , -topCoeff    , ADD_VALUES, ierr)
                     endif
 
                     if ( j< my -2 )  then
                         colIndex = Ii -(mx * my) + mx + mx
-                        if ( colIndex >= 2*mx *my ) stop 'Here 08_'
-                        call MatSetValue(A, Ii, colIndex , -ttopCoeff, ADD_VALUES, ierr)
+                        if ( colIndex >= 2*mx *my ) stop 'Here 08'
+                        call MatSetValue(A, Ii, colIndex , -ttopCoeff    , ADD_VALUES, ierr)
+                    endif
+
+                    if ( j< my -3 )  then
+                        colIndex = Ii -(mx * my) + mx + mx + mx
+                        if ( colIndex >= 2*mx *my ) stop 'Here 08'
+                        call MatSetValue(A, Ii, colIndex , -tttopCoeff    , ADD_VALUES, ierr)
                     endif
 
                     colIndex = Ii -(mx * my)
                     if ( colIndex >= 2*mx *my ) stop 'Here 09'
-                    call MatSetValue(A, Ii, colIndex, -centerYCoeff, ADD_VALUES, ierr)
+                    call MatSetValue(A, Ii, colIndex, -centerYCoeff , ADD_VALUES, ierr)
 
                     
                     !!! Setting gradient coefficients for RHS v
                     if (i > 0 )     then
                         colIndex = Ii  - 1
                         if ( colIndex >= 2*mx *my ) stop 'Here 010'
-                        call MatSetValue(A, Ii, colIndex , -leftCoeff, ADD_VALUES, ierr)
+                        call MatSetValue(A, Ii, colIndex , -leftCoeff   , ADD_VALUES, ierr)
                     end if
 
                     if (i > 1 )     then
                         colIndex = Ii  - 2
-                        if ( colIndex >= 2*mx *my ) stop 'Here 010_'
-                        call MatSetValue(A, Ii, colIndex , -lleftCoeff, ADD_VALUES, ierr)
+                        if ( colIndex >= 2*mx *my ) stop 'Here 010'
+                        call MatSetValue(A, Ii, colIndex , -lleftCoeff   , ADD_VALUES, ierr)
+                    end if
+
+                    if (i > 2 )     then
+                        colIndex = Ii  - 3
+                        if ( colIndex >= 2*mx *my ) stop 'Here 010'
+                        call MatSetValue(A, Ii, colIndex , -llleftCoeff   , ADD_VALUES, ierr)
                     end if
 
                     if (i < mx -1)  then
                         colIndex = Ii  + 1
                         if ( colIndex >= 2*mx *my ) stop 'Here 011'
-                        call MatSetValue(A, Ii, colIndex , -rightCoeff, ADD_VALUES, ierr)
+                        call MatSetValue(A, Ii, colIndex , -rightCoeff  , ADD_VALUES, ierr)
                     endif
 
                     if (i < mx -2)  then
                         colIndex = Ii  + 2
-                        if ( colIndex >= 2*mx *my ) stop 'Here 011_'
-                        call MatSetValue(A, Ii, colIndex , -rrightCoeff, ADD_VALUES, ierr)
+                        if ( colIndex >= 2*mx *my ) stop 'Here 011'
+                        call MatSetValue(A, Ii, colIndex , -rrightCoeff  , ADD_VALUES, ierr)
+                    endif
+
+                    if (i < mx -3)  then
+                        colIndex = Ii  + 3
+                        if ( colIndex >= 2*mx *my ) stop 'Here 011'
+                        call MatSetValue(A, Ii, colIndex , -rrrightCoeff  , ADD_VALUES, ierr)
                     endif
 
                     colIndex = Ii
                     if ( colIndex >= 2*mx *my ) stop 'Here 012'
-                    call MatSetValue(A, Ii, colIndex, -centerXCoeff, ADD_VALUES, ierr)
+                    call MatSetValue(A, Ii, colIndex, -centerXCoeff , ADD_VALUES, ierr)
 
                 endif
                 
@@ -1449,91 +1837,129 @@ module helmHoltzDecomp
                 !!!! Setting Poission problem for phi
                 colIndex = Ii - mx*my -mx*my  ! laplacian coeff for psi is zero
                 ! Interior grid points: central difference stencil
+
+                call MatSetValue(A, Ii, colIndex , -tikhov  , ADD_VALUES, ierr)
+
                 if (i == 0)  then
-                    rrightCoeff = 1./dx(i+1, j+1)
-                    rightCoeff = -2./dx(i+1, j+1)
-                    centerCoeff = 1./dx(i+1, j+1)
+                    rrrightCoeff = 0.0
+                    rrightCoeff = 1./dx(i+1, j+1)**2
+                    rightCoeff = -2./dx(i+1, j+1)**2
+                    centerCoeff = 1./dx(i+1, j+1)**2
                     leftCoeff = 0.0
                     lleftCoeff = 0.0
-
-                elseif (i == 1 .or. mx -2 ) then
-                    rrightCoeff = 0.0
-                    rightCoeff = 1./dx(i+1, j+1)
-                    centerCoeff = -2./dx(i+1, j+1)
-                    leftCoeff = 1./dx(i+1, j+1)
-                    lleftCoeff = 0.0
-
+                    llleftCoeff = 0.0
 
                 elseif (i == mx -1) then
+                    rrrightCoeff = 0.0
                     rrightCoeff = 0.0
                     rightCoeff = 0.0
-                    centerCoeff = 1./dx(i+1, j+1)
-                    leftCoeff = -2./dx(i+1, j+1)
-                    lleftCoeff = 1./dx(i+1, j+1)
+                    centerCoeff = 1./dx(i+1, j+1)**2
+                    leftCoeff = -2./dx(i+1, j+1)**2
+                    lleftCoeff = 1./dx(i+1, j+1)**2
+                    llleftCoeff = 0.0
 
-                
-                else
-                    rrightCoeff = -1./12.0 * 1./dx(i+1, j+1)
-                    rightCoeff = 4.0/3.0 * 1./dx(i+1, j+1)
-                    centerCoeff = -5./2.0 * 1./dx(i+1, j+1)
-                    leftCoeff = 4.0/3.0 * 1./dx(i+1, j+1)
-                    lleftCoeff = -1./12.0 * 1./dx(i+1, j+1)
-                    
+                elseif (i == 1 .or. mx -2 ) then
+                    rrrightCoeff = 0.0
+                    rrightCoeff = 0.0
+                    rightCoeff = 1./dx(i+1, j+1)**2
+                    centerCoeff = -2./dx(i+1, j+1)**2
+                    leftCoeff = 1./dx(i+1, j+1)**2
+                    lleftCoeff = 0.0
+                    llleftCoeff = 0.0
+
+                else if(i == 2 .or. mx -3 ) then
+                    rrrightCoeff = 0.0
+                    rrightCoeff = -1./12.0 * 1./dx(i+1, j+1)**2
+                    rightCoeff = 4.0/3.0 * 1./dx(i+1, j+1)**2
+                    centerCoeff = -5./2.0 * 1./dx(i+1, j+1)**2
+                    leftCoeff = 4.0/3.0 * 1./dx(i+1, j+1)**2
+                    lleftCoeff = -1./12.0 * 1./dx(i+1, j+1)**2
+                    llleftCoeff = 0.0
+
+                else if (i == 2 .or. mx -3 ) then
+                    rrrightCoeff = 1./90.0 * 1./dx(i+1, j+1)**2
+                    rrightCoeff = -3./20.0 * 1./dx(i+1, j+1)**2
+                    rightCoeff = 3.0/2.0 * 1./dx(i+1, j+1)**2
+                    centerCoeff = -49./18.0 * 1./dx(i+1, j+1)**2
+                    leftCoeff = 3.0/2.0 * 1./dx(i+1, j+1)**2
+                    lleftCoeff = -3./20.0 * 1./dx(i+1, j+1)**2
+                    llleftCoeff = 1./90.0 * 1./dx(i+1, j+1)**2
 
                 endif
                     
                 if (j == 1) then
-                    ttopCoeff = 1./dy(i+1, j+1)
-                    topCoeff = -2./dy(i+1, j+1)
-                    centerCoeff = centerCoeff + 1./dy(i+1, j+1)
+                    tttopCoeff = 0.0
+                    ttopCoeff = 1./dy(i+1, j+1)**2
+                    topCoeff = -2./dy(i+1, j+1)**2
+                    centerCoeff = centerCoeff + 1./dy(i+1, j+1)**2
                     bottomCoeff = 0
                     bbottomCoeff = 0
+                    bbbottomCoeff = 0
 
-                elseif (j == 2 .or. j == my - 2) then
-                    ttopCoeff = 0
-                    topCoeff = 1./dy(i+1, j+1)
-                    centerCoeff = centerCoeff -2./dy(i+1, j+1)
-                    bottomCoeff = 1./dy(i+1, j+1)
-                    bbottomCoeff = 0
-                
-                
                 elseif (j == my - 1) then
+                    tttopCoeff = 0.0
                     ttopCoeff = 0
                     topCoeff = 0
-                    centerCoeff = centerCoeff + 1./dy(i+1, j+1)
-                    bottomCoeff =  -2./dy(i+1, j+1)
-                    bbottomCoeff =  1./dy(i+1, j+1)
+                    centerCoeff = centerCoeff + 1./dy(i+1, j+1)**2
+                    bottomCoeff =  -2./dy(i+1, j+1)**2
+                    bbottomCoeff =  1./dy(i+1, j+1)**2
+                    bbbottomCoeff = 0
 
+                elseif (j == 2 .or. j == my - 2) then
+                    tttopCoeff = 0.0
+                    ttopCoeff = 0
+                    topCoeff = 1./dy(i+1, j+1)**2
+                    centerCoeff = centerCoeff -2./dy(i+1, j+1)**2
+                    bottomCoeff = 1./dy(i+1, j+1)**2
+                    bbottomCoeff = 0
+                    bbbottomCoeff = 0
                 
-                else
-                    !!! setting nine coefficients for each row based on Finite Volume Descretization in the center points
-                    ttopCoeff = -1./12.0 * 1./dy(i+1, j+1)
-                    topCoeff = 4.0/3.0 * 1./dy(i+1, j+1)
-                    centerCoeff = centerCoeff + -5.0/2.0 * 1./dy(i+1, j+1)
-                    bottomCoeff = 4.0/3.0 * 1./dy(i+1, j+1)
-                    bbottomCoeff = -1./12.0 * 1./dy(i+1, j+1)
+                
+                else if (j == 3 .or. j == my - 3) then
+                    tttopCoeff = 0.0
+                    ttopCoeff = -1./12.0 * 1./dy(i+1, j+1)**2
+                    topCoeff = 4.0/3.0 * 1./dy(i+1, j+1)**2
+                    centerCoeff = centerCoeff + -5.0/2.0 * 1./dy(i+1, j+1)**2
+                    bottomCoeff = 4.0/3.0 * 1./dy(i+1, j+1)**2
+                    bbottomCoeff = -1./12.0 * 1./dy(i+1, j+1)**2
+                    bbbottomCoeff = 0
+
+                else 
+                    tttopCoeff = 1.0/90.0 * 1./dy(i+1, j+1)**2
+                    ttopCoeff = -3./20.0 * 1./dy(i+1, j+1)**2
+                    topCoeff = 3.0/2.0 * 1./dy(i+1, j+1)**2
+                    centerCoeff = centerCoeff + -49.0/18.0 * 1./dy(i+1, j+1)**2
+                    bottomCoeff = 3.0/2.0 * 1./dy(i+1, j+1)**2
+                    bbottomCoeff = -3./20.0 * 1./dy(i+1, j+1)**2
+                    bbbottomCoeff = 1.0/90.0 * 1./dy(i+1, j+1)**2
                     
                 endif
-                                
+                         
+                
+                if (i > 2) then 
+                    colIndex2 = colIndex  - 3
+                    if ( colIndex2 >= 2*mx *my ) stop 'Here 13_'
+                    call MatSetValue(A, Ii, colIndex2, llleftCoeff  , ADD_VALUES, ierr)
+                endif
                 
                 if (i > 1) then 
                     colIndex2 = colIndex  - 2
                     if ( colIndex2 >= 2*mx *my ) stop 'Here 13_'
-                    call MatSetValue(A, Ii, colIndex2, lleftCoeff   , ADD_VALUES, ierr)
+                    call MatSetValue(A, Ii, colIndex2, lleftCoeff  , ADD_VALUES, ierr)
                 endif
 
                 
                 if (i > 0) then 
                     colIndex2 = colIndex  - 1
                     if ( colIndex2 >= 2*mx *my ) stop 'Here 13'
-                    call MatSetValue(A, Ii, colIndex2, leftCoeff   , ADD_VALUES, ierr)
+                    call MatSetValue(A, Ii, colIndex2, leftCoeff  , ADD_VALUES, ierr)
                 endif
 
                 
                 if (i < mx-1) then 
                     colIndex2 = colIndex  + 1
                     if ( colIndex2 >= 2*mx *my ) stop 'Here 14'
-                    call MatSetValue(A, Ii,  colIndex2, rightCoeff  , ADD_VALUES, ierr)
+                    call MatSetValue(A, Ii,  colIndex2, rightCoeff , ADD_VALUES, ierr)
                 endif
 
                 
@@ -1543,7 +1969,19 @@ module helmHoltzDecomp
                     call MatSetValue(A, Ii,  colIndex2, rrightCoeff  , ADD_VALUES, ierr)
                 endif
 
+                if (i < mx-3) then 
+                    colIndex2 = colIndex  + 3
+                    if ( colIndex2 >= 2*mx *my ) stop 'Here 14_'
+                    call MatSetValue(A, Ii,  colIndex2, rrrightCoeff  , ADD_VALUES, ierr)
+                endif
+
                 
+                if (j > 2) then 
+                    colIndex2 = colIndex  - mx -  mx - mx
+                    if ( colIndex2 >= 2*mx *my ) stop 'Here 15_'
+                    call MatSetValue(A, Ii, colIndex2, bbbottomCoeff , ADD_VALUES, ierr)
+                endif 
+
                 if (j > 1) then 
                     colIndex2 = colIndex  - mx -  mx
                     if ( colIndex2 >= 2*mx *my ) stop 'Here 15_'
@@ -1561,7 +1999,7 @@ module helmHoltzDecomp
                 if (j< my-1) then 
                     colIndex2 = colIndex  + mx
                     if ( colIndex2 >= 2*mx *my ) stop 'Here 16'
-                    call MatSetValue(A, Ii, colIndex2, topCoeff    , ADD_VALUES, ierr)
+                    call MatSetValue(A, Ii, colIndex2, topCoeff     , ADD_VALUES, ierr)
                 endif
 
                 
@@ -1569,6 +2007,12 @@ module helmHoltzDecomp
                     colIndex2 = colIndex  + mx + mx
                     if ( colIndex2 >= 2*mx *my ) stop 'Here 16_'
                     call MatSetValue(A, Ii, colIndex2, ttopCoeff    , ADD_VALUES, ierr)
+                endif
+
+                if (j < my-3 ) then 
+                    colIndex2 = colIndex  + mx + mx + mx
+                    if ( colIndex2 >= 2*mx *my ) stop 'Here 16_'
+                    call MatSetValue(A, Ii, colIndex2, tttopCoeff    , ADD_VALUES, ierr)
                 endif
 
                 colIndex2 = colIndex
@@ -1599,13 +2043,13 @@ module helmHoltzDecomp
         call KSPSetOperators(ksp, N, N, ierr)
         
         ! Use LSQR solver for rectangular system (least squares problem)
-        ! call KSPSetType(ksp, KSPLSQR, ierr)
+        call KSPSetType(ksp, KSPCG, ierr)
         call KSPSetInitialGuessNonzero(ksp, PETSC_TRUE, ierr)
         call KSPSetFromOptions(ksp, ierr)
 
         ! Set solver tolerances: rel_tol, abs_tol, div_tol, and max iterations
-        max_iter = 2000
-        rel_tol = 1d-10
+        max_iter = 1000
+        rel_tol = 1d-100
         abs_tol = 1d-100
         div_tol = 1d10
         call KSPSetTolerances(ksp, rel_tol, abs_tol, div_tol,  max_iter, ierr)
@@ -2140,352 +2584,6 @@ module helmHoltzDecomp
 
         call PetscFinalize(ierr)
         if (rank == 0) print *, 'PETSC FINALIZED'
-    end subroutine
-
-
-    subroutine solvepoissionBig2(phi, psi, uvel, vvel, dxBottomE, dxTopE, dyLeftE, dyRightE, &
-        dxLeftN, dxRightN, dyBottomN, dyTopN, cellArea)
-        real(kind=real_kind), intent(in), dimension(:,:) :: uvel, vvel, &  ! RHS of the poission equation
-                                    dxBottomE, dxTopE, dyLeftE, dyRightE, & !at cell edges
-                                    dxLeftN, dxRightN, dyBottomN, dyTopN, cellArea  ! stencil joining nodes
-        real(kind=real_kind), intent(inout), dimension(:,:) :: phi, psi
-        integer :: shapeArr(2)
-
-        PetscErrorCode :: ierr
-        PetscMPIInt :: rank, size
-        Vec :: x_globalOnZero, x_local, y_globalOnZero, y_local, sol_globalOnZero
-        VecScatter :: scatterx, scattery, gather
-        IS :: xis_localVec, xis_globalVec, yis_localVec, yis_globalVec
-        Mat :: A
-        KSP :: ksp
-        PetscInt :: Istart, Iend, Jstart, Jend, Ii, Jj, i, j, colIndex, &
-                    colIndex2, mx, my, localSize, globalSize, low, high
-        PetscScalar :: leftCoeff, rightCoeff, topCoeff, bottomCoeff, centerCoeff
-        PetscScalar :: leftGradCoeff, rightGradCoeff, topGradCoeff, bottomGradCoeff, &
-                        centerGradXCoeff, centerGradYCoeff
-        PetscScalar :: val, norm, rel_tol, abs_tol, div_tol
-        PetscInt :: max_iter
-
-        real(kind=8), pointer :: collected_xPointer(:)
-        real(kind=real_kind), allocatable :: collected_xarray(:), divU(:,:), curlU(:,:)
-        logical :: inColRange
-
-        ! Initialize PETSc
-        call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
-        call MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr)
-        call MPI_Comm_size(PETSC_COMM_WORLD, size, ierr)
-
-        if (rank == 0) call calcHozDivVertCurl(uvel, vvel, dxBottomE, dxTopE, dyLeftE, dyRightE, cellArea, divU, curlU)
-
-        shapeArr = shape(cellArea)
-        mx = shapeArr(1)
-        my = shapeArr(2)
-
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SYSTEM OF EQUATIONS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-        !          
-        !         
-        !         | laplacian        0      | |  phi  | | -div   | 
-        !         |     0        laplacian  | |  psi  | | -curl  |
-        !
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        ! create a distributed vector for phi
-        ! Create the source vector (fully defined on rank 0)
-
-        ! The poission equation is solved in the matrix form as [ A ][x] = [y]
-
-        call VecCreate(PETSC_COMM_WORLD, x_globalOnZero,  ierr)
-        call VecSetFromOptions(x_globalOnZero, ierr)
-        call VecCreate(PETSC_COMM_WORLD, y_globalOnZero, ierr)
-        call VecSetFromOptions(y_globalOnZero, ierr)
-
-        call VecSetSizes(x_globalOnZero, PETSC_DECIDE, 2*mx * my, ierr)
-        call VecSetSizes(y_globalOnZero, PETSC_DECIDE, 2*mx * my, ierr)
-
-        if (rank == 0) then
-            print *, taskid
-            print *, 'creating vectors of size', mx,'x', my
-
-            do Ii = 0, mx * my - 1
-                i = mod(Ii, mx)
-                j = Ii / mx
-                
-
-                !!!!!!!!!!!!!!!!!!!!!!!!!! setting phi and psi  !!!!!!!!!!!!!!!!!!!!!!!
-                val = phi(i+1,j+1)
-                call VecSetValue(x_globalOnZero, Ii, val, INSERT_VALUES, ierr)
-                val = psi(i+1,j+1)
-                call VecSetValue(x_globalOnZero, Ii + mx * my, val, INSERT_VALUES, ierr)
-
-                !!!!!!!!!!!!!!!!!!!!!!!!!! setting RHS !!!!!!!!!!!!!!!!!!!!!!!
-                if (i == 0 .or. i == mx -1 .or. j == 0 .or. j == my -1 ) then
-                    val = uvel(i+1, j+1)  + vvel(i+1, j+1)
-                    call VecSetValue(y_globalOnZero, Ii, val, INSERT_VALUES, ierr)
-                else
-                    val = -divU(i+1, j+1)  * cellArea(i+1, j+1)
-                    call VecSetValue(y_globalOnZero, Ii, val, INSERT_VALUES, ierr)
-                    val = -curlU(i+1, j+1) * cellArea(i+1, j+1)
-                    call VecSetValue(y_globalOnZero, Ii + (mx * my), val, INSERT_VALUES, ierr)
-                endif
-
-            end do
-
-            print *, 'LHS and RHS vectors assigned values Set'
-
-        end if
-
-        call VecAssemblyBegin(x_globalOnZero, ierr)
-        call VecAssemblyEnd(x_globalOnZero, ierr)
-
-        call VecAssemblyBegin(y_globalOnZero, ierr)
-        call VecAssemblyEnd(y_globalOnZero, ierr)
-
-        ! Create the distributed destination vector
-        if (rank == 0) print *, 'creating vector for distributing across processors'
-
-        call VecCreate(PETSC_COMM_WORLD, x_local, ierr)
-        call VecCreate(PETSC_COMM_WORLD, y_local, ierr)
-
-        call VecSetSizes(x_local, PETSC_DECIDE, 2*mx * my, ierr)
-        call VecSetSizes(y_local, PETSC_DECIDE, 2*mx * my, ierr)
-
-        call VecSetFromOptions(y_local, ierr)
-        call VecSetFromOptions(x_local, ierr)
-
-        if (rank == 0) print *, 'creating vector for distributing across processors COMPLETE'
-
-
-        call VecGetOwnershipRange(x_local, low, high, ierr) ! /* low, high are global indices */
-        call ISCreateStride(PETSC_COMM_SELF, high - low, low, 1, xis_localVec, ierr)
-
-        call VecGetOwnershipRange(y_local, low, high, ierr) ! /* low, high are global indices */
-        call ISCreateStride(PETSC_COMM_SELF, high - low, low, 1, yis_localVec, ierr)
-
-        ! Create scatter context
-        if (rank == 0) print *, 'scattering LHS vector  ... '
-        call VecScatterCreate(x_globalOnZero, xis_localVec, x_local, xis_localVec, scatterx, ierr)
-
-        ! Perform the scatter operation
-        call VecScatterBegin(scatterx, x_globalOnZero, x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
-        call VecScatterEnd(scatterx, x_globalOnZero, x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
-        if (rank == 0) print *, 'scattering LHS vector COMPLETE'
-
-        if (rank == 0) print *, 'scattering RHS vector  ... '
-        ! Create scatter context
-        call VecScatterCreate(y_globalOnZero, yis_localVec, y_local, yis_localVec, scattery, ierr)
-
-        ! Perform the scatter operation
-        call VecScatterBegin(scattery, y_globalOnZero, y_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
-        call VecScatterEnd(scattery, y_globalOnZero, y_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
-        if (rank == 0) print *, 'scattering RHS vectors COMPLETE'
-
-        ! NOW creating a coefficient distributed matrix A
-        if (rank == 0) print *, 'Creating matrix for linear problem  ... '
-        call MatCreate(PETSC_COMM_WORLD, A, ierr)
-        call MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 2 * mx * my, 2 * mx * my, ierr)
-        call MatSetFromOptions(A, ierr) 
-        !call MatSetType(A, MATAIJ, ierr) 
-        call MatSetUp(A, ierr)
-
-        if (rank == 0) print *, 'Matrix Memory Allocated', 2 * mx * my,'x', 2 * mx * my
-
-        ! Get ownership ranges for rows
-        call MatGetOwnershipRange(A, Istart, Iend, ierr)
-        call MatGetOwnershipRangeColumn(A, Jstart, Jend, ierr)
-
-        !print *, 'rank ', rank, 'rows', Istart, Iend, 'cols', Jstart, Jend
-
-        ! Assemble the matrix A and vector b
-        do Ii = Istart, Iend - 1
-            i = mod(Ii, mx)
-            j = Ii / mx
-            j = mod(j,my)
-            
-            if (i > 0 .and. i < mx -1 .and. j > 0 .and. j < my -1) then 
-                !!!! setting laplacian coefficients for interior grid points
-                ! if (Ii < mx * my) then
-                !     !!!! Setting Poission problem for phi
-                !     colIndex = Ii  ! laplacian coeff for psi is zero
-                ! else
-                !     colIndex = Ii !- mx * my  ! laplacian coeff for phi is zero
-                ! endif
-                colIndex = Ii
-                
-                if (Ii == 326) print *, 'ASSIGNED'
-
-                !!! setting five coefficients for each row based on Finite Volume Descretization in the center points
-                rightCoeff = dyRightE(i+1,j+1)/dxRightN(i+1,j+1)
-                leftCoeff =  dyLeftE(i+1,j+1)/dxLeftN(i+1,j+1)
-                topCoeff =    dxTopE(i+1,j+1)/dyTopN(i+1,j+1)
-                bottomCoeff = dxBottomE(i+1,j+1)/dyBottomN(i+1,j+1)
-                centerCoeff = -dyLeftE(i+1,j+1)/dxLeftN(i+1,j+1) - dyRightE(i+1,j+1)/dxRightN(i+1,j+1) &
-                            & -dxBottomE(i+1,j+1)/dyBottomN(i+1,j+1) - dxTopE(i+1,j+1)/dyBottomN(i+1,j+1)
-
-                colIndex2 = colIndex  - 1
-                if (colIndex2 > 2 * mx * my ) stop 'Here 01'
-                call MatSetValue(A, Ii, colIndex2, leftCoeff, ADD_VALUES, ierr)
-
-                colIndex2 = colIndex  + 1
-                if (colIndex2 > 2 * mx * my ) stop 'Here 02'
-                call MatSetValue(A, Ii,  colIndex2, rightCoeff  , ADD_VALUES, ierr)
-
-                colIndex2 = colIndex  - mx
-                if (colIndex2 > 2 * mx * my ) stop 'Here 03'
-                call MatSetValue(A, Ii, colIndex2, bottomCoeff , ADD_VALUES, ierr) 
-
-                colIndex2 = colIndex  + mx
-                if (colIndex2 > 2 * mx * my ) stop 'Here 04'
-                call MatSetValue(A, Ii, colIndex2, topCoeff    , ADD_VALUES, ierr)
-
-                colIndex2 = colIndex
-                if (colIndex2 > 2 * mx * my ) stop 'Here 05'
-                call MatSetValue(A, Ii,  colIndex2, centerCoeff , ADD_VALUES, ierr)
-            
-            else
-                if ( j == 0) then
-                    !!! Setting dy gradient coefficients phi
-                    topGradCoeff = 1./dyTopN(i+1,j+1)   
-                    centerGradYCoeff = -1./dyTopN(i+1,j+1)
-                    bottomGradCoeff = 0.0
-                elseif ( j == my - 1) then
-                    !!! Setting dy gradient coefficients phi
-                    centerGradYCoeff = 1./dyBottomN(i+1,j+1) 
-                    bottomGradCoeff = -1./dyBottomN(i+1,j+1)
-                    topGradCoeff = 0.0
-                else
-                    !!! Setting dy gradient coefficients phi
-                    topGradCoeff = 1./(dyTopN(i+1,j+1) + dyBottomN(i+1,j+1))
-                    bottomGradCoeff = -1./(dyTopN(i+1,j+1) + dyBottomN(i+1,j+1))
-                    centerGradYCoeff = 0    
-                endif
-
-
-                if (i == 0) then
-                    !!! Setting gradient coefficients phi
-                    rightGradCoeff = 1./dxRightN(i+1,j+1)   
-                    centerGradXCoeff = -1./dxRightN(i+1,j+1)
-                    leftGradCoeff = 0.0
-                elseif (i == mx-1) then
-                    !!! Setting gradient coefficients phi
-                    leftGradCoeff = -1./dxLeftN(i+1,j+1)   
-                    centerGradXCoeff = 1./dxLeftN(i+1,j+1)
-                    rightGradCoeff = 0
-                
-                else
-                    !!! Setting gradient coefficients phi
-                    leftGradCoeff = -1./(dxLeftN(i+1,j+1)  + dxRightN(i+1,j+1)) 
-                    rightGradCoeff = 1./(dxLeftN(i+1,j+1)  + dxRightN(i+1,j+1))
-                    centerGradXCoeff = 0
-
-                endif
-
-                if (Ii .GE. mx*my) then
-                    colIndex = Ii - mx * my  
-                else
-                    colIndex = Ii
-                endif
-
-                if (i > 0) then
-                    if ( colIndex -1 > 2*mx*my ) stop 'Here 30'
-                    call MatSetValue(A, Ii, colIndex -1, -leftGradCoeff, ADD_VALUES, ierr)
-                    if ( colIndex  + mx *my -1 > 2*mx*my ) stop 'Here 31'
-                    call MatSetValue(A, Ii, colIndex  + mx *my -1, -leftGradCoeff, ADD_VALUES, ierr)
-                endif
-
-                if (i < mx -1 ) then
-                    if ( colIndex +1 > 2*mx*my ) stop 'Here 32'
-                    call MatSetValue(A, Ii, colIndex  +1 , -rightGradCoeff, ADD_VALUES, ierr)
-                    if ( colIndex  + mx * my +1 > 2*mx*my ) stop 'Here 33'
-                    call MatSetValue(A, Ii, colIndex  + mx * my +1 , -rightGradCoeff, ADD_VALUES, ierr)
-                endif
-
-                if (j > 0 ) then
-                    if (colIndex  - mx > 2 * mx * my ) stop 'Here 34'
-                    call MatSetValue(A, Ii, colIndex  - mx , -bottomGradCoeff, ADD_VALUES, ierr)
-                    if (colIndex  + mx * my - mx  > 2 * mx * my ) stop 'Here 35'
-                    call MatSetValue(A, Ii, colIndex  + mx * my - mx , bottomGradCoeff, ADD_VALUES, ierr)
-                end if
-
-                if (j < my -1) then
-                    if (colIndex  + mx > 2 * mx * my ) stop 'Here 36'
-                    call MatSetValue(A, Ii, colIndex  + mx, -topGradCoeff, ADD_VALUES, ierr)
-                    if (colIndex  + mx * my + mx > 2 * mx * my ) stop 'Here 37'
-                    call MatSetValue(A, Ii, colIndex  + mx * my + mx, topGradCoeff, ADD_VALUES, ierr)
-                endif
-
-                if (colIndex > 2 * mx * my ) stop 'Here 38'
-                call MatSetValue(A, Ii, colIndex  , -centerGradXCoeff, ADD_VALUES, ierr)
-                if (colIndex  + mx*my > 2 * mx * my ) stop 'Here 39'
-                call MatSetValue(A, Ii, colIndex  + mx*my , centerGradYCoeff, ADD_VALUES, ierr)
-            endif
-
-        end do
-
-        ! Finalize assembly
-        call MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr)
-        call MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr)
-
-        !call MatView(A, PETSC_VIEWER_STDOUT_WORLD, ierr)
-
-        if (rank == 0 ) print *, 'Matrix assembly complete'
-
-        ! Create the KSP linear solver
-        call KSPCreate(PETSC_COMM_WORLD, ksp, ierr)
-        call KSPSetOperators(ksp, A, A, ierr)
-        
-        ! Use LSQR solver for rectangular system (least squares problem)
-        call KSPSetType(ksp, KSPLSQR, ierr)
-        call KSPSetFromOptions(ksp, ierr)
-
-        ! Set solver tolerances: rel_tol, abs_tol, div_tol, and max iterations
-        max_iter = 1000
-        rel_tol = 1d-4
-        abs_tol = 1d-4
-        div_tol = 1d20
-        call KSPSetTolerances(ksp, rel_tol, abs_tol, div_tol,  max_iter, ierr)
-
-        ! Solve the linear system A * u = b
-        call KSPSolve(ksp, y_local, x_local, ierr)
-
-        ! Output the solution norm as a summary
-
-        call VecNorm(x_local, NORM_2, norm, ierr)
-        if (rank == 0) then
-            write(*,*) 'Solution vector 2-norm:', norm
-        end if
-
-        ! Create a scatter context to gather the global vector to rank 0
-        call VecScatterCreateToZero(x_local, gather, sol_globalOnZero, ierr)
-        call VecScatterBegin(gather, x_local, sol_globalOnZero, INSERT_VALUES, SCATTER_FORWARD, ierr)
-        call VecScatterEnd(gather, x_local, sol_globalOnZero, INSERT_VALUES, SCATTER_FORWARD, ierr)
-
-        if (rank == 0) print *, 'gather complete'
-
-        if (rank == 0) then
-        allocate(collected_xarray(2*mx*my))
-        call VecGetArrayReadF90(sol_globalOnZero, collected_xPointer, ierr)
-        collected_xarray = collected_xPointer
-        phi = reshape(collected_xarray(1:mx*my), (/mx, my/))
-        psi = reshape(collected_xarray(mx*my:2*mx*my), (/mx, my/))
-        deallocate(collected_xarray)
-        endif
-
-        ! Clean up
-        call KSPDestroy(ksp, ierr)
-        call VecDestroy(x_local, ierr)
-        call VecDestroy(x_globalOnZero, ierr)
-        call VecDestroy(y_local, ierr)
-        call VecDestroy(y_globalOnZero, ierr)
-        call VecDestroy(sol_globalOnZero, ierr)
-        call MatDestroy(A, ierr)
-        call VecScatterDestroy(scatterx, ierr)
-        call VecScatterDestroy(scattery, ierr)
-        call VecScatterDestroy(gather, ierr)
-        call ISDestroy(xis_localVec, ierr)
-        call ISDestroy(xis_globalVec, ierr)
-        call ISDestroy(yis_localVec, ierr)
-        call ISDestroy(yis_globalVec, ierr)
-        call PetscFinalize(ierr)
     end subroutine
     
     
