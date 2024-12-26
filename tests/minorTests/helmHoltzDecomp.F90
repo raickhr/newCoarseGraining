@@ -2054,9 +2054,9 @@ module helmHoltzDecomp
         call KSPSetFromOptions(ksp, ierr)
 
         ! Set solver tolerances: rel_tol, abs_tol, div_tol, and max iterations
-        max_iter = 500
-        rel_tol = 1d-100
-        abs_tol = 1d-100
+        max_iter = 5000
+        rel_tol = 1d-10
+        abs_tol = 1d-10
         div_tol = 1d10
         call KSPSetTolerances(ksp, rel_tol, abs_tol, div_tol,  max_iter, ierr)
 
@@ -2779,14 +2779,15 @@ module helmHoltzDecomp
         call KSPSetOperators(ksp, N, N, ierr)
         
         ! Use LSQR solver for rectangular system (least squares problem)
-        call KSPSetType(ksp, KSPGMRES, ierr)
+        !call KSPSetType(ksp, KSPGMRES, ierr)
+        call KSPSetType(ksp, KSPMINRES, ierr)
         call KSPSetInitialGuessNonzero(ksp, PETSC_TRUE, ierr)
         call KSPSetFromOptions(ksp, ierr)
 
         ! Set solver tolerances: rel_tol, abs_tol, div_tol, and max iterations
-        max_iter = 1500
-        rel_tol = 1d-100
-        abs_tol = 1d-100
+        max_iter = 500
+        rel_tol = 1d-10
+        abs_tol = 1d-10
         div_tol = 1d10
         call KSPSetTolerances(ksp, rel_tol, abs_tol, div_tol,  max_iter, ierr)
 

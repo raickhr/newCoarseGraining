@@ -216,15 +216,6 @@ module multiGridHelmHoltz
                                     & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
                                     & wrk_cellArea, islast = .True.)
 
-                ! call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, wrk_centerDx, wrk_centerDy, &
-                !                     & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
-                !                     & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
-                !                     & wrk_cellArea, islast = .False.)
-                
-                ! call decomposeHelmholtz_2(wrk_uvel, wrk_vvel, wrk_psi, wrk_phi, wrk_centerDx, wrk_centerDy, &
-                !                     & wrk_bottomEdx, wrk_topEdx, wrk_leftEdy, wrk_rightEdy, &
-                !                     & wrk_leftNdx, wrk_rightNdx, wrk_bottomNdy, wrk_topNdy, &
-                !                     & wrk_cellArea, islast = .True.)
             endif
             
             if (taskid == 0 ) print *, 'Decomposition complete'
