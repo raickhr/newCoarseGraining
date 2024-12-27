@@ -8,23 +8,30 @@ module multiGridHelmHoltz
     implicit none
 
     type :: grid
-        real(kind=real_kind), allocatable, dimension(:,:) :: centerDx, centerDy, &
-                                                             lat, lon
-        integer :: nx, ny
+        real(kind=real_kind), allocatable, dimension(:,:) :: centerDx, centerDy, & ! dx and dy array
+                                                             cellArea, &  ! cell area
+                                                             lat, lon, & ! coordinates
+                                                             uvel, vvel, &  ! vectors for Helmholtz decomp
+                                                             psi, phi ! toroidal and poloidal scalars
+        integer :: nx, ny, coarseLevel
     contains
             procedure :: setGrid => set_grid     ! method to set grid value at grid level
             procedure :: delGrid => del_grid
+            procedure :: setUvelVvelFromOrig => set_uvel_vvelFromOrig
+            procedure :: setUvelVvelByVal => set_uvel_vvel_byVal
+            procedure :: resetUvelVvel => reset_uvel_vvel
     end type
 
-    integer :: nfactors
+    integer, allocatable :: factorList(:)
+
     class(grid), allocatable :: multiGrid(:)
     
     contains
 
-        subroutine set_grid(self, coarseLevel, lat, lon)
+        subroutine set_grid(self, coarseLevel, org_lat, org_lon, org_centerDx, org_centerDy, org_cellArea)
             class(grid), intent(inout) :: self
             integer, intent(in) :: coarseLevel
-            real, intent(in) :: lat(:,:), lon(:,:)
+            real, intent(in) :: org_lat(:,:), org_lon(:,:), org_centerDx(:,:), org_centerDy(:,:), org_cellArea(:,:)
             
             integer :: nx, ny, shapeArr
 
@@ -32,36 +39,183 @@ module multiGridHelmHoltz
             nx = shapeArr(1)
             ny = shapeArr(2)
 
-            self%nx = nx
-            self%ny = ny
+            if (coarseLevel > 1) then 
+                call coarsenLatLon(nx, ny, coarseLevel, org_lat, org_lon, self%lat, self%lon)
+                call coarsenDXDY(nx, ny, coarseLevel, org_centerDx, org_centerDy, self%centerDx, self%centerDy, downCenterUp = 0)
+                call coarsenAREA(nx, ny, coarseLevel, org_cellArea, self%cellArea)
+            else if (coarseLevel == 1) then
+                allocate(self%lat(nx, ny), self%lon(nx, ny), self%cellArea(nx, ny))
+                self%lat = org_lat
+                self%lon = org_lon
+                self%cellArea = org_cellArea
+            end if
 
-            call coarsenLatLon(nx, ny, coarseLevel, lat, lon, self%lat, self%lon)
-            call coarsenDXDY(nx, ny, coarseLevel, centerDx, centerDy, self%centerDx, self%centerDy, downCenterUp = 0)
+            shapeArr = shape(self%lat)
+            self%nx = shapeArr(1)
+            self%ny = shapeArr(2)
+            self%coarseLevel = coarseLevel
+
         end subroutine
 
         subroutine del_grid(self)
             class(grid), intent(inout) :: self
             deallocate(self%lat, self%lon)
             deallocate(self%centerDx, self%centerDy)
+            deallocate(self%cellArea)
         end subroutine
 
-
-        subroutine setMultiGrid(factorList, lat, lon, centerDx, centerDy)
-            integer, intent(in) :: factorList(:)
-            real(kind=real_kind), intent(in) :: lat(:,:), lon(:,:), centerDx(:,:), centerDy(:,:)
-            integer :: shapeArr(2), i, alloc_err
+        subroutine set_uvel_vvelFromOrig(self, factor, org_uvel, org_vvel, org_cellArea)
+            class(grid), intent(inout) :: self
+            real, intent(in) :: org_uvel(:,:), org_vvel(:,:), org_cellArea(:,:)
             
+            integer :: factor, nx, ny, shapeArr(2)
 
-            nfactors = size(factorList)
+            if (taskid == 0) then
+                shapeArr = shape(org_uvel)
+                nx = shapeArr(1)
+                ny = shapeArr(2)
 
-            allocate(multiGrid(nfactors), list_nx(nfactors), list_ny(nfactors), stat=alloc_err)
+                if (factor > 1) then
+                    call coarsenField(nx, ny, factor, org_uvel, org_cellArea, self%uvel)
+                    
+
+                    call coarsenField(nx, ny, factor, org_vvel, org_cellArea, self%vvel)
+                    
+                else if (factor == 1 ) then 
+                    allocate(self%uvel(nx,ny), self%vvel(nx, ny))
+                    self%uvel = org_uvel
+                    self%vvel = org_vvel
+                end if
+
+                shapeArr = shape(self%uvel)
+                nx = shapeArr(1)
+                ny = shapeArr(2)
+                if (nx .NE. self%nx .or. ny .NE. self%ny) stop 'Error in coarsening UVEl for HelmHoltz Decomp. First Set Multi Grid'
+
+
+                shapeArr = shape(self%vvel)
+                nx = shapeArr(1)
+                ny = shapeArr(2)
+                if (nx .NE. self%nx .or. ny .NE. self%ny) stop 'Error in coarsening VVEl for HelmHoltz Decomp. First Set Multi Grid'
+            endif
+        end subroutine
+
+        subroutine set_uvel_vvel_byVal(self, uvel, vvel)
+            class(grid), intent(inout) :: self
+            real, intent(in) :: uvel(:,:), vvel(:,:)
+
+            integer :: factor, nx, ny, shapeArr(2)
+
+            if (taskid == 0 ) then
+                shapeArr = shape(uvel)
+                nx = shapeArr(1)
+                ny = shapeArr(2)
+
+                self%uvel = uvel
+                self%vvel = vvel
+
+                shapeArr = shape(self%uvel)
+                nx = shapeArr(1)
+                ny = shapeArr(2)
+                if (nx .NE. self%nx .or. ny .NE. self%ny) stop 'Error in coarsening UVEl for HelmHoltz Decomp. First Set Multi Grid Or Check Multigrid'
+
+
+                shapeArr = shape(self%vvel)
+                nx = shapeArr(1)
+                ny = shapeArr(2)
+                if (nx .NE. self%nx .or. ny .NE. self%ny) stop 'Error in coarsening VVEl for HelmHoltz Decomp. First Set Multi Grid Or Check Multigrid'
+            endif
+
+        end subroutine
+
+        subroutine reset_uvel_vvel(self)
+            class(grid) :: self
+            if (taskid == 0) deallocate(self%uvel, self%vvel)
+        end subroutine
+
+        subroutine setMultiGrid(facList, lat, lon, centerDx, centerDy)
+            integer, intent(in) :: facList(:)
+            real(kind=real_kind), intent(in) :: lat(:,:), lon(:,:), centerDx(:,:), centerDy(:,:)
+            integer :: shapeArr(2), i, alloc_err, nfactors
+            
+            nfactors = size(facList)
+
+            allocate(multiGrid(nfactors+1), factorList(nfactors+1), stat=alloc_err)
+
+            factorList(1:nfactors) = facList
+
+            factorList(nfactors + 1) = 1   ! Last gird should be the original grid
+
             allocate(multiGridMats(nfactors))
             
-            do i = 1, nfactors
+            do i = 1, nfactors + 1
                 multiGrid(i)%setGrid(factorList(i), lat, lon)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
                 multiGridMats(i)%setMat(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy)
+                call MPI_Barrier(MPI_COMM_WORLD, i_err)
             end do
+        end subroutine
+
+        subroutine delMultiGrid()
+            deallocate(multiGrid, factorList)
+        end subroutine
+
+
+        subroutine solveByMultiGrid(nx, ny, uvel, vvel, cellarea, phi, psi)
+            integer , intent(in) :: nx, ny
+            real(kind=real_kind), intent(in) :: uvel(:, :), vvel(:, :), cellArea(:, :)
+            real(kind=real_kind), allocatable, intent(out) :: phi(:, :), psi(:, :)
+
+            integer :: i, factor, nfactors
+
+            real(kind=real_kind), allocatable, dimension(:,:) :: crs_phi, crs_psi,  wrk_phi, wrk_psi,
+
+            nfactors = size(factorList)
+
+            do i = 1, nfactors
+                factor = factorList(i)
+                multiGrid(i)%setUvelVvelFromOrig(factor, uvel, vvel, cellArea)
+            end do
+
+
+            do i = 1, nfactors
+                if (taskid == 0 ) then
+                    allocate( wrk_phi(multiGrid(i)%nx, multiGrid(i)%ny), &
+                              wrk_psi(multiGrid(i)%nx, multiGrid(i)%ny))
+
+                    if (i == 1) then
+                        wrk_phi = 0
+                        wrk_psi = 0
+                    else
+                endif 
+
+                call MPI_Barrier(MPI_COMM_WORLD, i_err)
+                        
+                multiGridMats(i-1)%getSol(multiGrid(i-1)%nx, multiGrid(i-1)%ny, crs_phi, crs_psi)
+
+                call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+                if (taskid == 0 ) then
+                        call blinearInterpolationLatLon(multiGrid(i-1)%lat(1,:), multiGrid(i-1)%lon(:,1), &   ! previous grid
+                                                        multiGrid(i)%lat(1,:), multiGrid(i)%lon(:,1), &       ! current grid
+                                                        crs_psi, wrk_psi)
+
+                        call blinearInterpolationLatLon(multiGrid(i-1)%lat(1,:), multiGrid(i-1)%lon(:,1), &   ! previous grid
+                                                        multiGrid(i)%lat(1,:), multiGrid(i)%lon(:,1), &       ! current grid
+                                                        crs_phi, wrk_phi)
+                    endif
+                endif 
+
+                multiGridMats(i)%setRHS(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy, multiGrid(i)%uvel, multiGrid(i)%vvel)
+                multiGridMats(i)%setLHS(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy, wrk_phi, wrk_psi)
+
+                if (taskid == 0 ) then
+                    deallocate( wrk_phi, wrk_psi, crs_phi, crs_psi)
+                endif
+
+                multiGridMats(i)solve_system(maxIter = 500, relTol = 1d-20, absTol = 1d-20, divTol = 1d10)
+            end do
+
         end subroutine
     
     
