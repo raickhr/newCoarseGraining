@@ -144,6 +144,8 @@ module multiGridHelmHoltz
             call initPETSC()
             
             nfactors = size(facList)
+            
+            if (rank == 0) print *, 'nfactors', nfactors
 
             allocate(multiGrid(nfactors+1), factorList(nfactors+1), stat=alloc_err)
 
@@ -154,6 +156,8 @@ module multiGridHelmHoltz
             allocate(multiGridMats(nfactors))
             
             do i = 1, nfactors + 1
+                if (rank == 0) print *, 'i', i
+
                 call multiGrid(i)%setGrid(factorList(i), lat, lon, centerDx, centerDy, cellArea)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
                 call multiGridMats(i)%setMat(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy)
