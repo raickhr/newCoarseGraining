@@ -10,10 +10,11 @@ module helmHoltzDecomp
     use petscmpi
     use petscksp
     use petscdmda  
+
     implicit none
 
     type :: linearSystemMat
-        MAT :: A
+        Mat :: A
         Vec :: x_globalOnZero, x_local, y_globalOnZero, y_local
         integer :: nx, ny
     contains 
@@ -25,7 +26,7 @@ module helmHoltzDecomp
             procedure :: solve => solve_system
     end type
 
-    PetscMPIInt :: rank, size
+    PetscMPIInt :: rank, size_nprocs
     PetscErrorCode :: ierr
         
 
@@ -36,7 +37,7 @@ module helmHoltzDecomp
     subroutine initPETSC()
         call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
         call MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr)
-        call MPI_Comm_size(PETSC_COMM_WORLD, size, ierr)
+        call MPI_Comm_size(PETSC_COMM_WORLD, size_nprocs, ierr)
     end subroutine
 
     subroutine finalizePETSC()
@@ -44,15 +45,13 @@ module helmHoltzDecomp
     end subroutine
 
     subroutine set_mat(self, nx, ny, dx, dy)
-
         class(linearSystemMat), intent(inout) :: self
         integer, intent(in) :: nx, ny
         real(kind=real_kind), intent(in) :: dx(nx, ny), dy(nx, ny)
 
         integer, allocatable :: relPosX(:), relPosY(:)
         real(kind=real_kind), allocatable :: fdXCoeffs(:), fdYCoeffs(:)
-        integer :: schemeX, schmeY, ncoeffsX, ncoeffsY, count
-
+        integer :: schemeX, schemeY, ncoeffsX, ncoeffsY, count
 
         PetscInt :: Istart, Iend, Ii, i, j, mx, my, &
                     colIndex
@@ -105,11 +104,11 @@ module helmHoltzDecomp
             endif
 
             if (Ii < 2*(mx*my)) then
-                call getFDcoefficients(derOrder=1, accuracyOrder=6, scheme=scheme, fdXCoeffs, relPosX)
-                call getFDcoefficients(derOrder=1, accuracyOrder=6, scheme=scheme, fdYCoeffs, relPosY)
+                call getFDcoefficients(fdXCoeffs, relPosX, derOrder=1, accuracyOrder=6, scheme=schemeX)
+                call getFDcoefficients(fdYCoeffs, relPosY, derOrder=1, accuracyOrder=6, scheme=schemeY)
 
-                ncoeffsX = size(fdXCoeffs)
-                ncoeffsY = size(fdYCoeffs)                
+                ncoeffsX = SIZE(fdXCoeffs)
+                ncoeffsY = SIZE(fdYCoeffs)                
                 if (Ii < (mx*my)) then
                     !!! SETTING THE FIRST ROW TERMS IN THE MATRIX
                     do count =1, ncoeffsX  !setting -dx terms in the matrix
@@ -139,8 +138,8 @@ module helmHoltzDecomp
 
                 endif
             else
-                call getFDcoefficients(derOrder=2, accuracyOrder=6, scheme=scheme, fdXCoeffs, relPosX)
-                call getFDcoefficients(derOrder=2, accuracyOrder=6, scheme=scheme, fdYCoeffs, relPosY)
+                call getFDcoefficients(fdXCoeffs, relPosX, derOrder=2, accuracyOrder=6, scheme=schemeX)
+                call getFDcoefficients(fdYCoeffs, relPosY, derOrder=2, accuracyOrder=6, scheme=schemeY)
 
                 ncoeffsX = size(fdXCoeffs)
                 ncoeffsY = size(fdYCoeffs)
@@ -170,15 +169,21 @@ module helmHoltzDecomp
 
     end subroutine
 
+    subroutine del_mat(self)
+        class(linearSystemMat), intent(inout) :: self
+        call MatDestroy(self%A, ierr)
+    end subroutine
+    
+
     subroutine set_rhs(self, nx, ny, centerDx, centerDy, uvel, vvel)
         class(linearSystemMat) :: self
         integer, intent(in) :: nx, ny
         real (kind=real_kind), intent(in) :: centerDx(nx, ny), centerDy(nx, ny), &
                                              uvel(:, :), vvel(:, :)
 
-        real (kind=real_kind), allocatable :: divU, curlU
+        real (kind=real_kind), allocatable :: divU(:,:), curlU(:,:)
 
-        PetscInt :: mx, my, Ii,  low, high
+        PetscInt :: mx, my, Ii,  low, high, i, j
         PetscScalar :: val
         IS :: yis_localVec 
         VecScatter :: scattery
@@ -252,7 +257,7 @@ module helmHoltzDecomp
         integer, intent(in) :: nx, ny
         real (kind=real_kind), intent(in) :: phi(:, :), psi(:, :)
 
-        PetscInt :: mx, my, Ii,  low, high
+        PetscInt :: mx, my, Ii,  low, high, i, j
         PetscScalar :: val
         IS :: xis_localVec 
         VecScatter :: scatterx
@@ -316,8 +321,11 @@ module helmHoltzDecomp
     subroutine get_lhsOnZero(self, nx, ny, phi, psi)
         class(linearSystemMat) :: self
         integer, intent(in) :: nx, ny
+
         Vec :: sol_globalOnZero
         PetscInt :: globalSize, mx, my
+        VecScatter :: gather
+
         real(kind=8), pointer :: collected_xPointer(:)
         real(kind=real_kind), allocatable :: collected_xarray(:)
         real(kind=real_kind), allocatable, intent(out) :: phi(:,:), psi(:,:)
@@ -342,6 +350,9 @@ module helmHoltzDecomp
             print *, 'global size of solution vec', globalSize
             call VecGetArrayReadF90(sol_globalOnZero, collected_xPointer, ierr)
             collected_xarray = collected_xPointer
+            if (allocated(phi)) then
+                deallocate(phi, psi)
+            endif
             allocate(phi(mx, my), psi(mx, my))
             phi = reshape(collected_xarray(1:mx*my), (/mx, my/))
             psi = reshape(collected_xarray(mx*my:2*mx*my), (/mx, my/))
@@ -357,7 +368,7 @@ module helmHoltzDecomp
         integer :: maxIter
         real(kind=real_kind) :: relTol, absTol, divTol
 
-        PetscScalar :: rel_tol, abs_tol, div_tol
+        PetscScalar :: rel_tol, abs_tol, div_tol, norm
         PetscInt :: max_iter
         Mat :: N
         Vec :: Ay

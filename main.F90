@@ -6,12 +6,16 @@ program main
     use filterparallel
     use input_data_info
     use read_write
+    use multiGridHelmHoltz
 
     implicit none
     
     type(configuration):: config         ! object that defines run configuration
-    integer :: file_index, time_index, z_index
+    integer :: file_index, time_index, z_index, facList(3)
     character (len=filename_len) :: writefilename
+
+
+    facList = (/9, 5, 3/)
 
     call startMPI()
 
@@ -27,7 +31,8 @@ program main
         call set_num_3Dvector_fields(config%num_of_3Dvector_fields_to_read)
 
         call allocate_scalar_fields(nxu, nyu, nzu)
-        call allocate_vector2D_fields(nxu, nyu)
+        call allocate_vector2D_fields(nxu, nyu, nzu)
+        call allocate_phi_psi_fields(nxu, nyu, nzu)
         call allocate_vector3D_fields(nxu, nyu, nzu)
 
         call set_fieldnames(config%list_scalar_fieldsNames, &
@@ -59,6 +64,10 @@ program main
     call broadCastFilterInfo()
     call broadCastInputDataInfo()
     if (taskid .EQ. MASTER) print *, ' all grid info broadcasted !'
+
+    !call 
+
+    call setMultiGrid(facList, ULAT, ULONG, DXU, DYU, UAREA)
 
     call dividework()
 
@@ -92,6 +101,10 @@ program main
                 print *, ''
             end if
 
+            call helmholtzDecompAllVecFields()
+
+            if (taskid == 0 ) call writePolTorVelWithPsiPhi()
+
             call filter_allvars()
 
             ! OL_scalar_fields(:,:,1,:,1) = 1.0d0
@@ -124,6 +137,8 @@ program main
         end do !close time loop
     end do ! close
 
+    call delMultiGrid()
+    
     call deallocate_gridVars()
     call deallocate_filtervars()
     call deallocate_inputData_info()

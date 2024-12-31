@@ -71,7 +71,6 @@ module netcdf_io
         print *,'complete reading ', varname_in_ncfile
     end subroutine
 
-
     subroutine getVar3DatZlevel_real(fileid, varname_in_ncfile, z_index, time_index, varArr, units, long_name, error_string )
         integer, intent(in) :: fileid, z_index, time_index
         character (*), intent(in) :: varname_in_ncfile, error_string
@@ -86,16 +85,10 @@ module netcdf_io
         if ( ncerr .NE. nf90_noerr )  call handle_err(ncerr, error_string)
 
         ! check to see if variable attribute units is present and get units string
-        ! ncerr = nf90_inq_att(fileid, varid, "units")#, &
-        !                         len=unitlength)
-        ! if ( ncerr .NE. nf90_noerr) call handle_err(ncerr, "error inq units of "//varname_in_ncfile)
         ncerr = nf90_get_att(fileid, varid, "units", units)
         if (ncerr .NE. nf90_noerr) call handle_err(ncerr, "error obtaining units of "//varname_in_ncfile)
 
         ! check to see if variable attribute long_name is present and get long_name string
-        ! ncerr = nf90_inq_att(fileid, varid, "long_name", &
-        !                         len=longnamelength)
-        ! if ( ncerr .NE. nf90_noerr) call handle_err(ncerr, "error inq long_name of "//varname_in_ncfile)
         ncerr = nf90_get_att(fileid, varid, "long_name", long_name)
         if (ncerr .NE. nf90_noerr) call handle_err(ncerr, "error obtaining long_name of "//varname_in_ncfile)
 
@@ -106,7 +99,6 @@ module netcdf_io
         if ( ncerr .NE. nf90_noerr )  call handle_err(ncerr, error_string)
         print *,'complete reading ', varname_in_ncfile
     end subroutine
-
 
     subroutine getVar2D_WithAttrs_real(fileid, varname_in_ncfile, time_index, varArr, units, long_name, error_string )
         integer, intent(in) :: fileid, time_index
@@ -167,13 +159,13 @@ module netcdf_io
         integer(kind=int_kind) :: num_atts, num_coords, ncerr, counter
 
         select case (vartype)
-        case (1) 
+        case (1) ! int var type
             ncerr = nf90_def_var(file_id, varname , nf90_int,&
             coords_ids, var_id)
-        case (2)
+        case (2) ! float var type
             ncerr = nf90_def_var(file_id, varname , nf90_float,&
             coords_ids, var_id)
-        case (3)
+        case (3) ! double var type
             ncerr = nf90_def_var(file_id, varname , nf90_double,&
             coords_ids, var_id)
         end select

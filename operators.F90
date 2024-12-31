@@ -49,94 +49,6 @@ module operators
         deallocate(dummy)
     end subroutine
 
-    ! subroutine fromFaceCenterToEdgeHermite(phi, dxLeftN, dxRightN, dyBottomN, dyTopN, latArr, lonArr, leftEdgePhi, rightEdgePhi, bottomEdgePhi, topEdgePhi)
-    !     real(kind = real_kind), dimension(:,:), intent(in) :: phi, dxLeftN, dxRightN, dyBottomN, dyTopN, &
-    !                                                        &  latArr, lonArr
-    !     real(kind = real_kind), allocatable, dimension(:,:), intent(out) :: leftEdgePhi, rightEdgePhi, &
-    !                                                                      &  bottomEdgePhi, topEdgePhi, 
-
-    !     real(kind = real_kind), allocatable, dimension(:,:) :: x, x1, x2, fx1, fx2, dfx1, dfx2, &
-    !                                                            h0, h1, h2, h3, t, dummy
-
-    !     integer :: nx, ny, ierr, shapeArr(2)
-
-    !     shapeArr = shape(phi)
-    !     nx = shapeArr(1)
-    !     ny = shapeArr(2)
-
-        
-    !     allocate(x(nx, ny), x1(nx, ny), x2(nx, ny), t(nx, ny), &
-    !             fx1(nx, ny), fx2(nx, ny), dfx1(nx, ny), dfx2(nx, ny), &
-    !             h0(nx, ny), h1(nx, ny), h2(nx, ny), h3(nx, ny), &
-    !             dummy1(nx, ny), dummy2(nx, ny), stat= ierr)
-
-    !     if (allocated(leftEdgePhi)) then
-    !         deallocate(leftEdgePhi)    
-    !         deallocate(rightEdgePhi)    
-    !         deallocate(bottomEdgePhi)    
-    !         deallocate(topEdgePhi)    
-    !     endif
-
-    !     allocate(leftEdgePhi(nx, ny), stat= ierr)
-    !     allocate(rightEdgePhi(nx, ny), stat= ierr)
-    !     allocate(bottomEdgePhi(nx, ny), stat= ierr)
-    !     allocate(topEdgePhi(nx, ny), stat= ierr)
-
-
-    !     ! interpolate for left Edge Value
-    !     x1 = cshift(lonArr, shift=-1, dim = 1)
-    !     x2 = lonArr
-    !     x = (x1 + x2)/2.0
-    !     x1(1,:) = lonArr(1,:)
-    !     x2(1,:) = lonArr(2,:)
-    !     x(1,:) = x1(1,:) - 0.5 *(x2(1,:) - x1(1,:))
-
-    !     fx1 = cshift(phi, shift=-1, dim = 1)
-    !     fx2 = phi
-    !     fx1(1,:) = phi(1,:)
-    !     fx2(1,:) = phi(2,:)
-
-    !     dummy = (cshift(phi, shift=1, dim =1) - cshift(phi, shift=-1, dim =1))/(dxLeftN + dxRightN)
-    !     dfx1 = cshift(dummy, shift=-1, dim =1)
-    !     dfx2 = dummy
-
-    !     t = (x - x1)/(x2 - x1)
-
-    !     h0 = 2*t**3 - 3*t**2 + 1
-    !     h1 = -2*t**3 + 3*t**2
-    !     h2 = t**3 - 2*t**2 + t
-    !     h3 = t**3 - t**2
-
-    !     leftEdgePhi = h0 * fx1  &
-    !                 + h1 * fx2  &
-    !                 + h2 * dfx1 &
-    !                 + h3 * dfx2
-
-
-
-        
-
-        
-
-    !     \
-    !     dummy = cshift(phi, shift=-1, dim=1) ! left values
-    !     call setBoundary(dummy, boundary='left', boundaryType='linear')
-    !     leftEdgePhi = 0.5 * (dummy + phi)
-
-    !     dummy = cshift(phi, shift=1, dim=1) ! right values
-    !     call setBoundary(dummy, boundary='right', boundaryType='linear')
-    !     rightEdgePhi = 0.5 * (dummy + phi)
-
-    !     dummy = cshift(phi, shift=-1, dim=2) ! bottom values
-    !     call setBoundary(dummy, boundary='left', boundaryType='linear')
-    !     bottomEdgePhi = 0.5 * (dummy + phi)
-
-    !     dummy = cshift(phi, shift=1, dim=2) ! top values
-    !     call setBoundary(dummy, boundary='right', boundaryType='linear')
-    !     topEdgePhi = 0.5 * (dummy + phi)
-    !     deallocate(dummy)
-    ! end subroutine
-
     subroutine setBoundary(phi, boundary, boundaryType)
         real(kind=real_kind), intent(inout) :: phi(:,:)
         character(len=*), optional, intent(in) :: boundary, boundaryType
@@ -367,7 +279,6 @@ module operators
         deallocate(gradX_uvel, gradY_uvel, gradX_vvel, gradY_vvel, stat=ierr)
     end subroutine
 
-
     subroutine calcHozDivVertCurlFD(uvel, vvel, dx, dy, horzDiv, vertCurl)
         real(kind=real_kind), intent(in), dimension(:,:) :: uvel, vvel, dx, dy
         real(kind=real_kind), intent(out), allocatable, dimension(:,:) :: horzDiv, vertCurl
@@ -458,5 +369,304 @@ module operators
 
         torUvel = gradY_psi
         torVvel = -gradX_psi
+    end subroutine
+
+
+    subroutine getFDcoefficients(coefficients, relPos, derOrder, accuracyOrder, scheme)
+        integer, intent(in) :: derOrder, accuracyOrder, scheme
+        ! scheme are for the edge of the grid, 
+        ! if 1 provides forward, if -1 backward FD scheme, if 0  use centeral FD scheme
+
+        real(kind=real_kind), intent(out), allocatable :: coefficients(:)
+        integer, intent(out), allocatable :: relPos(:)
+
+        integer :: ncoeffs, ierr
+
+        ncoeffs = derOrder + accuracyOrder
+        if (allocated(coefficients)) then
+            deallocate(coefficients, relPos)
+        endif
+        
+        allocate(coefficients(ncoeffs), relPos(ncoeffs), stat=ierr)
+
+        coefficients(:) = 0.0
+
+        select case (derOrder) ! first or second derivative
+        case (1) ! First derivative
+            select case(scheme) ! forward central or backward scheme
+            case(0) ! central scheme
+                select case (accuracyOrder)
+                case (2)
+                    coefficients(1) = -0.5
+                    coefficients(2) = 0.0
+                    coefficients(3) = 0.5
+
+                    relPos(1) = -1
+                    relPos(2) = 0
+                    relPos(3) = 1
+
+                case (4)
+                    coefficients(1) = 1.0/12.0
+                    coefficients(2) = -2.0/3.0
+                    coefficients(3) = 0.0
+                    coefficients(4) = 2.0/3.0
+                    coefficients(5) = -1.0/12.0
+
+                    relPos(1) = -2
+                    relPos(2) = -1
+                    relPos(3) = 0
+                    relPos(4) = 1
+                    relPos(5) = 2
+
+                case (6)
+                    coefficients(1) = -1.0/60.0
+                    coefficients(2) = 3.0/20.0
+                    coefficients(3) = -3.0/4.0
+                    coefficients(4) = 0.0
+                    coefficients(5) = 3.0/4.0
+                    coefficients(6) = -3.0/20.0
+                    coefficients(7) = 1.0/60.0
+
+
+                    relPos(1) = -3
+                    relPos(2) = -2
+                    relPos(3) = -1
+                    relPos(4) = 0
+                    relPos(5) = 1
+                    relPos(6) = 2
+                    relPos(7) = 3
+                    
+                end select
+
+            case(1) ! Forward Scheme
+                select case (accuracyOrder)
+                case (2)
+                    coefficients(1) = -3.0/2.0
+                    coefficients(2) = 2.0
+                    coefficients(3) = -1.0/2.0
+
+                    relPos(1) = 0
+                    relPos(2) = 1
+                    relPos(3) = 2
+
+                case (4)
+                    coefficients(1) = -25/12
+                    coefficients(2) = 4.0
+                    coefficients(3) = -3.0
+                    coefficients(4) = 4.0/3.0
+                    coefficients(5) = -1.0/4.0
+
+                    relPos(1) = 0
+                    relPos(2) = 1
+                    relPos(3) = 2
+                    relPos(4) = 3
+                    relPos(5) = 4
+
+                case (6)
+                    coefficients(1) = -49.0/20.0
+                    coefficients(2) = 6.0
+                    coefficients(3) = -15.0/2.0
+                    coefficients(4) = 20.0/3.0
+                    coefficients(5) = -15.0/4.0
+                    coefficients(6) = 6.0/5.0
+                    coefficients(7) = -1.0/6.0
+
+                    relPos(1) = 0
+                    relPos(2) = 1
+                    relPos(3) = 2
+                    relPos(4) = 3
+                    relPos(5) = 4
+                    relPos(6) = 5
+                    relPos(7) = 6
+                end select
+
+
+            case(-1)! Backward Scheme
+                select case (accuracyOrder)
+                case (2)
+                    coefficients(3) = 3.0/2.0
+                    coefficients(2) = -2.0
+                    coefficients(1) = 1.0/2.0
+
+                    relPos(1) = -2
+                    relPos(2) = -1
+                    relPos(3) = 0
+
+                case (4)
+                    coefficients(5) = 25/12
+                    coefficients(4) = -4.0
+                    coefficients(3) = 3.0
+                    coefficients(2) = -4.0/3.0
+                    coefficients(1) = 1.0/4.0
+
+                    relPos(1) = -4
+                    relPos(2) = -3
+                    relPos(3) = -2
+                    relPos(4) = -1
+                    relPos(5) = 0
+
+                case (6)
+                    coefficients(7) = 49.0/20.0
+                    coefficients(6) = -6.0
+                    coefficients(5) = 15.0/2.0
+                    coefficients(4) = -20.0/3.0
+                    coefficients(3) = 15.0/4.0
+                    coefficients(2) = -6.0/5.0
+                    coefficients(1) = 1.0/6.0
+
+                    relPos(1) = -6
+                    relPos(2) = -5
+                    relPos(3) = -4
+                    relPos(4) = -3
+                    relPos(5) = -2
+                    relPos(6) = -1
+                    relPos(7) = 0
+                end select
+            end select
+
+        case (2) ! Second Derivative
+            select case(scheme) ! forward central or backward scheme
+            case(0) ! Cenbtral Scheme
+                deallocate(coefficients)
+                allocate(coefficients(derOrder + accuracyOrder - 1))
+                deallocate(relPos)
+                allocate(relPos(derOrder + accuracyOrder - 1))
+                select case (accuracyOrder)
+                case (2)
+                    coefficients(1) = 1.0
+                    coefficients(2) = -2.0
+                    coefficients(3) = 1.0
+
+                    relPos(1) = -1
+                    relPos(2) = 0
+                    relPos(3) = 1
+
+                case (4)
+                    coefficients(1) = -1.0/12.0
+                    coefficients(2) = 4.0/3.0
+                    coefficients(3) = -5.0/2.0
+                    coefficients(4) = 4.0/3.0
+                    coefficients(5) = -1.0/12.0
+
+                    relPos(1) = -2
+                    relPos(2) = -1
+                    relPos(3) = 0
+                    relPos(4) = 1
+                    relPos(5) = 2
+
+                case (6)
+                    coefficients(1) = 1.0/90.0
+                    coefficients(2) = -3.0/20.0
+                    coefficients(3) = 3.0/2.0
+                    coefficients(4) = -49.0/18.0
+                    coefficients(5) = 3.0/2.0
+                    coefficients(6) = -3.0/20.0
+                    coefficients(7) = 1.0/90.0
+
+                    relPos(1) = -3
+                    relPos(2) = -2
+                    relPos(3) = -1
+                    relPos(4) = 0
+                    relPos(5) = 1
+                    relPos(6) = 2
+                    relPos(7) = 3
+                end select
+            case(1) ! Forward Scheme
+                select case (accuracyOrder)
+                case (2)
+                    coefficients(1) = 2.0
+                    coefficients(2) = -5.0
+                    coefficients(3) = 4.0
+                    coefficients(4) = -1.0
+
+                    relPos(1) = 0
+                    relPos(2) = 1
+                    relPos(3) = 2
+                    relPos(4) = 3
+
+                case (4)
+                    coefficients(1) = 15.0/4.0
+                    coefficients(2) = -77.0/6.0
+                    coefficients(3) = 107.0/6.0
+                    coefficients(4) = -13
+                    coefficients(5) = 61.0/12.0
+                    coefficients(6) = -5.0/6.0
+
+                    relPos(1) = 0
+                    relPos(2) = 1
+                    relPos(3) = 2
+                    relPos(4) = 3
+                    relPos(5) = 4
+                    relPos(6) = 5
+
+                case (6)
+                    coefficients(1) = 469.0/90.0
+                    coefficients(2) = -223.0/10.0
+                    coefficients(3) = 879.0/20.0
+                    coefficients(4) = -949.0/18.0
+                    coefficients(5) = 41.0
+                    coefficients(6) = -201/10.0
+                    coefficients(7) = 1019.0/180.0
+                    coefficients(8) = -7.0/10.0
+
+                    relPos(1) = 0
+                    relPos(2) = 1
+                    relPos(3) = 2
+                    relPos(4) = 3
+                    relPos(5) = 4
+                    relPos(6) = 5
+                    relPos(7) = 6
+                    relPos(8) = 7
+                end select
+            case(-1)! Backward Scheme
+                select case (accuracyOrder)
+                case (2)
+                    coefficients(4) = 2.0
+                    coefficients(3) = -5.0
+                    coefficients(2) = 4.0
+                    coefficients(1) = -1.0
+
+                    relPos(1) = -3
+                    relPos(2) = -2
+                    relPos(3) = -1
+                    relPos(4) = 0
+
+                case (4)
+                    coefficients(6) = 15.0/4.0
+                    coefficients(5) = -77.0/6.0
+                    coefficients(4) = 107.0/6.0
+                    coefficients(3) = -13
+                    coefficients(2) = 61.0/12.0
+                    coefficients(1) = -5.0/6.0
+
+                    relPos(1) = -5
+                    relPos(2) = -4
+                    relPos(3) = -3
+                    relPos(4) = -2
+                    relPos(5) = -1
+                    relPos(6) = 0
+
+                case (6)
+                    coefficients(8) = 469.0/90.0
+                    coefficients(7) = -223.0/10.0
+                    coefficients(6) = 879.0/20.0
+                    coefficients(5) = -949.0/18.0
+                    coefficients(4) = 41.0
+                    coefficients(3) = -201/10.0
+                    coefficients(2) = 1019.0/180.0
+                    coefficients(1) = -7.0/10.0
+
+                    relPos(1) = -7
+                    relPos(2) = -6
+                    relPos(3) = -5
+                    relPos(4) = -4
+                    relPos(5) = -3
+                    relPos(6) = -2
+                    relPos(7) = -1
+                    relPos(8) = 0
+                end select
+            end select
+        
+        end select
     end subroutine
 end module

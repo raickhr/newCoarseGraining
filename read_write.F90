@@ -97,27 +97,32 @@ module read_write
         ! scalar_fields(1300,599,:,: ) = 10
 
         do field_count=1, num_2Dvector_fields
-            call getVar2D_WithAttrs_real(file_id,  trim(adjustl(vector2DX_field_info(field_count)%varname)), &
-                                  &       time_index, &
-                                  &       vector2DX_fields(:,:,field_count), &
-                                  &       vector2DX_field_info(field_count)%units, &
-                                  &       vector2DX_field_info(field_count)%long_name, &
-                                  &       "getVar2D_withAttrs_real vector2dx" )
+            do z_count =1, num_zlevels
+                z_index = arr_z_index(z_count)
+                call getVar3DatZlevel_real(file_id, trim(adjustl(vector2DX_field_info(field_count)%varname)), &
+                                    &       z_index, time_index, &
+                                    &       vector2DX_fields(:,:,z_count, field_count), &
+                                    &       vector2DX_field_info(field_count)%units, &
+                                    &       vector2DX_field_info(field_count)%long_name, &
+                                    &       "getVar3DatZlevel_real vector2dx" )
 
-            where (abs(vector2DX_fields(:,:, field_count)) > 1d10)
-                vector2DX_fields(:,:, field_count) = 0
-            end where
+                call getVar3DatZlevel_real(file_id, trim(adjustl(vector2DY_field_info(field_count)%varname)), &
+                                    &       z_index, time_index, &
+                                    &       vector2DY_fields(:,:,z_count, field_count), &
+                                    &       vector2DY_field_info(field_count)%units, &
+                                    &       vector2DY_field_info(field_count)%long_name, &
+                                    &       "getVar3DatZlevel_real vector2dy" )
 
-            call getVar2D_WithAttrs_real(file_id,  trim(adjustl(vector2DX_field_info(field_count)%varname)), &
-                                  &       time_index, &
-                                  &       vector2DY_fields(:,:,field_count), &
-                                  &       vector2DY_field_info(field_count)%units, &
-                                  &       vector2DY_field_info(field_count)%long_name, &
-                                  &       "getVar2D_withAttrs_real vector2dy" )
 
-            where (abs(vector2DY_fields(:,:, field_count)) > 1d10)
-                vector2DY_fields(:,:, field_count) = 0
-            end where
+                where (abs(vector2DX_fields(:,:, z_count, field_count)) > 1d10)
+                    vector2DX_fields(:,:, z_count, field_count) = 0
+                end where
+
+                where (abs(vector2DY_fields(:,:, z_count, field_count)) > 1d10)
+                    vector2DY_fields(:,:, z_count, field_count) = 0
+                end where
+                   
+            end do
         end do
 
         do field_count=1, num_3Dvector_fields
@@ -144,15 +149,15 @@ module read_write
                                     &       vector3DZ_field_info(field_count)%long_name, &
                                     &       "getVar3DatZlevel_real vector3dz" )
 
-            where (abs(vector3DX_fields(:,:, z_count, field_count)) > 1d10)
-                vector3DX_fields(:,:, z_count, field_count) = 0
-            end where
-            where (abs(vector3DY_fields(:,:, z_count, field_count)) > 1d10)
-                vector3DY_fields(:,:, z_count, field_count) = 0
-            end where
-            where (abs(vector3DZ_fields(:,:, z_count, field_count)) > 1d10)
-                vector3DZ_fields(:,:, z_count, field_count) = 0
-            end where
+                where (abs(vector3DX_fields(:,:, z_count, field_count)) > 1d10)
+                    vector3DX_fields(:,:, z_count, field_count) = 0
+                end where
+                where (abs(vector3DY_fields(:,:, z_count, field_count)) > 1d10)
+                    vector3DY_fields(:,:, z_count, field_count) = 0
+                end where
+                where (abs(vector3DZ_fields(:,:, z_count, field_count)) > 1d10)
+                    vector3DZ_fields(:,:, z_count, field_count) = 0
+                end where
             end do
         end do
 
@@ -264,7 +269,7 @@ module read_write
             att_names(2) = 'long_name'
             att_values(2) = trim(adjustl(vector2DX_field_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_2d, varids(var_index), att_names, att_values )
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
 
             varname = trim(adjustl(vector2DY_field_info(field_count)%varname))
@@ -273,7 +278,7 @@ module read_write
             att_names(2) = 'long_name'
             att_values(2) = trim(adjustl(vector2DY_field_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_2d, varids(var_index), att_names, att_values )
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
         end do
 
@@ -347,16 +352,16 @@ module read_write
             end do
 
             do field_count=1, num_2Dvector_fields
-                dummy2d(:,:, 1,1) = OL_vector2DX_fields( :,:, field_count, counter)
+                dummy3d(:, :, :, 1,1) = OL_vector2DX_fields(:, :, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, counter/), &
-                        count = (/nxu, nyu, 1, 1 /))
+                        start = (/1, 1, 1, 1, counter/), &
+                        count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
 
-                dummy2d(:,:, 1,1) = OL_vector2DY_fields( :,:, field_count, counter)
+                dummy3d(:, :, :, 1,1) = OL_vector2DY_fields(:, :, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, counter/), &
-                        count = (/nxu, nyu, 1, 1 /))
+                        start = (/1, 1, 1, 1, counter/), &
+                        count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
             end do
 
@@ -386,6 +391,50 @@ module read_write
         if (ncerr /= nf90_noerr) stop 'at close'
     
     
+    end subroutine
+
+    subroutine write2dVar(fileName, varName, varArr)
+        character(len=*) , intent(in) :: fileName, varName
+        integer :: arrshape(2), nx, ny
+        real(kind=real_kind), intent(in) :: varArr(:, :)
+
+        integer :: file_id, xdim_id, ydim_id, var_id, ncerr
+    
+        arrshape = shape(varArr)
+        nx = arrshape(1)
+        ny = arrshape(2)
+
+        ncerr = nf90_create(fileName, nf90_clobber, file_id)
+        if (ncerr /= nf90_noerr) call handle_err(ncerr, 'nf90_open to write')
+    
+        !-------------------------------------------------------------------
+        !  define dimensions
+        !-------------------------------------------------------------------
+        !print *, 'nx ny', nx, ny
+        ncerr = nf90_def_dim(file_id, 'X' , nx, xdim_id)
+        if (ncerr /= nf90_noerr) call handle_err(ncerr, 'dimension X')
+
+        ncerr = nf90_def_dim(file_id, 'Y', ny, ydim_id)
+        if (ncerr /= nf90_noerr) call handle_err(ncerr, 'dimension Y')
+    
+        !-------------------------------------------------------------------
+        !-- define variable 
+
+        ncerr = nf90_def_var(file_id, varName , nf90_double, (/xdim_id, ydim_id/), var_id)
+    
+        ncerr = nf90_enddef(file_id)
+        if (ncerr /= nf90_noerr) stop 'at enddef'
+
+        !-------------------------------------------------------------------
+        !-- write array to the variable
+
+        ncerr = nf90_put_var(file_id, var_id, varArr,       &
+                        start = (/1, 1/), &
+                        count = (/nx, ny /))
+
+        ncerr = nf90_close(file_id)
+
+        if (ncerr /= nf90_noerr) stop 'at close'
     end subroutine
 
 

@@ -5,6 +5,8 @@ module multiGridHelmHoltz
     use mpiwrapper
     use operators
     use helmHoltzDecomp
+    use fields
+    use read_write
     implicit none
 
     type :: grid
@@ -33,9 +35,9 @@ module multiGridHelmHoltz
             integer, intent(in) :: coarseLevel
             real, intent(in) :: org_lat(:,:), org_lon(:,:), org_centerDx(:,:), org_centerDy(:,:), org_cellArea(:,:)
             
-            integer :: nx, ny, shapeArr
+            integer :: nx, ny, shapeArr(2)
 
-            shapeArr = shape(uvel)
+            shapeArr = shape(org_lat)
             nx = shapeArr(1)
             ny = shapeArr(2)
 
@@ -62,6 +64,7 @@ module multiGridHelmHoltz
             deallocate(self%lat, self%lon)
             deallocate(self%centerDx, self%centerDy)
             deallocate(self%cellArea)
+            deallocate(self%uvel, self%vvel, self%psi, self%phi) 
         end subroutine
 
         subroutine set_uvel_vvelFromOrig(self, factor, org_uvel, org_vvel, org_cellArea)
@@ -133,10 +136,12 @@ module multiGridHelmHoltz
             if (taskid == 0) deallocate(self%uvel, self%vvel)
         end subroutine
 
-        subroutine setMultiGrid(facList, lat, lon, centerDx, centerDy)
+        subroutine setMultiGrid(facList, lat, lon, centerDx, centerDy, cellArea)
             integer, intent(in) :: facList(:)
-            real(kind=real_kind), intent(in) :: lat(:,:), lon(:,:), centerDx(:,:), centerDy(:,:)
+            real(kind=real_kind), intent(in) :: lat(:,:), lon(:,:), centerDx(:,:), centerDy(:,:), cellArea(:,:)
             integer :: shapeArr(2), i, alloc_err, nfactors
+
+            call initPETSC()
             
             nfactors = size(facList)
 
@@ -149,32 +154,35 @@ module multiGridHelmHoltz
             allocate(multiGridMats(nfactors))
             
             do i = 1, nfactors + 1
-                multiGrid(i)%setGrid(factorList(i), lat, lon)
+                call multiGrid(i)%setGrid(factorList(i), lat, lon, centerDx, centerDy, cellArea)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
-                multiGridMats(i)%setMat(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy)
+                call multiGridMats(i)%setMat(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
             end do
         end subroutine
 
         subroutine delMultiGrid()
             deallocate(multiGrid, factorList)
+            call finalizePETSC()
         end subroutine
 
-
-        subroutine solveByMultiGrid(nx, ny, uvel, vvel, cellarea, phi, psi)
+        subroutine solveByMultiGrid(nx, ny, uvel, vvel, cellarea, phi, psi, &
+                                    max_Iter, rel_Tol, abs_Tol, div_Tol)
             integer , intent(in) :: nx, ny
             real(kind=real_kind), intent(in) :: uvel(:, :), vvel(:, :), cellArea(:, :)
             real(kind=real_kind), allocatable, intent(out) :: phi(:, :), psi(:, :)
 
+            integer, intent(in) :: max_Iter
+            real, intent(in) :: rel_Tol, abs_Tol, div_Tol
             integer :: i, factor, nfactors
 
-            real(kind=real_kind), allocatable, dimension(:,:) :: crs_phi, crs_psi,  wrk_phi, wrk_psi,
+            real(kind=real_kind), allocatable, dimension(:,:) :: crs_phi, crs_psi,  wrk_phi, wrk_psi
 
             nfactors = size(factorList)
 
             do i = 1, nfactors
                 factor = factorList(i)
-                multiGrid(i)%setUvelVvelFromOrig(factor, uvel, vvel, cellArea)
+                call multiGrid(i)%setUvelVvelFromOrig(factor, uvel, vvel, cellArea)
             end do
 
 
@@ -191,7 +199,7 @@ module multiGridHelmHoltz
 
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
                         
-                multiGridMats(i-1)%getSol(multiGrid(i-1)%nx, multiGrid(i-1)%ny, crs_phi, crs_psi)
+                call multiGridMats(i-1)%getSol(multiGrid(i-1)%nx, multiGrid(i-1)%ny, crs_phi, crs_psi)
 
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
@@ -206,17 +214,93 @@ module multiGridHelmHoltz
                     endif
                 endif 
 
-                multiGridMats(i)%setRHS(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy, multiGrid(i)%uvel, multiGrid(i)%vvel)
-                multiGridMats(i)%setLHS(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy, wrk_phi, wrk_psi)
+                call multiGridMats(i)%setRHS(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy, multiGrid(i)%uvel, multiGrid(i)%vvel)
+                call multiGridMats(i)%setLHS(multiGrid(i)%nx, multiGrid(i)%ny, wrk_phi, wrk_psi)
 
                 if (taskid == 0 ) then
                     deallocate( wrk_phi, wrk_psi, crs_phi, crs_psi)
                 endif
 
-                multiGridMats(i)solve_system(maxIter = 500, relTol = 1d-20, absTol = 1d-20, divTol = 1d10)
+                call multiGridMats(i)%solve(maxIter = max_Iter, relTol = rel_Tol, absTol = abs_Tol, divTol = div_Tol)
             end do
 
+            call multiGridMats(i)%getSol(multiGrid(i)%nx, multiGrid(i)%ny, phi, psi)
+
         end subroutine
+
+
+        subroutine helmholtzDecompAllVecFields()
+            integer :: counter, z_counter, nx, ny, nz, shapeArr(4) !x, y, z, fieldid
+            real(kind=real_kind), allocatable :: uvel(:,:), vvel(:,:), phi(:, :), psi(:, :)
+
+            integer :: max_Iter
+            real :: rel_Tol, abs_Tol, div_Tol
+
+            max_Iter = 500
+            rel_Tol = 1d-20
+            abs_Tol = 1d-20
+            div_Tol = 1d10
+
+            shapeArr = shape(vector2DX_fields)
+            nx = shapeArr(1)
+            ny = shapeArr(2)
+            nz = shapeArr(3)
+
+
+            if (taskid == 0) allocate(uvel(nx, ny), vvel(nx, ny) )
+
+            do counter=1, num_2Dvector_fields
+                do z_counter =1, nz
+                    uvel = vector2DX_fields(:, :, z_counter, counter)
+                    vvel = vector2DY_fields(:, :, z_counter, counter)
+
+                    call solveByMultiGrid(nx, ny, uvel, vvel, UAREA, phi, psi, &
+                                        max_Iter, rel_Tol, abs_Tol, div_Tol)
+
+                    phi_fields(:,:,z_counter, counter) = phi
+                    psi_fields(:,:,z_counter, counter) = psi
+                end do
+            end do
+
+            if (taskid == 0 ) deallocate(uvel, vvel, phi, psi)
+        end subroutine
+
+
+        subroutine writePolTorVelWithPsiPhi()
+            integer :: counter, z_counter, nx, ny, nz, shapeArr(4)
+            character(len=3) :: str_C, str_Z
+            real(kind=real_kind), dimension(:,:), allocatable :: uvel_pol, uvel_tor, vvel_pol, vvel_tor
+
+            shapeArr = shape(vector2DX_fields)
+            nx = shapeArr(1)
+            ny = shapeArr(2)
+            nz = shapeArr(3)
+
+            allocate(uvel_pol(nx, ny), uvel_tor(nx, ny), &
+                     vvel_pol(nx, ny), vvel_tor(nx, ny))
+
+            WRITE(str_C,'(I0.3)') counter
+            WRITE(str_Z,'(I0.3)') z_counter
+
+            do counter=1, num_2Dvector_fields
+                do z_counter =1, nz
+                    call write2dVar('phi_'//str_C//str_Z//'.nc', 'phi', phi_fields(:,:,z_counter, counter))
+                    call write2dVar('psi_'//str_C//str_Z//'.nc', 'psi', psi_fields(:,:,z_counter, counter))
+
+                    call getPolTorVelFD(psi_fields(:,:,z_counter, counter), phi_fields(:,:,z_counter, counter), &
+                                        DXU, DYU, uvel_pol, uvel_tor, vvel_pol, vvel_tor)
+
+                    call write2dVar('uvel_pol_'//str_C//str_Z//'.nc', 'uvel_pol', uvel_pol)
+                    call write2dVar('vvel_pol_'//str_C//str_Z//'.nc', 'vvel_pol', vvel_pol)
+
+                    call write2dVar('uvel_tor_'//str_C//str_Z//'.nc', 'uvel_tor', uvel_tor)
+                    call write2dVar('vvel_tor_'//str_C//str_Z//'.nc', 'vvel_tor', vvel_tor)
+                end do
+            end do
+        end subroutine
+
+        
+
     
     
 

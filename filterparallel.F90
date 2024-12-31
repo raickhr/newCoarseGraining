@@ -165,12 +165,14 @@ module filterparallel
             enddo
 
             do counter=1, num_2Dvector_fields
-                unfiltvars(:,:, varcounter) = &
-                    &   vector2DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
-                varcounter = varcounter + 1
-                unfiltvars(:,:, varcounter) = &
-                    &   vector2DY_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
-                varcounter = varcounter + 1
+                do depth_counter = 1, nzu
+                    unfiltvars(:,:, varcounter) = &
+                        &   vector2DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
+                    varcounter = varcounter + 1
+                    unfiltvars(:,:, varcounter) = &
+                        &   vector2DY_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
+                    varcounter = varcounter + 1
+                end do
             end do
 
             do counter=1, num_3Dvector_fields
@@ -213,10 +215,12 @@ module filterparallel
             enddo
 
             do counter=1, num_2Dvector_fields
-                OL_vector2DX_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
-                varcounter = varcounter + 1
-                OL_vector2DY_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
-                varcounter = varcounter + 1
+                do depth_index = 1, nzu
+                    OL_vector2DX_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    varcounter = varcounter + 1
+                    OL_vector2DY_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    varcounter = varcounter + 1
+                end do
             end do
 
             do counter=1, num_3Dvector_fields

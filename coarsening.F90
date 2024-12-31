@@ -1,7 +1,13 @@
 module coarsening
     use kinds
-    use debug
     implicit none
+    logical:: verbose
+
+#ifdef VERBOSE
+    parameter (verbose = .TRUE.)
+#else
+    parameter (verbose = .FALSE.)
+#endif
 
     contains
     subroutine coarsenField(nx, ny, factor, field, cellArea, outField, fieldWithPadding_out, cellAreaWithPadding_out)
@@ -625,33 +631,33 @@ module coarsening
 
     end subroutine
 
-    subroutine coarsenGridAndUVforHelmHoltz(uvel, vvel, &
-                                            lat, lon, &
-                                            centerDx, centerDy, &
-                                            crs_uvel, crs_vvel, &
-                                            crs_lat, crs_lon, &
-                                            crs_centerDx, crs_centerDy)
+    ! subroutine coarsenGridAndUVforHelmHoltz(uvel, vvel, &
+    !                                         lat, lon, &
+    !                                         centerDx, centerDy, &
+    !                                         crs_uvel, crs_vvel, &
+    !                                         crs_lat, crs_lon, &
+    !                                         crs_centerDx, crs_centerDy)
 
-        real (kind=real_kind), intent(in), dimension(:,:) ::uvel, vvel, &
-                                                            lat, lon, &
-                                                            centerDx, centerDy
+    !     real (kind=real_kind), intent(in), dimension(:,:) ::uvel, vvel, &
+    !                                                         lat, lon, &
+    !                                                         centerDx, centerDy
 
-        real(kind=real_kind), intent(out), allocatable, dimension(:,:) ::crs_uvel, crs_vvel, &
-                                                            crs_lat, crs_lon, &
-                                                            crs_centerDx, crs_centerDy
+    !     real(kind=real_kind), intent(out), allocatable, dimension(:,:) ::crs_uvel, crs_vvel, &
+    !                                                         crs_lat, crs_lon, &
+    !                                                         crs_centerDx, crs_centerDy
 
 
-        integer :: shapeArr(2), nx, ny
+    !     integer :: shapeArr(2), nx, ny
     
-        shapeArr = shape(uvel)
-        nx = shapeArr(1)
-        ny = shapeArr(2)
+    !     shapeArr = shape(uvel)
+    !     nx = shapeArr(1)
+    !     ny = shapeArr(2)
         
-        call coarsenLatLon(nx, ny, factor, lat, lon, wrk_lat, wrk_lon)
-        call coarsenDXDY(nx, ny, factor, centerDx, centerDy, wrk_centerDx, wrk_centerDy, downCenterUp = 0)
-        call coarsenField(nx, ny, factor, uvel, cellArea, wrk_uvel)
-        call coarsenField(nx, ny, factor, vvel, cellArea, wrk_vvel)
-    end subroutine
+    !     call coarsenLatLon(nx, ny, factor, lat, lon, wrk_lat, wrk_lon)
+    !     call coarsenDXDY(nx, ny, factor, centerDx, centerDy, wrk_centerDx, wrk_centerDy, downCenterUp = 0)
+    !     call coarsenField(nx, ny, factor, uvel, cellArea, wrk_uvel)
+    !     call coarsenField(nx, ny, factor, vvel, cellArea, wrk_vvel)
+    ! end subroutine
 
     
 end module
