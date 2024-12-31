@@ -156,16 +156,14 @@ module helmHoltzDecomp
                     call MatSetValue(self%A, Ii, colIndex , val, ADD_VALUES, ierr)
                 enddo
             endif
-
-            call MatAssemblyBegin(self%A, MAT_FINAL_ASSEMBLY, ierr)
-            call MatAssemblyEnd(self%A, MAT_FINAL_ASSEMBLY, ierr)
-
-            !call MatView(A, PETSC_VIEWER_STDOUT_WORLD, ierr)
-
-            if (rank == 0 ) print *, 'Matrix assembly complete'
-
-
         enddo
+
+        call MatAssemblyBegin(self%A, MAT_FINAL_ASSEMBLY, ierr)
+        call MatAssemblyEnd(self%A, MAT_FINAL_ASSEMBLY, ierr)
+
+        !call MatView(A, PETSC_VIEWER_STDOUT_WORLD, ierr)
+
+        if (rank == 0 ) print *, 'Matrix assembly complete'
 
     end subroutine
 
