@@ -148,12 +148,13 @@ module multiGridHelmHoltz
             if (rank == 0) print *, 'nfactors', nfactors
 
             allocate(multiGrid(nfactors+1), factorList(nfactors+1), stat=alloc_err)
+            allocate(multiGridMats(nfactors + 1))
 
             factorList(1:nfactors) = facList
 
             factorList(nfactors + 1) = 1   ! Last gird should be the original grid
 
-            allocate(multiGridMats(nfactors))
+            
             
             do i = 1, nfactors + 1
                 if (rank == 0) print *, 'i', i
