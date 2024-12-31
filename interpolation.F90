@@ -16,7 +16,8 @@ module interpolation
                                                            & bottomLeft_lon, bottomRight_lon, topRight_lon, topLeft_lon, &
                                                            & bottomLeft_field, bottomRight_field, topRight_field, topLeft_field 
 
-        logical(kind=log_kind), allocatable, dimension(:,:) :: insideBox, nearestBox, leftOfEdge1, leftOfEdge2, leftOfEdge3, leftOfEdge4
+        logical(kind=log_kind), allocatable, dimension(:,:) :: insideBox, nearestBox, leftOfEdge1, &
+                                                               leftOfEdge2, leftOfEdge3, leftOfEdge4
         real(kind=real_kind) :: x1, y1, x2, y2       
         integer :: i, j
         real(kind=real_kind) :: counter
@@ -31,7 +32,8 @@ module interpolation
 
         allocate(bottomLeft_lat(fnx, fny), bottomRight_lat(fnx, fny), topRight_lat(fnx, fny), topLeft_lat(fnx, fny), &
                & bottomLeft_lon(fnx, fny), bottomRight_lon(fnx, fny), topRight_lon(fnx, fny), topLeft_lon(fnx, fny), &
-               & bottomLeft_field(fnx, fny), bottomRight_field(fnx, fny), topRight_field(fnx, fny), topLeft_field(fnx, fny), stat=ierr)
+               & bottomLeft_field(fnx, fny), bottomRight_field(fnx, fny), topRight_field(fnx, fny), &
+               & topLeft_field(fnx, fny), stat=ierr)
 
         allocate(leftOfEdge1(fnx, fny), leftOfEdge2(fnx, fny), leftOfEdge3(fnx, fny), leftOfEdge4(fnx, fny), &
                & insideBox(fnx, fny), nearestBox(fnx, fny), stat=ierr)
@@ -108,7 +110,7 @@ module interpolation
 
                 !insideBox = leftOfEdge1 .AND. leftOfEdge2 .AND. leftOfEdge3 .AND. leftOfEdge4
                 
-                where (insideBox == .TRUE. )
+                where (insideBox .EQV. .TRUE. )
                     fine_field = i+j
                 end where
 
@@ -212,6 +214,13 @@ module interpolation
             y1(:, i) = coarse_LAT1d(bottomTopIndex(i,1))
             y2(:, i) = coarse_LAT1d(bottomTopIndex(i,2))
             if ((y2(1,i) - y1(1,i)) < 0.0000001 ) then
+                print *, coarse_LAT1d
+                print *, 'size(coarse_LAT1d)', size(coarse_LAT1d)
+                do j = bottomTopIndex(i,1) -2,  bottomTopIndex(i,2) + 2
+                    print *, j, coarse_LAT1d(j)
+                end do
+                print *, 'i, bottomTopIndex(i,1), bottomTopIndex(i,2)', i, bottomTopIndex(i,1), bottomTopIndex(i,2)
+                print *, 'y1(1, i), y2(1, i)', y1(1, i), y2(1, i)
                 print *, 'check lat vals'
                 stop
             endif
@@ -285,6 +294,132 @@ module interpolation
             endif
         endif
 
+        if (enclosingTwoIndices(1) < 1) then
+            enclosingTwoIndices(1) = 1
+            enclosingTwoIndices(2) = 2
+        endif
+
+        if (enclosingTwoIndices(2) > lenCoord) then
+            enclosingTwoIndices(1) = lenCoord-1
+            enclosingTwoIndices(2) = lenCoord
+        endif
+
+
+
+
     end function
+
+    subroutine biliearInterpolationLatLonResidual(coarse_LAT1d, coarse_LON1d, &
+                        fine_LAT1d, fine_LON1d, coarse_residual, fine_residual)
+
+        real(kind=real_kind), intent(in) :: coarse_LAT1d(:), coarse_LON1d(:), &
+                                            fine_LAT1d(:), fine_LON1d(:), coarse_residual(:)
+
+        real(kind=real_kind), allocatable, intent(out) :: fine_residual(:)
+
+        real(kind=real_kind), allocatable :: crs_dummy(:,:), fine_dummy(:, :)
+
+
+        integer :: nx, ny, cnx, cny
+
+        print *, 'interpolating residual'
+
+        cny = size(coarse_LAT1d)
+        cnx = size(coarse_LON1d)
+
+        ny = size(fine_LAT1d)
+        nx = size(fine_LON1d)
+
+        print *, 'from ', cnx, 'x', cny, ' to ', nx, 'x', ny
+
+        allocate(fine_dummy(nx, ny))
+        allocate(crs_dummy(cnx, cny))
+        if (allocated(fine_residual)) deallocate(fine_residual)
+        allocate(fine_residual(4*nx*ny))
+
+        print *, 'shape of coarse residual ', size(coarse_residual)
+
+        crs_dummy = reshape(coarse_residual(1 : cnx* cny), (/cnx, cny/))
+        print *, 'reshaped uvel'
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                        fine_LAT1d, fine_LON1d, &
+                                        crs_dummy, fine_dummy)
+        print *, 'interpolation uvel complete'
+        print *, 'shape uvel', shape(fine_dummy)
+        fine_residual(1:nx*ny) = pack(fine_dummy, .TRUE.)
+        print *, 'flattening uvel complete'
+
+        crs_dummy = reshape(coarse_residual(cnx* cny+1:2*cnx* cny), (/cnx, cny/))
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                        fine_LAT1d, fine_LON1d, &
+                                        crs_dummy, fine_dummy)
+        fine_residual(nx*ny+1: 2*nx*ny) = pack(fine_dummy, .TRUE.)
+
+        crs_dummy = reshape(coarse_residual(2*cnx* cny+1:3*cnx* cny), (/cnx, cny/))
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                        fine_LAT1d, fine_LON1d, &
+                                        crs_dummy, fine_dummy)
+        fine_residual(2*nx*ny+1: 3*nx*ny) = pack(fine_dummy, .TRUE.)
+
+        crs_dummy = reshape(coarse_residual(3*cnx* cny+1:4*cnx* cny), (/cnx, cny/))
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                        fine_LAT1d, fine_LON1d, &
+                                        crs_dummy, fine_dummy)
+        fine_residual(3*nx*ny+1: 4*nx*ny) = pack(fine_dummy, .TRUE.)
+
+        deallocate(fine_dummy, crs_dummy)
+
+    end subroutine
+
+    subroutine biliearInterpolationLatLonLHS(coarse_LAT1d, coarse_LON1d, &
+        fine_LAT1d, fine_LON1d, coarse_LHS, fine_LHS)
+
+        real(kind=real_kind), intent(in) :: coarse_LAT1d(:), coarse_LON1d(:), &
+                                    fine_LAT1d(:), fine_LON1d(:), coarse_LHS(:)
+
+        real(kind=real_kind), allocatable, intent(out) :: fine_LHS(:)
+
+        real(kind=real_kind), allocatable :: crs_dummy(:,:), fine_dummy(:, :)
+
+
+        integer :: nx, ny, cnx, cny
+
+        print *, 'interpolating residual'
+
+        cny = size(coarse_LAT1d)
+        cnx = size(coarse_LON1d)
+
+        ny = size(fine_LAT1d)
+        nx = size(fine_LON1d)
+
+        print *, 'from ', cnx, 'x', cny, ' to ', nx, 'x', ny
+
+        allocate(fine_dummy(nx, ny))
+        allocate(crs_dummy(cnx, cny))
+        if (allocated(fine_LHS)) deallocate(fine_LHS)
+        allocate(fine_LHS(2*nx*ny))
+
+        print *, 'shape of coarse LHS ', size(coarse_LHS)
+
+        crs_dummy = reshape(coarse_LHS(1 : cnx* cny), (/cnx, cny/))
+        print *, 'reshaped phi'
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                fine_LAT1d, fine_LON1d, &
+                                crs_dummy, fine_dummy)
+        print *, 'interpolation phi complete'
+        print *, 'shape phi', shape(fine_dummy)
+        fine_LHS(1:nx*ny) = pack(fine_dummy, .TRUE.)
+        print *, 'flattening phi complete'
+
+        crs_dummy = reshape(coarse_LHS(cnx* cny+1:2*cnx* cny), (/cnx, cny/))
+        call blinearInterpolationLatLon(coarse_LAT1d, coarse_LON1d, &
+                                fine_LAT1d, fine_LON1d, &
+                                crs_dummy, fine_dummy)
+        fine_LHS(nx*ny+1: 2*nx*ny) = pack(fine_dummy, .TRUE.)
+
+        deallocate(fine_dummy, crs_dummy)
+
+        end subroutine
+
 
 end module

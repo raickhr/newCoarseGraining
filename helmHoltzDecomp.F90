@@ -22,6 +22,8 @@ module helmHoltzDecomp
             procedure :: delMat => del_mat
             procedure :: setLHS => set_lhs
             procedure :: setRHS => set_rhs
+            procedure :: resetLHS => reset_lhs
+            procedure :: resetRHS => reset_rhs
             procedure :: getSol => get_lhsOnZero
             procedure :: solve => solve_system
     end type
@@ -191,12 +193,11 @@ module helmHoltzDecomp
 
         call VecCreate(PETSC_COMM_WORLD, self%y_globalOnZero, ierr)
         call VecSetFromOptions(self%y_globalOnZero, ierr)
-
         call VecSetSizes(self%y_globalOnZero, PETSC_DECIDE, 4*mx * my, ierr)
 
         if (rank == 0) then
             call calcHozDivVertCurlFD(uvel, vvel, centerDx, centerDy, divU, curlU)
-            print *, 'creating vectors of size', mx,'x', my
+            print *, 'creating RHS vectors grid size size', mx,'x', my
 
             do Ii = 0, mx * my - 1
                 i = mod(Ii, mx)
@@ -218,7 +219,7 @@ module helmHoltzDecomp
 
             deallocate(divU, curlU)
 
-            print *, 'LHS and RHS vectors assigned values Set'
+            print *, 'RHS vectors assigned values Set'
         end if
 
         call VecAssemblyBegin(self%y_globalOnZero, ierr)
@@ -250,6 +251,67 @@ module helmHoltzDecomp
         call VecScatterDestroy(scattery, ierr)
     end subroutine
 
+    subroutine reset_rhs(self, nx, ny, centerDx, centerDy, uvel, vvel)
+        class(linearSystemMat) :: self
+        integer, intent(in) :: nx, ny
+        real (kind=real_kind), intent(in) :: centerDx(nx, ny), centerDy(nx, ny), &
+                                             uvel(:, :), vvel(:, :)
+
+        real (kind=real_kind), allocatable :: divU(:,:), curlU(:,:)
+
+        PetscInt :: mx, my, Ii,  low, high, i, j
+        PetscScalar :: val
+        IS :: yis_localVec 
+        VecScatter :: scattery
+
+        mx = nx
+        my = ny
+
+        if (rank == 0) then
+            call calcHozDivVertCurlFD(uvel, vvel, centerDx, centerDy, divU, curlU)
+            do Ii = 0, mx * my - 1
+                i = mod(Ii, mx)
+                j = Ii / mx
+                
+                !!!!!!!!!!!!!!!!!!!!!!!!!! setting RHS !!!!!!!!!!!!!!!!!!!!!!!
+                val = uvel(i+1, j+1) 
+                call VecSetValue(self%y_globalOnZero, Ii, val, INSERT_VALUES, ierr)
+                
+                val = vvel(i+1, j+1) 
+                call VecSetValue(self%y_globalOnZero, Ii + (mx * my), val, INSERT_VALUES, ierr)
+                
+                val = -divU(i+1, j+1) 
+                call VecSetValue(self%y_globalOnZero, Ii + 2 * (mx * my), val, INSERT_VALUES, ierr)
+
+                val = -curlU(i+1, j+1) 
+                call VecSetValue(self%y_globalOnZero, Ii + 3 * (mx * my), val, INSERT_VALUES, ierr)
+            end do
+
+            deallocate(divU, curlU)
+
+            print *, 'RHS vectors reassigned values'
+        end if
+
+        call VecAssemblyBegin(self%y_globalOnZero, ierr)
+        call VecAssemblyEnd(self%y_globalOnZero, ierr)
+
+        call VecGetOwnershipRange(self%y_local, low, high, ierr) ! /* low, high are global indices */
+        call ISCreateStride(PETSC_COMM_SELF, high - low, low, 1, yis_localVec, ierr)
+
+        if (rank == 0) print *, 'scattering RHS vector  ... '
+        ! Create scatter context
+        call VecScatterCreate(self%y_globalOnZero, yis_localVec, self%y_local, yis_localVec, scattery, ierr)
+
+        ! Perform the scatter operation
+        call VecScatterBegin(scattery, self%y_globalOnZero, self%y_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+        call VecScatterEnd(scattery, self%y_globalOnZero, self%y_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+        if (rank == 0) print *, 'scattering RHS vectors COMPLETE'
+
+        call ISDestroy(yis_localVec, ierr)
+        call VecScatterDestroy(scattery, ierr)
+    end subroutine
+    
+
     subroutine set_lhs(self, nx, ny, phi, psi)
         class(linearSystemMat) :: self
         integer, intent(in) :: nx, ny
@@ -269,7 +331,7 @@ module helmHoltzDecomp
         call VecSetSizes(self%x_globalOnZero, PETSC_DECIDE, 2 * mx * my, ierr)
 
         if (rank == 0) then
-            print *, 'creating vectors of size', mx,'x', my
+            print *, 'creating LHS vectors for grid size', mx,'x', my
 
             do Ii = 0, mx * my - 1
                 i = mod(Ii, mx)
@@ -284,33 +346,82 @@ module helmHoltzDecomp
                 
             end do
 
-            print *, 'LHS and RHS vectors assigned values Set'
+            print *, 'LHS vectors assigned values Set'
         end if
 
         call VecAssemblyBegin(self%x_globalOnZero, ierr)
         call VecAssemblyEnd(self%x_globalOnZero, ierr)
 
         ! Create the distributed destination vector
-        if (rank == 0) print *, 'creating RHS vector for distributing across processors'
+        if (rank == 0) print *, 'creating LHS vector for distributing across processors'
 
         call VecCreate(PETSC_COMM_WORLD, self%x_local, ierr)
         call VecSetSizes(self%x_local, PETSC_DECIDE, 2 * mx * my, ierr)
 
         call VecSetFromOptions(self%x_local, ierr)
         
-        if (rank == 0) print *, 'creating RHS vector for distributing across processors COMPLETE'
+        if (rank == 0) print *, 'creating LHS vector for distributing across processors COMPLETE'
 
         call VecGetOwnershipRange(self%x_local, low, high, ierr) ! /* low, high are global indices */
         call ISCreateStride(PETSC_COMM_SELF, high - low, low, 1, xis_localVec, ierr)
 
-        if (rank == 0) print *, 'scattering RHS vector  ... '
+        if (rank == 0) print *, 'scattering LHS vector  ... '
         ! Create scatter context
-        call VecScatterCreate(self%x_globalOnZero, xis_localVec, self%y_local, xis_localVec, scatterx, ierr)
+        call VecScatterCreate(self%x_globalOnZero, xis_localVec, self%x_local, xis_localVec, scatterx, ierr)
 
         ! Perform the scatter operation
         call VecScatterBegin(scatterx, self%x_globalOnZero, self%x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
         call VecScatterEnd(scatterx, self%x_globalOnZero, self%x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
-        if (rank == 0) print *, 'scattering RHS vectors COMPLETE'
+        if (rank == 0) print *, 'scattering LHS vectors COMPLETE'
+
+        call ISDestroy(xis_localVec, ierr)
+        call VecScatterDestroy(scatterx, ierr)
+    end subroutine
+
+    subroutine reset_lhs(self, nx, ny, phi, psi)
+        class(linearSystemMat) :: self
+        integer, intent(in) :: nx, ny
+        real (kind=real_kind), intent(in) :: phi(:, :), psi(:, :)
+
+        PetscInt :: mx, my, Ii,  low, high, i, j
+        PetscScalar :: val
+        IS :: xis_localVec 
+        VecScatter :: scatterx
+
+        mx = nx
+        my = ny
+
+        if (rank == 0) then
+            do Ii = 0, mx * my - 1
+                i = mod(Ii, mx)
+                j = Ii / mx
+                
+                !!!!!!!!!!!!!!!!!!!!!!!!!! setting LHS !!!!!!!!!!!!!!!!!!!!!!!
+                val = phi(i+1, j+1) 
+                call VecSetValue(self%x_globalOnZero, Ii, val, INSERT_VALUES, ierr)
+                
+                val = psi(i+1, j+1) 
+                call VecSetValue(self%x_globalOnZero, Ii + (mx * my), val, INSERT_VALUES, ierr)
+                
+            end do
+
+            print *, 'LHS vectors reassigned values'
+        end if
+
+        call VecAssemblyBegin(self%x_globalOnZero, ierr)
+        call VecAssemblyEnd(self%x_globalOnZero, ierr)
+
+        call VecGetOwnershipRange(self%x_local, low, high, ierr) ! /* low, high are global indices */
+        call ISCreateStride(PETSC_COMM_SELF, high - low, low, 1, xis_localVec, ierr)
+
+        if (rank == 0) print *, 'scattering LHS vector  ... '
+        ! Create scatter context
+        call VecScatterCreate(self%x_globalOnZero, xis_localVec, self%x_local, xis_localVec, scatterx, ierr)
+
+        ! Perform the scatter operation
+        call VecScatterBegin(scatterx, self%x_globalOnZero, self%x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+        call VecScatterEnd(scatterx, self%x_globalOnZero, self%x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+        if (rank == 0) print *, 'scattering LHS vectors COMPLETE'
 
         call ISDestroy(xis_localVec, ierr)
         call VecScatterDestroy(scatterx, ierr)

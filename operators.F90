@@ -189,17 +189,7 @@ module operators
         gradX = gradX - 1./12. * cshift(phi, shift =  2, dim=1) 
         
         dummy = -1./2. * cshift(phi, shift = -1, dim=1)
-        dummy = dummy +1./2.  * cshift(phi, shift =  1, dim=1) 
-
-        ! gradX = 1./12. * cshift(phi, shift = -2, dim=1) &
-        !      & -2./3.  * cshift(phi, shift = -1, dim=1) &
-        !      & +2./3.  * cshift(phi, shift =  1, dim=1) &
-        !      & -1./12. * cshift(phi, shift =  2, dim=1) 
-        
-        ! dummy = -1./2. * cshift(phi, shift = -1, dim=1) &
-        !        & +1./2.  * cshift(phi, shift =  1, dim=1) 
-
-        !print *, 'aaaa'
+        dummy = dummy + 1./2.  * cshift(phi, shift =  1, dim=1) 
         
         gradX(2,:) = dummy(2,:)
         gradX(nx-2, :) = dummy(nx-2,:)
@@ -233,6 +223,101 @@ module operators
         gradY = gradY/dy
 
         deallocate(dummy)
+    end subroutine
+
+    subroutine calcGradFD2(phi, dx, dy, gradX, grady, accuracyOrder)
+        real(kind=real_kind), intent(in), dimension(:,:) :: phi, dx, dy
+        real(kind=real_kind), intent(out), allocatable, dimension(:,:) :: gradX, grady
+        integer, optional :: accuracyOrder 
+
+        integer :: nx, ny, ierr, shapeArr(2), i, derorder
+
+        integer, allocatable ::  relPos(:)
+        real(kind=real_kind), allocatable :: coefficients(:), dummy(:,:) 
+
+        integer, parameter :: CENTRAL = 0, FORWARD = 1, BACKWARD = -1
+
+        derorder = 1
+        shapeArr = shape(phi)
+
+        nx = shapeArr(1)
+        ny = shapeArr(2)
+
+        !Make sure the shape of the arrays match
+
+        if (.NOT. all(shape(dx) .EQ. shapeArr) .OR. &
+            .NOT. all(shape(dy) .EQ. shapeArr)) then
+                stop "calcGradFD:: shape of array inconsistent"
+        endif
+
+        if (allocated(gradX)) then
+            deallocate(gradY)
+        endif
+
+        if (allocated(gradY)) then
+            deallocate(gradY)
+        endif
+
+        allocate(gradX(nx, ny), stat = ierr)
+        allocate(gradY(nx, ny), stat = ierr)
+        allocate(dummy(nx, ny), stat = ierr)
+        
+        if (present(accuracyOrder)) then
+            call getFDcoefficients(coefficients, relPos, derOrder, accuracyOrder, scheme=CENTRAL)
+        else
+            call getFDcoefficients(coefficients, relPos, derOrder, 4, scheme=CENTRAL)
+        endif
+
+        gradX = 0
+        do i = 1, size(coefficients)
+            gradX = gradX + coefficients(i) * cshift(phi, shift = relPos(i), dim=1)
+        end do
+
+        gradY = 0
+        do i = 1, size(coefficients)
+            gradY = gradY + coefficients(i) * cshift(phi, shift = relPos(i), dim=2)
+        end do
+
+        if (present(accuracyOrder)) then
+            call getFDcoefficients(coefficients, relPos, derOrder, accuracyOrder, scheme=FORWARD)
+        else
+            call getFDcoefficients(coefficients, relPos, derOrder, 4, scheme=FORWARD)
+        endif
+
+        dummy = 0
+        do i = 1, size(coefficients)
+            dummy = dummy + coefficients(i) * cshift(phi, shift = relPos(i), dim=1)
+        end do
+        gradX(1:size(coefficients),:) = dummy(1:size(coefficients),:)
+
+        dummy = 0
+        do i = 1, size(coefficients)
+            dummy = dummy + coefficients(i) * cshift(phi, shift = relPos(i), dim=2)
+        end do
+        gradY(:,1:size(coefficients)) = dummy(:,1:size(coefficients))
+
+        if (present(accuracyOrder)) then
+            call getFDcoefficients(coefficients, relPos, derOrder, accuracyOrder, scheme=BACKWARD)
+        else
+            call getFDcoefficients(coefficients, relPos, derOrder, 4, scheme=BACKWARD)
+        endif
+
+        dummy = 0
+        do i = 1, size(coefficients)
+            dummy = dummy + coefficients(i) * cshift(phi, shift = relPos(i), dim=1)
+        end do
+        gradX(nx-size(coefficients)+1:nx,:) = dummy(nx-size(coefficients)+1:nx,:)
+        
+        dummy = 0
+        do i = 1, size(coefficients)
+            dummy = dummy + coefficients(i) * cshift(phi, shift = relPos(i), dim=2)
+        end do
+        gradY(:,ny-size(coefficients)+1:ny) = dummy(:,ny-size(coefficients)+1:ny)
+
+        deallocate(dummy)
+        gradX = gradX/dx
+        gradY = gradY/dy
+
     end subroutine
 
     subroutine calcHozDivVertCurl(uvel, vvel, dxBottom, dxTop, dyLeft, dyRight, cellArea, horzDiv, vertCurl)
@@ -315,7 +400,6 @@ module operators
 
         call calcGradFD(uvel, dx, dy, gradX_uvel, gradY_uvel)
         call calcGradFD(vvel, dx, dy, gradX_vvel, gradY_vvel)
-        print *, 'okay here'
 
         horzDiv = gradX_uvel + gradY_vvel
         vertCurl = gradX_vvel - gradY_uvel

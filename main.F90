@@ -11,11 +11,11 @@ program main
     implicit none
     
     type(configuration):: config         ! object that defines run configuration
-    integer :: file_index, time_index, z_index, facList(3)
+    integer :: file_index, time_index, z_index, facList(4)
     character (len=filename_len) :: writefilename
 
 
-    facList = (/9, 5, 3/)
+    facList = (/9, 5, 3, 2/)
 
     call startMPI()
 
@@ -36,7 +36,7 @@ program main
         call allocate_vector3D_fields(nxu, nyu, nzu)
 
         call set_fieldnames(config%list_scalar_fieldsNames, &
-                        &   config%list_2DvectorX_fieldsNames,  config%list_2DvectorX_fieldsNames, &
+                        &   config%list_2DvectorX_fieldsNames,  config%list_2DvectorY_fieldsNames, &
                         &   config%list_3DvectorX_fieldsNames,  config%list_3DvectorY_fieldsNames, config%list_3DvectorZ_fieldsNames)
 
         ! setting filterlength info
@@ -97,13 +97,18 @@ program main
                 print *, 'all read field info at one time instant broadcasted !'
                 print *, ''
                 print *, ''
-                print *, 'filtering all variables started !'
                 print *, ''
             end if
 
             call helmholtzDecompAllVecFields()
 
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+            if (taskid == 0 ) print *, 'completed Helmholtz decomposition'
+
             if (taskid == 0 ) call writePolTorVelWithPsiPhi()
+
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
             call filter_allvars()
 

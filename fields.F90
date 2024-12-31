@@ -155,7 +155,6 @@ module fields
     
             do counter = 1, num_2Dvector_fields
                 vector2DX_field_info(counter)%varname = trim(adjustl(list_2dvectorxfieldnames(counter)))
-    
                 vector2DY_field_info(counter)%varname = trim(adjustl(list_2dvectoryfieldnames(counter)))
             end do
     
