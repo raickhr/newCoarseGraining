@@ -102,6 +102,12 @@ program main
 
             call helmholtzDecompAllVecFields()
 
+            if (taskid .EQ. MASTER) then
+                WRITE(writefilename, "(A5,I0.3,A5,I0.3,A3)") "phi_psi_file", file_index, "_time", time_index, ".nc"
+                call writeHelmHoltzDeompFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
+                &   'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), trim(adjustl(config%timevar_name)))
+            end if
+
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
             if (taskid == 0 ) print *, 'completed Helmholtz decomposition'
@@ -122,7 +128,9 @@ program main
                 print *, ''
             end if
 
-            call collectFilteredFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
+            !call collectFilteredFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
+
+            call collectCoarseGrainedFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
 
             if (taskid .EQ. MASTER) then 
                 print *, ''
@@ -131,7 +139,8 @@ program main
             end if
             
             if (taskid .EQ. MASTER) then
-                WRITE(writefilename, "(A5,I0.3,A5,I0.3,A3)") "file", file_index, "_time", time_index, ".nc" 
+                WRITE(writefilename, "(A5,I0.3,A5,I0.3,A3)") "file", file_index, "_time", time_index, ".nc"
+                call writeHelmHoltzDeompFields(fullfilename, x_dimname, y_dimname, z_dimname, time_dimname) 
                 call writeFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
                 &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
                 &                 'Lengthscale', trim(adjustl(config%timevar_name)))

@@ -340,7 +340,7 @@ module multiGridHelmHoltz
 
                     if (taskid == 0) then
                         call getPolTorVelFD(psi_fields(:,:,z_counter, counter), phi_fields(:,:,z_counter, counter), &
-                                            DXU, DYU, vector2DX_phi_fields(:, :, z_counter, counter), vector2DX_psi_fields(:, :, z_counter, counter),
+                                            DXU, DYU, vector2DX_phi_fields(:, :, z_counter, counter), vector2DX_psi_fields(:, :, z_counter, counter), &
                                             vector2DY_phi_fields(:, :, z_counter, counter), vector2DY_psi_fields(:, :, z_counter, counter))
                     endif
                 end do

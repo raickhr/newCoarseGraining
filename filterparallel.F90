@@ -136,7 +136,9 @@ module filterparallel
                 
                 call get_filteredVals_allVars(east_west_BoxSize, north_south_BoxSize, numvars, unfiltvars, kernelVal, filtered_vars(:) )
                 
-                call assignFilteredVars(numvars,i_index, j_index, filter_counter, filtered_vars)
+                !call assignFilteredVars(numvars,i_index, j_index, filter_counter, filtered_vars)
+
+                call assignCoarseGrainedVars(numvars,i_index, j_index, filter_counter, filtered_vars)
 
                 deallocate(unfiltvars)
                 deallocate(kernelVal) 
