@@ -437,7 +437,7 @@ module helmHoltzDecomp
 
         real(kind=8), pointer :: collected_xPointer(:)
         real(kind=real_kind), allocatable :: collected_xarray(:)
-        real(kind=real_kind), allocatable, intent(out) :: phi(:,:), psi(:,:)
+        real(kind=real_kind), intent(out) :: phi(nx,ny), psi(nx,ny)
 
         mx = nx
         my = ny
@@ -453,16 +453,9 @@ module helmHoltzDecomp
         
         if (rank == 0) then
             allocate(collected_xarray(2*mx*my))
-            !allocate(collected_xPointer(2*mx*my))
-            print *, 'array_allocated'
-            print *, 'shape collected pointer', shape(collected_xPointer)
             print *, 'global size of solution vec', globalSize
             call VecGetArrayReadF90(sol_globalOnZero, collected_xPointer, ierr)
             collected_xarray = collected_xPointer
-            if (allocated(phi)) then
-                deallocate(phi, psi)
-            endif
-            allocate(phi(mx, my), psi(mx, my))
             phi = reshape(collected_xarray(1:mx*my), (/mx, my/))
             psi = reshape(collected_xarray(mx*my:2*mx*my), (/mx, my/))
             deallocate(collected_xarray)

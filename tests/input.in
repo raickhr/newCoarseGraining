@@ -8,10 +8,10 @@ num_of_3Dvector_fields_to_read = 0
 timevar_name = "ocean_time"
 vertdim_name = "s_rho"
 startTimeIndex = 1
-endTimeIndex = 1
+endTimeIndex = 3
 nx = 2599
 ny = 599
-nz = 1
+nz = 5
 nt = 1 
 nfilter = 1
 OutputPath = 'output'
@@ -32,6 +32,6 @@ list_2DvectorY_fieldsNames = "v_northward"
 ! list_3DvectorY_fieldsNames = "v_northward", "VT"
 ! list_3DvectorZ_fieldsNames = "w", "WT"
 
-list_zlevels = 30
+list_zlevels = 30, 29, 28, 27, 26
 list_filterLength = 500
 /

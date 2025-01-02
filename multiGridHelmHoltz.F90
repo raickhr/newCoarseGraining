@@ -83,12 +83,10 @@ module multiGridHelmHoltz
 
                 if (factor > 1) then
                     call coarsenField(nx, ny, factor, org_uvel, org_cellArea, self%uvel)
-                    
-
                     call coarsenField(nx, ny, factor, org_vvel, org_cellArea, self%vvel)
                     
                 else if (factor == 1 ) then 
-                    allocate(self%uvel(nx,ny), self%vvel(nx, ny))
+                    if (.not. allocated(self%uvel)) allocate(self%uvel(nx,ny), self%vvel(nx, ny))
                     self%uvel = org_uvel
                     self%vvel = org_vvel
                 end if
@@ -144,6 +142,8 @@ module multiGridHelmHoltz
             real(kind=real_kind), intent(in) :: lat(:,:), lon(:,:), centerDx(:,:), centerDy(:,:), cellArea(:,:)
             integer :: shapeArr(2), i, alloc_err, nfactors
 
+            real(kind=real_kind), allocatable, dimension(:,:) :: dummy
+
             call initPETSC()
             
             nfactors = size(facList)
@@ -167,6 +167,15 @@ module multiGridHelmHoltz
 
                 call multiGridMats(i)%setMat(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+                allocate(dummy(multiGrid(i)%nx, multiGrid(i)%ny))
+                dummy = 0.0
+
+                call multiGridMats(i)%setRHS(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy, dummy, dummy)
+                call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+                call multiGridMats(i)%setLHS(multiGrid(i)%nx, multiGrid(i)%ny, dummy, dummy)
+                deallocate(dummy)
             end do
         end subroutine
 
@@ -178,8 +187,8 @@ module multiGridHelmHoltz
         subroutine solveByMultiGrid(nx, ny, uvel, vvel, cellarea, phi, psi, &
                                     max_Iter, rel_Tol, abs_Tol, div_Tol)
             integer , intent(in) :: nx, ny
-            real(kind=real_kind), intent(in) :: uvel(:, :), vvel(:, :), cellArea(:, :)
-            real(kind=real_kind), allocatable, intent(out) :: phi(:, :), psi(:, :)
+            real(kind=real_kind), intent(in) :: uvel(nx, ny), vvel(nx, ny), cellArea(nx, ny)
+            real(kind=real_kind), intent(out) :: phi(nx, ny), psi(nx, ny)
 
             integer, intent(in) :: max_Iter
             real, intent(in) :: rel_Tol, abs_Tol, div_Tol
@@ -202,15 +211,19 @@ module multiGridHelmHoltz
                 call multiGrid(i)%setUvelVvelFromOrig(factor, uvel, vvel, cellArea)
             end do
 
-
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+            if (taskid == 0) print *, 'Starting Multigrid'
             do i = 1, nfactors 
                 factor = factorList(i)
                 if (taskid == 0 ) then
                     print *, ''
                     print *, ''
                     print *, 'helmholtz at coarse level', factor  
-                    allocate( wrk_phi(multiGrid(i)%nx, multiGrid(i)%ny), &
-                              wrk_psi(multiGrid(i)%nx, multiGrid(i)%ny))
+                    allocate(wrk_phi(multiGrid(i)%nx, multiGrid(i)%ny), wrk_psi(multiGrid(i)%nx, multiGrid(i)%ny), &
+                             phi_seed(multiGrid(i)%nx, multiGrid(i)%ny), psi_seed(multiGrid(i)%nx, multiGrid(i)%ny), &
+                             res_uvel(multiGrid(i)%nx, multiGrid(i)%ny), res_vvel(multiGrid(i)%nx, multiGrid(i)%ny), &
+                             uvel_pol(multiGrid(i)%nx, multiGrid(i)%ny), vvel_pol(multiGrid(i)%nx, multiGrid(i)%ny), &
+                             uvel_tor(multiGrid(i)%nx, multiGrid(i)%ny), vvel_tor(multiGrid(i)%nx, multiGrid(i)%ny))
 
                     if (i == 1) then
                         wrk_phi = 0
@@ -223,22 +236,21 @@ module multiGridHelmHoltz
                         call blinearInterpolationLatLon(multiGrid(i-1)%lat(1,:), multiGrid(i-1)%lon(:,1), &   ! previous grid
                                                         multiGrid(i)%lat(1,:), multiGrid(i)%lon(:,1), &       ! current grid
                                                         crs_phi, wrk_phi)
-
+                        
                         deallocate(crs_phi, crs_psi)
                     endif
                 endif
+
+                call MPI_Barrier(MPI_COMM_WORLD, i_err)
                 
-                call multiGridMats(i)%setRHS(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy, multiGrid(i)%uvel, multiGrid(i)%vvel)
-                call multiGridMats(i)%setLHS(multiGrid(i)%nx, multiGrid(i)%ny, wrk_phi, wrk_psi)
+                call multiGridMats(i)%resetRHS(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy, multiGrid(i)%uvel, multiGrid(i)%vvel)
+                call multiGridMats(i)%resetLHS(multiGrid(i)%nx, multiGrid(i)%ny, wrk_phi, wrk_psi)
                 call multiGridMats(i)%solve(maxIter = max_Iter, relTol = rel_Tol, absTol = abs_Tol, divTol = div_Tol)
+
+                if (taskid == 0) allocate(crs_phi(multiGrid(i)%nx, multiGrid(i)%ny), crs_psi(multiGrid(i)%nx, multiGrid(i)%ny))
                 call multiGridMats(i)%getSol(multiGrid(i)%nx, multiGrid(i)%ny, crs_phi, crs_psi)
 
-                if (taskid == 0 ) then
-                    allocate(phi_seed(multiGrid(i)%nx, multiGrid(i)%ny), psi_seed(multiGrid(i)%nx, multiGrid(i)%ny), &
-                             uvel_pol(multiGrid(i)%nx, multiGrid(i)%ny), uvel_tor(multiGrid(i)%nx, multiGrid(i)%ny), &
-                             vvel_pol(multiGrid(i)%nx, multiGrid(i)%ny), vvel_tor(multiGrid(i)%nx, multiGrid(i)%ny), &
-                             res_uvel(multiGrid(i)%nx, multiGrid(i)%ny), res_vvel(multiGrid(i)%nx, multiGrid(i)%ny)) 
-                    
+                if (taskid == 0 ) then                    
                     phi_seed = crs_phi
                     psi_seed = crs_psi
                     
@@ -249,9 +261,6 @@ module multiGridHelmHoltz
                     res_vvel = multiGrid(i)%vvel - vvel_pol - vvel_tor
                     wrk_phi = 0.0 
                     wrk_psi = 0.0
-
-                    deallocate(uvel_pol, uvel_tor, &
-                               vvel_pol, vvel_tor) 
 
                     print *, 'residual calculation complete'
 
@@ -271,12 +280,7 @@ module multiGridHelmHoltz
                 if (rank == 0) then 
                     crs_phi = crs_phi + phi_seed
                     crs_psi = crs_psi + psi_seed
-                    deallocate(phi_seed, psi_seed, &
-                               res_uvel, res_vvel)
                     if (i == nfactors) then
-                        allocate(phi(multiGrid(nfactors)%nx, multiGrid(nfactors)%ny), &
-                                psi(multiGrid(nfactors)%nx, multiGrid(nfactors)%ny))
-                        print *, shape(phi), shape(crs_phi)
                         phi = crs_phi
                         psi = crs_psi 
                         print *, 'collected solutions in original grid'
@@ -288,7 +292,12 @@ module multiGridHelmHoltz
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
                 if (rank == 0 ) then 
-                    deallocate(wrk_phi, wrk_psi)
+                    deallocate( wrk_phi, wrk_psi, &
+                                phi_seed, psi_seed, &
+                                res_uvel, res_vvel, &
+                                uvel_pol, vvel_pol, &
+                                uvel_tor, vvel_tor)
+
                     if ( i == nfactors) deallocate(crs_phi, crs_psi)
                     print *, 'Loop completed'
                     print *, ''
@@ -306,8 +315,6 @@ module multiGridHelmHoltz
 
         subroutine helmholtzDecompAllVecFields()
             integer :: counter, z_counter, nx, ny, nz, shapeArr(4) !x, y, z, fieldid
-            real(kind=real_kind), allocatable :: uvel(:,:), vvel(:,:), phi(:, :), psi(:, :)
-
             integer :: max_Iter
             real :: rel_Tol, abs_Tol, div_Tol
 
@@ -321,39 +328,24 @@ module multiGridHelmHoltz
             ny = shapeArr(2)
             nz = shapeArr(3)
 
-            
-
-
-            if (taskid == 0) allocate(uvel(nx, ny), vvel(nx, ny) )
-
             do counter=1, num_2Dvector_fields
                 do z_counter =1, nz
-                    uvel = vector2DX_fields(:, :, z_counter, counter)
-                    vvel = vector2DY_fields(:, :, z_counter, counter)
-
                     if (taskid == 0 ) then
                         print *, 'Starting Helmholtz Decomposition for field number', counter, ' at z count ', z_counter
                     end if
 
-                    if (allocated(phi)) then
-                        deallocate(phi, psi)
-                    endif
-
-                    call solveByMultiGrid(nx, ny, uvel, vvel, UAREA, phi, psi, &
+                    call solveByMultiGrid(nx, ny, vector2DX_fields(:, :, z_counter, counter), vector2DY_fields(:, :, z_counter, counter), &
+                                        UAREA, phi_fields(:,:,z_counter, counter), psi_fields(:,:,z_counter, counter), &
                                         max_Iter, rel_Tol, abs_Tol, div_Tol)
 
-                    print *, 'saving the psi phi fields'
-
                     if (taskid == 0) then
-                        phi_fields(:,:,z_counter, counter) = phi
-                        psi_fields(:,:,z_counter, counter) = psi
+                        call getPolTorVelFD(psi_fields(:,:,z_counter, counter), phi_fields(:,:,z_counter, counter), &
+                                            DXU, DYU, vector2DX_phi_fields(:, :, z_counter, counter), vector2DX_psi_fields(:, :, z_counter, counter),
+                                            vector2DY_phi_fields(:, :, z_counter, counter), vector2DY_psi_fields(:, :, z_counter, counter))
                     endif
-
-                    print *, 'saved the psi phi fields'
                 end do
             end do
 
-            if (taskid == 0 ) deallocate(uvel, vvel, phi, psi)
         end subroutine
 
 
@@ -370,11 +362,11 @@ module multiGridHelmHoltz
             allocate(uvel_pol(nx, ny), uvel_tor(nx, ny), &
                      vvel_pol(nx, ny), vvel_tor(nx, ny))
 
-            WRITE(str_C,'(I0.3)') counter
-            WRITE(str_Z,'(I0.3)') z_counter
-
             do counter=1, num_2Dvector_fields
                 do z_counter =1, nz
+                    WRITE(str_C,'(I0.3)') counter
+                    WRITE(str_Z,'(I0.3)') z_counter
+
                     call write2dVar('phi_'//str_C//str_Z//'.nc', 'phi', phi_fields(:,:,z_counter, counter))
                     call write2dVar('psi_'//str_C//str_Z//'.nc', 'psi', psi_fields(:,:,z_counter, counter))
 
@@ -388,6 +380,8 @@ module multiGridHelmHoltz
                     call write2dVar('vvel_tor_'//str_C//str_Z//'.nc', 'vvel_tor', vvel_tor)
                 end do
             end do
+            deallocate(uvel_pol, uvel_tor, &
+                     vvel_pol, vvel_tor)
         end subroutine
 
         

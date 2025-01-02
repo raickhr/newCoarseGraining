@@ -114,6 +114,23 @@ module read_write
                                     &       "getVar3DatZlevel_real vector2dy" )
 
 
+                vector2DX_phi_field_info(field_count)%varname = "phi_"//vector2DX_field_info(field_count)%varname 
+                vector2DX_phi_field_info(field_count)%units = vector2DX_field_info(field_count)%units 
+                vector2DX_phi_field_info(field_count)%long_name = "poloidal component of "//vector2DX_field_info(field_count)%long_name 
+
+                vector2DX_psi_field_info(field_count)%varname = "psi_"//vector2DX_field_info(field_count)%varname 
+                vector2DX_psi_field_info(field_count)%units = vector2DX_field_info(field_count)%units 
+                vector2DX_psi_field_info(field_count)%long_name = "toroidal component of "//vector2DX_field_info(field_count)%long_name 
+
+                vector2DY_phi_field_info(field_count)%varname = "phi_"//vector2DY_field_info(field_count)%varname 
+                vector2DY_phi_field_info(field_count)%units = vector2DY_field_info(field_count)%units 
+                vector2DY_phi_field_info(field_count)%long_name = "poloidal component of "//vector2DY_field_info(field_count)%long_name 
+
+                vector2DY_psi_field_info(field_count)%varname = "psi_"//vector2DY_field_info(field_count)%varname 
+                vector2DY_psi_field_info(field_count)%units = vector2DX_field_info(field_count)%units 
+                vector2DY_psi_field_info(field_count)%long_name = "toroidal component of "//vector2DY_field_info(field_count)%long_name 
+
+
                 where (abs(vector2DX_fields(:,:, z_count, field_count)) > 1d10)
                     vector2DX_fields(:,:, z_count, field_count) = 0
                 end where
@@ -182,7 +199,7 @@ module read_write
         allocate(varids(numvars))
         allocate(dummy2d(nxu,nyu,1,1), dummy3d(nxu,nyu,nzu,1,1))
     
-        print *, 'writing file', trim(adjustl(fullfilename))
+        print *, 'writing file ', trim(adjustl(fullfilename))
         
         !-------------------------------------------------------------------
         !  open netcdf file

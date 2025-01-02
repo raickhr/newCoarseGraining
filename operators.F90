@@ -440,19 +440,18 @@ module operators
         !call calcGradFV(psi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_psi, gradY_psi)
 
         call calcGradFD(psi, centerDx, centerDy, gradX_psi, gradY_psi)
-        print*, 'gradients psi calculation complete'
         
         !call calcGradFV(phi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_phi, gradY_phi)
 
         call calcGradFD(phi, centerDx, centerDy, gradX_phi, gradY_phi)
-
-        print*, 'gradients calculation complete'
 
         polUvel = -gradX_phi
         polVvel = -gradY_phi
 
         torUvel = gradY_psi
         torVvel = -gradX_psi
+
+        deallocate(gradX_psi, gradY_psi, gradX_phi, gradY_phi)
     end subroutine
 
 

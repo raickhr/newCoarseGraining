@@ -106,9 +106,7 @@ program main
 
             if (taskid == 0 ) print *, 'completed Helmholtz decomposition'
 
-            if (taskid == 0 ) call writePolTorVelWithPsiPhi()
-
-            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+            call broadCastPsiPhiFields()
 
             call filter_allvars()
 
@@ -133,7 +131,7 @@ program main
             end if
             
             if (taskid .EQ. MASTER) then
-                WRITE(writefilename, "(A5,I0.3,A5,I0.3,A3)") "_file", file_index, "_time", time_index, ".nc" 
+                WRITE(writefilename, "(A5,I0.3,A5,I0.3,A3)") "file", file_index, "_time", time_index, ".nc" 
                 call writeFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
                 &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
                 &                 'Lengthscale', trim(adjustl(config%timevar_name)))
