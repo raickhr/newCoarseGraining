@@ -1,6 +1,7 @@
 module fields
     use kinds
     use gridModule
+    use configurationMod
     use mpiwrapper
     implicit none
 
@@ -103,6 +104,40 @@ module fields
 
     contains
 
+        subroutine init_unfilt_fields()
+            if (taskid == MASTER) then
+                call set_num_scalar2D_fields(config%num_of_scalar2D_fields_to_read)
+                call set_num_scalar3D_fields(config%num_of_scalar3D_fields_to_read)
+                call set_num_vector2D_fields(config%num_of_vector2D_fields_to_read)
+                call set_num_vector3D_fields(config%num_of_vector3D_fields_to_read)
+
+                call set_fieldnames(config%list_scalar2D_fieldsNames, config%list_scalar3D_fieldsNames, &
+                                &   config%list_vector2DX_fieldsNames,  config%list_vector2DY_fieldsNames, &
+                                &   config%list_vector3DX_fieldsNames,  config%list_vector3DY_fieldsNames, config%list_vector3DZ_fieldsNames)
+            endif
+
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+            call MPI_BCAST(num_scalar2D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(num_scalar3D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(num_vector2D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(num_vector3D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+    
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+    
+            call allocate_scalar2D_fields(nxu, nyu)
+            call allocate_scalar3D_fields(nxu, nyu, nzu)
+
+            call allocate_vector2D_fields(nxu, nyu)
+            call allocate_phipsi2D_fields(nxu, nyu)
+
+            call allocate_vector3D_fields(nxu, nyu, nzu)
+            call allocate_phipsi3D_fields(nxu, nyu, nzu)
+            
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+        end subroutine
+
         subroutine set_num_scalar2D_fields(n)
             integer(kind=int_kind), intent(in) :: n
             num_scalar2D_fields = n
@@ -113,12 +148,12 @@ module fields
             num_scalar3D_fields = n
         end subroutine
 
-        subroutine set_num_2dvector_fields(n)
+        subroutine set_num_vector2d_fields(n)
             integer(kind=int_kind), intent(in) :: n
             num_vector2D_fields = n
         end subroutine
 
-        subroutine set_num_3dvector_fields(n)
+        subroutine set_num_vector3d_fields(n)
             integer(kind=int_kind), intent(in) :: n
             num_vector3D_fields = n
         end subroutine
@@ -224,8 +259,13 @@ module fields
         end subroutine
 
 
-        subroutine allocate_output_fields(nx, ny, nz, nell)
-            integer(kind=int_kind), intent(in) :: nx, ny, nz, nell
+        subroutine allocate_filtered_fields()
+            integer(kind=int_kind) :: nx, ny, nz, nell
+
+            nx = nxu 
+            ny = nyu
+            nz = nzu
+            nell = num_filterlengths
 
             if (.not. allocated(OL_scalar2D_fields) .AND. num_scalar2D_fields > 0) then 
                 allocate(OL_scalar2D_fields(nx, ny, num_scalar2D_fields, nell))
@@ -268,11 +308,11 @@ module fields
 
         subroutine set_fieldnames(list_scalar2d_fieldnames, list_scalar3d_fieldnames, &
             &                     list_vector2dx_fieldnames,  list_vector2dy_fieldnames, &
-            &                     list_vector3dx_fieldnames, list_vector3dy_fieldnames, list_3dvectorzfieldnames)
+            &                     list_vector3dx_fieldnames, list_vector3dy_fieldnames, list_vector3dzfieldnames)
     
             character(len=*), intent(in), dimension(:) :: list_scalar2d_fieldnames, list_scalar3d_fieldnames, &
             &                                             list_vector2dx_fieldnames,  list_vector2dy_fieldnames, &
-            &                                             list_vector3dx_fieldnames, list_vector3dy_fieldnames, list_3dvectorzfieldnames
+            &                                             list_vector3dx_fieldnames, list_vector3dy_fieldnames, list_vector3dzfieldnames
     
             integer(kind=int_kind) :: counter
     
@@ -293,31 +333,10 @@ module fields
             do counter = 1, num_vector3D_fields
                 vector3DX_fields_info(counter)%varname = trim(adjustl(list_vector3dx_fieldnames(counter)))
                 vector3DY_fields_info(counter)%varname = trim(adjustl(list_vector3dy_fieldnames(counter)))
-                vector3DZ_fields_info(counter)%varname = trim(adjustl(list_3dvectorzfieldnames(counter)))
+                vector3DZ_fields_info(counter)%varname = trim(adjustl(list_vector3dzfieldnames(counter)))
             end do    
             
         end subroutine 
-
-        subroutine broadCastFieldInfo()
-            call MPI_BCAST(num_scalar2D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
-            call MPI_BCAST(num_scalar3D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
-            call MPI_BCAST(num_vector2D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
-            call MPI_BCAST(num_vector3D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
-    
-            call MPI_Barrier(MPI_COMM_WORLD, i_err)
-    
-            if (taskid .NE. MASTER) then
-                call allocate_scalar2D_fields(nxu, nyu)
-                call allocate_scalar3D_fields(nxu, nyu, nzu)
-
-                call allocate_vector2D_fields(nxu, nyu)
-                call allocate_phipsi2D_fields(nxu, nyu)
-
-                call allocate_vector3D_fields(nxu, nyu, nzu)
-                call allocate_phipsi3D_fields(nxu, nyu, nzu)
-            end if
-            call MPI_Barrier(MPI_COMM_WORLD, i_err)
-        end subroutine
 
         subroutine broadCastReadFields()
             integer :: counter
@@ -492,36 +511,61 @@ module fields
 
             do filter_index=1, num_filterlengths
 
-                do counter = 1, num_scalar_fields
+                do counter = 1, num_scalar2D_fields
+                    send_buffer(:,:) = OL_scalar2D_fields(:,js:je, counter, filter_index)
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                        &           OL_scalar2D_fields(:,  :  , counter, filter_index), recv_size, displacements, MPI_REAL, &
+                        &           MASTER, MPI_COMM_WORLD, i_err)
+                    call MPI_Barrier(MPI_COMM_WORLD, i_err)
+                end do
+
+                do counter = 1, num_scalar3D_fields
                     do zcounter = 1, nzu
-                        send_buffer(:,:) = OL_scalar_fields(:,js:je, zcounter, counter, filter_index)
+                        send_buffer(:,:) = OL_scalar3D_fields(:,js:je, zcounter, counter, filter_index)
                         call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
-                            &           OL_scalar_fields(:,  :  ,zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                            &           OL_scalar3D_fields(:,  :  ,zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
                             &           MASTER, MPI_COMM_WORLD, i_err)
                         call MPI_Barrier(MPI_COMM_WORLD, i_err)
                     end do
                     
                 end do
-
                 
                 do counter = 1, num_vector2D_fields
-                    do zcounter = 1, nzu
-                        send_buffer(:,:) = OL_phi_fields(:,js:je, zcounter, counter, filter_index)
-                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
-                                &           OL_phi_fields(:,:, zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
-                                &           MASTER, MPI_COMM_WORLD, i_err)
-                        
-                        send_buffer(:,:) = OL_psi_fields(:,js:je, zcounter, counter, filter_index)
-                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
-                                &           OL_psi_fields(:,:, zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
-                                &           MASTER, MPI_COMM_WORLD, i_err)
-                    end do
+                    send_buffer(:,:) = OL_vector2DX_fields(:,js:je, counter, filter_index)
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                            &           OL_vector2DX_fields(:,:, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                            &           MASTER, MPI_COMM_WORLD, i_err)
+                    
+                    send_buffer(:,:) = OL_vector2DY_fields(:,js:je, counter, filter_index)
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                            &           OL_vector2DY_fields(:,:, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                            &           MASTER, MPI_COMM_WORLD, i_err)
+
+                    send_buffer(:,:) = OL_phi2D_fields(:,js:je, counter, filter_index)
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                            &           OL_phi2D_fields(:,:, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                            &           MASTER, MPI_COMM_WORLD, i_err)
+                    
+                    send_buffer(:,:) = OL_psi2D_fields(:,js:je, counter, filter_index)
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                            &           OL_psi2D_fields(:,:, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                            &           MASTER, MPI_COMM_WORLD, i_err)
                 end do
 
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
         
                 do counter = 1, num_vector3D_fields
                     do zcounter = 1, nzu
+                        send_buffer(:,:) = OL_phi3D_fields(:,js:je, zcounter, counter, filter_index)
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                                &           OL_phi3D_fields(:,:, zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                                &           MASTER, MPI_COMM_WORLD, i_err)
+                        
+                        send_buffer(:,:) = OL_psi3D_fields(:,js:je, zcounter, counter, filter_index)
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                                &           OL_psi3D_fields(:,:, zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
+                                &           MASTER, MPI_COMM_WORLD, i_err)
+
                         send_buffer(:,:) = OL_vector3DX_fields(:,js:je, zcounter, counter, filter_index)
                         call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
                             &           OL_vector3DX_fields(:,:,zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
@@ -549,49 +593,80 @@ module fields
         end subroutine
 
         subroutine delloacate_fields()
-            if (allocated(scalar_fields)) deallocate(scalar_fields)
+            !! SCALAR FIELDS !!
+            if (allocated(scalar2D_fields)) deallocate(scalar2D_fields)
+            if (allocated(scalar3D_fields)) deallocate(scalar3D_fields)
+
+            if (allocated(scalar2D_fields_info)) deallocate(scalar2D_fields_info)
+            if (allocated(scalar3D_fields_info)) deallocate(scalar3D_fields_info)
+
+            !! 2D VECTOR FIELDS !!
 
             if (allocated(vector2DX_fields)) deallocate(vector2DX_fields)
             if (allocated(vector2DY_fields)) deallocate(vector2DY_fields)
 
+            if (allocated(vector2DX_fields_info)) deallocate(vector2DX_fields_info) 
+            if (allocated(vector2DY_fields_info)) deallocate(vector2DY_fields_info)
+
             if (allocated(vector2DX_phi_fields)) deallocate(vector2DX_phi_fields)
             if (allocated(vector2DY_phi_fields)) deallocate(vector2DY_phi_fields)
+
+            if (allocated(vector2DX_phi_fields_info)) deallocate(vector2DX_phi_fields_info) 
+            if (allocated(vector2DY_phi_fields_info)) deallocate(vector2DY_phi_fields_info)
 
             if (allocated(vector2DX_psi_fields)) deallocate(vector2DX_psi_fields)
             if (allocated(vector2DY_psi_fields)) deallocate(vector2DY_psi_fields)
 
-            if (allocated(psi_fields)) deallocate(psi_fields)
-            if (allocated(phi_fields)) deallocate(phi_fields)
+            if (allocated(vector2DX_psi_fields_info)) deallocate(vector2DX_psi_fields_info) 
+            if (allocated(vector2DY_psi_fields_info)) deallocate(vector2DY_psi_fields_info)
+
+            if (allocated(psi2D_fields)) deallocate(psi2D_fields)
+            if (allocated(phi2D_fields)) deallocate(phi2D_fields)
+
+            if (allocated(psi2D_fields_info)) deallocate(psi2D_fields_info) 
+            if (allocated(phi2D_fields_info)) deallocate(phi2D_fields_info)
+
+            !! 2D VECTOR FIELDS !!
 
             if (allocated(vector3DX_fields)) deallocate(vector3DX_fields)
             if (allocated(vector3DY_fields)) deallocate(vector3DY_fields)
             if (allocated(vector3DZ_fields)) deallocate(vector3DZ_fields)
 
-            if (allocated(scalar_fields_info)) deallocate(scalar_fields_info)
-
-            if (allocated(vector2DX_fields_info)) deallocate(vector2DX_fields_info) 
-            if (allocated(vector2DY_fields_info)) deallocate(vector2DY_fields_info)
-
-            if (allocated(psi_fields_info)) deallocate(psi_fields_info) 
-            if (allocated(phi_fields_info)) deallocate(phi_fields_info)
-
-            if (allocated(vector2DX_phi_fields_info)) deallocate(vector2DX_phi_fields_info) 
-            if (allocated(vector2DY_phi_fields_info)) deallocate(vector2DY_phi_fields_info)
-
-            if (allocated(vector2DX_psi_fields_info)) deallocate(vector2DX_psi_fields_info) 
-            if (allocated(vector2DY_psi_fields_info)) deallocate(vector2DY_psi_fields_info)
-
             if (allocated(vector3DX_fields_info)) deallocate(vector3DX_fields_info) 
             if (allocated(vector3DY_fields_info)) deallocate(vector3DY_fields_info) 
             if (allocated(vector3DZ_fields_info)) deallocate(vector3DZ_fields_info)
 
-            if (allocated(OL_scalar_fields)) deallocate(OL_scalar_fields)
+            if (allocated(vector3DX_phi_fields)) deallocate(vector3DX_phi_fields)
+            if (allocated(vector3DY_phi_fields)) deallocate(vector3DY_phi_fields)
+
+            if (allocated(vector3DX_phi_fields_info)) deallocate(vector3DX_phi_fields_info) 
+            if (allocated(vector3DY_phi_fields_info)) deallocate(vector3DY_phi_fields_info)
+
+            if (allocated(vector3DX_psi_fields)) deallocate(vector3DX_psi_fields)
+            if (allocated(vector3DY_psi_fields)) deallocate(vector3DY_psi_fields)
+
+            if (allocated(vector3DX_psi_fields_info)) deallocate(vector3DX_psi_fields_info) 
+            if (allocated(vector3DY_psi_fields_info)) deallocate(vector3DY_psi_fields_info)
+
+            if (allocated(psi3D_fields)) deallocate(psi3D_fields)
+            if (allocated(phi3D_fields)) deallocate(phi3D_fields)
+
+            if (allocated(psi3D_fields_info)) deallocate(psi3D_fields_info) 
+            if (allocated(phi3D_fields_info)) deallocate(phi3D_fields_info)
+
+            !! FILTERED FIELDS !!
+            !! FILTERED SCALAR FIELDS !!
+
+            if (allocated(OL_scalar2D_fields)) deallocate(OL_scalar2D_fields)
+            if (allocated(OL_scalar3D_fields)) deallocate(OL_scalar3D_fields)
+
+            !! FILTERED 2D VECTOR FIELDS !!
 
             if (allocated(OL_vector2DX_fields)) deallocate(OL_vector2DX_fields)
             if (allocated(OL_vector2DY_fields)) deallocate(OL_vector2DY_fields)
 
-            if (allocated(OL_phi_fields)) deallocate(OL_phi_fields)
-            if (allocated(OL_psi_fields)) deallocate(OL_psi_fields)
+            if (allocated(OL_phi2D_fields)) deallocate(OL_phi2D_fields)
+            if (allocated(OL_psi2D_fields)) deallocate(OL_psi2D_fields)
 
             if (allocated(OL_vector2DX_phi_fields)) deallocate(OL_vector2DX_phi_fields)
             if (allocated(OL_vector2DY_phi_fields)) deallocate(OL_vector2DY_phi_fields)
@@ -599,9 +674,20 @@ module fields
             if (allocated(OL_vector2DX_psi_fields)) deallocate(OL_vector2DX_psi_fields)
             if (allocated(OL_vector2DY_psi_fields)) deallocate(OL_vector2DY_psi_fields)
 
+            !! FILTERED 3D VECTOR FIELDS !!
+
             if (allocated(OL_vector3DX_fields)) deallocate(OL_vector3DX_fields)
             if (allocated(OL_vector3DY_fields)) deallocate(OL_vector3DY_fields)
             if (allocated(OL_vector3DZ_fields)) deallocate(OL_vector3DZ_fields)
+
+            if (allocated(OL_vector3DX_phi_fields)) deallocate(OL_vector3DX_phi_fields)
+            if (allocated(OL_vector3DY_phi_fields)) deallocate(OL_vector3DY_phi_fields)
+
+            if (allocated(OL_vector3DX_psi_fields)) deallocate(OL_vector3DX_psi_fields)
+            if (allocated(OL_vector3DY_psi_fields)) deallocate(OL_vector3DY_psi_fields)
+
+            if (allocated(OL_phi3D_fields)) deallocate(OL_phi3D_fields)
+            if (allocated(OL_psi3D_fields)) deallocate(OL_psi3D_fields)
 
         end subroutine
 

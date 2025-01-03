@@ -10,95 +10,45 @@ program main
 
     implicit none
     
-    type(configuration):: config         ! object that defines run configuration
-    integer :: file_index, time_index, z_index, facList(4)
+    integer :: file_index, time_index, z_index
     character (len=filename_len) :: writefilename
-
-
-    facList = (/9, 5, 3, 2/)
 
     call startMPI()
 
-    if (taskid .EQ. MASTER) then
-        call config%construct()   ! Run the constructor for configuration object which also reads the configuration file
-        call set_size(config%nx, config%ny, config%nz)
-        call init_grid(config%nx, config%ny, config%nz)
-        call get_grid_nc(config%InputPath, config%gridFile)
+    call init_config()
 
-        ! setting field info 
-        call set_num_scalar_fields(config%num_of_scalar_fields_to_read)
-        call set_num_2Dvector_fields(config%num_of_2Dvector_fields_to_read)
-        call set_num_3Dvector_fields(config%num_of_3Dvector_fields_to_read)
+    call init_grid()
 
-        call allocate_scalar_fields(nxu, nyu, nzu)
-        call allocate_vector2D_fields(nxu, nyu, nzu)
-        call allocate_phi_psi_fields(nxu, nyu, nzu)
-        call allocate_vector3D_fields(nxu, nyu, nzu)
+    call init_unfilt_fields()
 
-        call set_fieldnames(config%list_scalar_fieldsNames, &
-                        &   config%list_2DvectorX_fieldsNames,  config%list_2DvectorY_fieldsNames, &
-                        &   config%list_3DvectorX_fieldsNames,  config%list_3DvectorY_fieldsNames, config%list_3DvectorZ_fieldsNames)
+    call init_helmholtz()
 
-        ! setting filterlength info
-        call set_num_filterlengths(config%nfilter)
-        call set_arr_filterlength(config%list_filterLength)
+    call init_filtering()
 
-        ! setting input data info for reading
-        call set_numfiles_numzlevels_ntimesinafile(config%num_of_files_to_read, &
-                                            &      config%nz, &
-                                            &      config%startTimeIndex,  &    
-                                            &      config%endTimeIndex)
-
-        timevar_name = trim(adjustl(config%timevar_name))
-        vertdim_name = trim(adjustl(config%vertdim_name))
-
-        call alloc_arr_z_index()
-
-        call set_arr_z_index(config%list_zlevels)
-                                    
-
-    endif
-
-    call broadCastGridInfo()
-    call broadCastFieldInfo()
-    call broadCastFilterInfo()
-    call broadCastInputDataInfo()
-    if (taskid .EQ. MASTER) print *, ' all grid info broadcasted !'
-
-    !call 
-
-    call setMultiGrid(facList, ULAT, ULONG, DXU, DYU, UAREA)
+    call setMultiGrid()
 
     call dividework()
 
-    if (taskid .EQ. MASTER) print *, 'work division done !'
+    call allocate_filtered_fields()
 
-    call allocate_output_fields(nxu, nyu, nzu, num_filterlengths)
+    do file_index = 1, config%num_of_files_to_read
 
-    do file_index = 1, num_files
         if (taskid .EQ. MASTER) then
-            print *,"AT FILE NUMBER ",file_index,' OF ', num_files
+            print *,"AT FILE NUMBER ",file_index,' OF ', config%num_of_files_to_read
         endif
-        do time_index = start_timeindex, end_timeindex
+
+        do time_index = config%startTimeIndex, config%endTimeIndex
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
             if (taskid .EQ. MASTER) then
-                print *,"AT TIME INDEX ",time_index-start_timeindex+1,' OF ', end_timeindex - start_timeindex +1
+                print *,"AT TIME INDEX ",time_index-config%startTimeIndex+1,' OF ', config%endTimeIndex - config%startTimeIndex +1
 
                 call read_fields(trim(adjustl(config%InputPath))//'/'//trim(adjustl(config%list_filenames(file_index))), &
                                     time_index)
-                ! call assign_fields()
+
             endif
 
             call broadCastReadFields()
-
-
-            if (taskid .EQ. MASTER) then 
-                print *, ''
-                print *, 'all read field info at one time instant broadcasted !'
-                print *, ''
-                print *, ''
-                print *, ''
-            end if
 
             call helmholtzDecompAllVecFields()
 

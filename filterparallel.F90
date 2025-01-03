@@ -3,6 +3,7 @@ module filterparallel
     use mpiwrapper
     use gridModule
     use fields
+    use configurationMod
     implicit none
 
     integer(kind=int_kind) :: num_filterlengths
@@ -11,10 +12,25 @@ module filterparallel
     integer(kind=int_kind), allocatable, dimension(:) :: arr_numcols_inallprocs, arr_startcolindex_inallprocs
     contains
 
+        subroutine init_filtering()
+            if (taskid == MASTER) call set_num_filterlengths(config%nfilter)
+
+            call MPI_BCAST(num_filterlengths, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+            allocate(arr_filterlengths(num_filterlengths))
+
+            if (taskid == MASTER) call set_arr_filterlength(config%list_filterLength)
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+            call MPI_BCAST(arr_filterlengths, num_filterlengths, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+    
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+        end subroutine
+
         subroutine set_num_filterlengths(n)
             integer(kind=int_kind), intent(in) :: n
             num_filterlengths = n
-            if (.not. allocated(arr_filterlengths)) allocate(arr_filterlengths(n))
         end subroutine
 
         subroutine set_arr_filterlength(list_filterlength)
@@ -49,15 +65,6 @@ module filterparallel
             end do  
             
             call MPI_Barrier(MPI_COMM_WORLD, i_err)         
-        end subroutine
-
-        subroutine broadCastFilterInfo()
-            call MPI_BCAST(num_filterlengths, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
-            call MPI_Barrier(MPI_COMM_WORLD, i_err)
-            if (taskid .NE. MASTER) call set_num_filterlengths(num_filterlengths)
-            call MPI_BCAST(arr_filterlengths, num_filterlengths, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
-    
-            call MPI_Barrier(MPI_COMM_WORLD, i_err)
         end subroutine
 
         subroutine deallocate_filtervars()

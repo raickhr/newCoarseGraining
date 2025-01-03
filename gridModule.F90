@@ -2,6 +2,7 @@ module gridModule
     use kinds
     use constants
     use mpiwrapper
+    use configurationMod
 
     implicit none
 
@@ -26,31 +27,34 @@ module gridModule
             nzu = nz
         end subroutine
 
-        subroutine init_grid(nx, ny, nz)
-            integer(kind=int_kind), intent(in) :: nx, ny, nz
+        subroutine init_grid()
             integer(kind=int_kind) :: ierr
 
-            if (.not. allocated(DXU)) then
-                allocate(DXU(nx, ny),  DYU(nx, ny),     &
-                &   ULAT(nx, ny), ULONG(nx, ny), &
-                &   UAREA(nx, ny), FCORU(nx, ny), &
-                &   KMU(nx, ny), HU(nx, ny), stat=ierr)
-            endif
-
-            if ( ierr /= 0 ) then
-                print *,'ERROR : could not allocate xy grid'
-                stop 999
-            endif
-        end subroutine
-
-        subroutine broadCastGridInfo()
+            if (taskid = MASTER) call set_size(config%nx, config%ny, config%nz)
+            
             call MPI_BCAST(nxu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
             call MPI_BCAST(nyu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
             call MPI_BCAST(nzu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
     
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
-            if (taskid .NE. MASTER) call init_grid(nxu, nyu, nzu)
-    
+
+            allocate(DXU(nxu, nyu),  DYU(nxu, nyu),     &
+                &   ULAT(nxu, nyu), ULONG(nxu, nyu), &
+                &   UAREA(nxu, nyu), FCORU(nxu, nyu), &
+                &   KMU(nxu, nyu), HU(nxu, nyu), stat=ierr)
+
+            if ( ierr /= 0 ) then
+                print *,'ERROR : could not allocate xy grid at rank', taskid
+                stop 999
+            endif
+        
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+            ! reading grid file
+            if (taskid = MASTER)call get_grid_nc(config%InputPath, config%gridFile)
+
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
             call MPI_BCAST(DXU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
             call MPI_BCAST(DYU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
             call MPI_BCAST(ULAT, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
@@ -61,6 +65,7 @@ module gridModule
             call MPI_BCAST(FCORU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
     
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
+            
         end subroutine
 
         subroutine deallocate_gridVars()

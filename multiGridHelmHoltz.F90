@@ -1,5 +1,6 @@
 module multiGridHelmHoltz
     use kinds   
+    use configurationMod
     use coarsening
     use interpolation
     use mpiwrapper
@@ -24,11 +25,66 @@ module multiGridHelmHoltz
             procedure :: resetUvelVvel => reset_uvel_vvel
     end type
 
+    integer :: ncoarse_factors, maximum_iterations
+    real(kind=real_kind) :: absolute_tolerance, relative_tolerance, divergence_tolerance
     integer, allocatable :: factorList(:)
 
     class(grid), allocatable :: multiGrid(:)
     
     contains
+
+        subroutine init_helmholtz()
+            if (taskid == MASTER) then
+                call set_ncoarse_factors(config%ncoarse_levels)
+                call set_tolerances(config%abs_tol, config%rel_tol, config%div_tol)
+                call set_maximum_iterations(config%max_iterations)
+            endif
+
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+            call MPI_BCAST(ncoarse_factors, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(absolute_tolerance, 1, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(relative_tolerance, 1, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(divergence_tolerance, 1, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+            call MPI_BCAST(maximum_iterations, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+    
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+            call MPI_BCAST(ncoarse_factors, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+
+            allocate(factorList(ncoarse_factors))
+            
+            if (taskid == MASTER) call set_coarse_factorlist(config%list_coarse_factor_levels)
+
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+            call MPI_BCAST(factorList, ncoarse_factors, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+        end subroutine
+
+        subroutine set_ncoarse_factors(n)
+            integer(kind=int_kind), intent(in) :: n
+            ncoarse_factors = n
+        end subroutine
+
+        subroutine set_coarse_factorlist(list_coarse_factor_levels)
+            integer, intent(in) :: list_coarse_factor_levels(:)
+            factorList = list_coarse_factor_levels
+        end subroutine
+
+        subroutine set_maximum_iterations(n)
+            integer(kind=int_kind), intent(in) :: n
+            maximum_iterations = n
+        end subroutine
+
+        subroutine set_tolerances(abs_tol, rel_tol, div_tol)
+            real(kind=real_kind), intent(in) :: abs_tol, rel_tol, div_tol
+            absolute_tolerance = abs_tol
+            relative_tolerance = rel_tol
+            divergence_tolerance = div_tol
+        end subroutine
 
         subroutine set_grid(self, coarseLevel, org_lat, org_lon, org_centerDx, org_centerDy, org_cellArea)
             class(grid), intent(inout) :: self
@@ -137,32 +193,18 @@ module multiGridHelmHoltz
             if (taskid == 0) deallocate(self%uvel, self%vvel)
         end subroutine
 
-        subroutine setMultiGrid(facList, lat, lon, centerDx, centerDy, cellArea)
-            integer, intent(in) :: facList(:)
-            real(kind=real_kind), intent(in) :: lat(:,:), lon(:,:), centerDx(:,:), centerDy(:,:), cellArea(:,:)
-            integer :: shapeArr(2), i, alloc_err, nfactors
-
+        subroutine setMultiGrid()
+            integer :: i
             real(kind=real_kind), allocatable, dimension(:,:) :: dummy
 
             call initPETSC()
             
-            nfactors = size(facList)
+            if (rank == 0) print *, 'nfactors', ncoarse_factors
             
-            if (rank == 0) print *, 'nfactors', nfactors
-
-            allocate(multiGrid(nfactors+1), factorList(nfactors+1), stat=alloc_err)
-            allocate(multiGridMats(nfactors + 1))
-
-            factorList(1:nfactors) = facList
-
-            factorList(nfactors + 1) = 1   ! Last gird should be the original grid
-
-            
-            
-            do i = 1, nfactors + 1
+            do i = 1, ncoarse_factors
                 if (rank == 0) print *, 'i', i,  'factorList(i)', factorList(i)
 
-                call multiGrid(i)%setGrid(factorList(i), lat, lon, centerDx, centerDy, cellArea)
+                call multiGrid(i)%setGrid(factorList(i), ULAT, ULONG, DXU, DYU, UAREA)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
                 call multiGridMats(i)%setMat(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy)
@@ -318,17 +360,17 @@ module multiGridHelmHoltz
             integer :: max_Iter
             real :: rel_Tol, abs_Tol, div_Tol
 
-            max_Iter = 500
-            rel_Tol = 1d-20
-            abs_Tol = 1d-20
-            div_Tol = 1d10
+            max_Iter = maximum_iterations
+            rel_Tol = relative_tolerance
+            abs_Tol = absolute_tolerance
+            div_Tol = divergence_tolerance
 
             shapeArr = shape(vector2DX_fields)
             nx = shapeArr(1)
             ny = shapeArr(2)
             nz = shapeArr(3)
 
-            do counter=1, num_2Dvector_fields
+            do counter=1, num_vector2D_fields
                 do z_counter =1, nz
                     if (taskid == 0 ) then
                         print *, 'Starting Helmholtz Decomposition for field number', counter, ' at z count ', z_counter
@@ -362,7 +404,7 @@ module multiGridHelmHoltz
             allocate(uvel_pol(nx, ny), uvel_tor(nx, ny), &
                      vvel_pol(nx, ny), vvel_tor(nx, ny))
 
-            do counter=1, num_2Dvector_fields
+            do counter=1, num_vector2D_fields
                 do z_counter =1, nz
                     WRITE(str_C,'(I0.3)') counter
                     WRITE(str_Z,'(I0.3)') z_counter
