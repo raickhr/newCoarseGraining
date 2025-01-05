@@ -146,6 +146,7 @@ module configurationMod
                     & list_vector3DY_fieldsNames, &
                     & list_vector3DZ_fieldsNames, &
                     & list_zlevels, &
+                    & list_coarse_factor_levels, &
                     & list_filterLength
 
 
@@ -277,8 +278,8 @@ module configurationMod
             print *, ' '
 
             print *, ' Following are the coarsening levels for Helmholtz decomposition ' 
-            do counter=1, nfilter
-                WRITE(*,'(F50.3)') list_coarse_factor_levels(counter)
+            do counter=1, ncoarse_levels
+                WRITE(*,'(I50)') list_coarse_factor_levels(counter)
                 self%list_coarse_factor_levels(counter) = list_coarse_factor_levels(counter)
             end do
             print *, ' '

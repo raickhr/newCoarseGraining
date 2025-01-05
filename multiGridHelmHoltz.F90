@@ -7,7 +7,7 @@ module multiGridHelmHoltz
     use operators
     use helmHoltzDecomp
     use fields
-    use read_write
+    use gridModule
     implicit none
 
     type :: grid
@@ -34,6 +34,7 @@ module multiGridHelmHoltz
     contains
 
         subroutine init_helmholtz()
+            call initPETSC()
             if (taskid == MASTER) then
                 call set_ncoarse_factors(config%ncoarse_levels)
                 call set_tolerances(config%abs_tol, config%rel_tol, config%div_tol)
@@ -61,6 +62,11 @@ module multiGridHelmHoltz
             call MPI_BCAST(factorList, ncoarse_factors, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
 
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+            allocate(multiGrid(ncoarse_factors))
+            allocate(multiGridMats(ncoarse_factors))
+
+            call setMultiGrid()
 
         end subroutine
 
@@ -196,14 +202,8 @@ module multiGridHelmHoltz
         subroutine setMultiGrid()
             integer :: i
             real(kind=real_kind), allocatable, dimension(:,:) :: dummy
-
-            call initPETSC()
-            
-            if (rank == 0) print *, 'nfactors', ncoarse_factors
             
             do i = 1, ncoarse_factors
-                if (rank == 0) print *, 'i', i,  'factorList(i)', factorList(i)
-
                 call multiGrid(i)%setGrid(factorList(i), ULAT, ULONG, DXU, DYU, UAREA)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
@@ -356,7 +356,7 @@ module multiGridHelmHoltz
 
 
         subroutine helmholtzDecompAllVecFields()
-            integer :: counter, z_counter, nx, ny, nz, shapeArr(4) !x, y, z, fieldid
+            integer :: counter, z_counter, nx, ny, nz
             integer :: max_Iter
             real :: rel_Tol, abs_Tol, div_Tol
 
@@ -365,65 +365,82 @@ module multiGridHelmHoltz
             abs_Tol = absolute_tolerance
             div_Tol = divergence_tolerance
 
-            shapeArr = shape(vector2DX_fields)
-            nx = shapeArr(1)
-            ny = shapeArr(2)
-            nz = shapeArr(3)
+            nx = nxu
+            ny = nyu
+            nz = nzu
 
             do counter=1, num_vector2D_fields
+                if (taskid == 0 ) then
+                    print *, 'Starting Helmholtz Decomposition for 2D vector field number', counter
+                end if
+
+                call solveByMultiGrid(nx, ny, vector2DX_fields(:, :, counter), vector2DY_fields(:, :, counter), &
+                                    UAREA, phi2D_fields(:,:, counter), psi2D_fields(:,:, counter), &
+                                    max_Iter, rel_Tol, abs_Tol, div_Tol)
+
+                if (taskid == 0) then
+                    call getPolTorVelFD(psi2D_fields(:,:, counter), phi2D_fields(:,:, counter), DXU, DYU,  &
+                                        vector2DX_phi_fields(:, :, counter), vector2DX_psi_fields(:, :, counter), &
+                                        vector2DY_phi_fields(:, :, counter), vector2DY_psi_fields(:, :, counter))
+                endif
+            end do
+
+
+            do counter=1, num_vector3D_fields
                 do z_counter =1, nz
                     if (taskid == 0 ) then
-                        print *, 'Starting Helmholtz Decomposition for field number', counter, ' at z count ', z_counter
+                        print *, 'Starting Helmholtz Decomposition for 3D vector field number', counter, ' at z count ', z_counter
                     end if
 
-                    call solveByMultiGrid(nx, ny, vector2DX_fields(:, :, z_counter, counter), vector2DY_fields(:, :, z_counter, counter), &
-                                        UAREA, phi_fields(:,:,z_counter, counter), psi_fields(:,:,z_counter, counter), &
+                    call solveByMultiGrid(nx, ny, vector3DX_fields(:, :, z_counter, counter), vector3DY_fields(:, :, z_counter, counter), &
+                                        UAREA, phi3D_fields(:,:,z_counter, counter), psi3D_fields(:,:,z_counter, counter), &
                                         max_Iter, rel_Tol, abs_Tol, div_Tol)
 
                     if (taskid == 0) then
-                        call getPolTorVelFD(psi_fields(:,:,z_counter, counter), phi_fields(:,:,z_counter, counter), &
-                                            DXU, DYU, vector2DX_phi_fields(:, :, z_counter, counter), vector2DX_psi_fields(:, :, z_counter, counter), &
-                                            vector2DY_phi_fields(:, :, z_counter, counter), vector2DY_psi_fields(:, :, z_counter, counter))
+                        call getPolTorVelFD(psi3D_fields(:,:,z_counter, counter), phi3D_fields(:,:,z_counter, counter), DXU, DYU, &
+                                            vector3DX_phi_fields(:, :, z_counter, counter), vector3DX_psi_fields(:, :, z_counter, counter), &
+                                            vector3DY_phi_fields(:, :, z_counter, counter), vector3DY_psi_fields(:, :, z_counter, counter))
                     endif
                 end do
             end do
 
         end subroutine
 
+        subroutine getVectorsFromFilteredHelmHoltzPotentials(num_filterlengths)
+            integer, intent(in) :: num_filterlengths
+            integer :: ell_counter, counter, z_counter, nx, ny, nz
+            integer :: max_Iter
+            real :: rel_Tol, abs_Tol, div_Tol
 
-        subroutine writePolTorVelWithPsiPhi()
-            integer :: counter, z_counter, nx, ny, nz, shapeArr(4)
-            character(len=3) :: str_C, str_Z
-            real(kind=real_kind), dimension(:,:), allocatable :: uvel_pol, uvel_tor, vvel_pol, vvel_tor
+            max_Iter = maximum_iterations
+            rel_Tol = relative_tolerance
+            abs_Tol = absolute_tolerance
+            div_Tol = divergence_tolerance
 
-            shapeArr = shape(vector2DX_fields)
-            nx = shapeArr(1)
-            ny = shapeArr(2)
-            nz = shapeArr(3)
+            nx = nxu
+            ny = nyu
+            nz = nzu
 
-            allocate(uvel_pol(nx, ny), uvel_tor(nx, ny), &
-                     vvel_pol(nx, ny), vvel_tor(nx, ny))
+            do ell_counter =1, num_filterlengths
+                do counter=1, num_vector2D_fields
+                    if (taskid == 0) then
+                        call getPolTorVelFD(OL_psi2D_fields(:,:, counter, ell_counter), OL_phi2D_fields(:,:, counter, ell_counter), DXU, DYU,  &
+                                            OL_vector2DX_phi_fields(:, :, counter, ell_counter), OL_vector2DX_psi_fields(:, :, counter, ell_counter), &
+                                            OL_vector2DY_phi_fields(:, :, counter, ell_counter), OL_vector2DY_psi_fields(:, :, counter, ell_counter))
+                    endif
+                end do
 
-            do counter=1, num_vector2D_fields
-                do z_counter =1, nz
-                    WRITE(str_C,'(I0.3)') counter
-                    WRITE(str_Z,'(I0.3)') z_counter
 
-                    call write2dVar('phi_'//str_C//str_Z//'.nc', 'phi', phi_fields(:,:,z_counter, counter))
-                    call write2dVar('psi_'//str_C//str_Z//'.nc', 'psi', psi_fields(:,:,z_counter, counter))
-
-                    call getPolTorVelFD(psi_fields(:,:,z_counter, counter), phi_fields(:,:,z_counter, counter), &
-                                        DXU, DYU, uvel_pol, uvel_tor, vvel_pol, vvel_tor)
-
-                    call write2dVar('uvel_pol_'//str_C//str_Z//'.nc', 'uvel_pol', uvel_pol)
-                    call write2dVar('vvel_pol_'//str_C//str_Z//'.nc', 'vvel_pol', vvel_pol)
-
-                    call write2dVar('uvel_tor_'//str_C//str_Z//'.nc', 'uvel_tor', uvel_tor)
-                    call write2dVar('vvel_tor_'//str_C//str_Z//'.nc', 'vvel_tor', vvel_tor)
+                do counter=1, num_vector3D_fields
+                    do z_counter =1, nz
+                        if (taskid == 0) then
+                            call getPolTorVelFD(OL_psi3D_fields(:,:,z_counter, counter, ell_counter), OL_phi3D_fields(:,:,z_counter, counter, ell_counter), DXU, DYU, &
+                                                OL_vector3DX_phi_fields(:, :, z_counter, counter, ell_counter), OL_vector3DX_psi_fields(:, :, z_counter, counter, ell_counter), &
+                                                OL_vector3DY_phi_fields(:, :, z_counter, counter, ell_counter), OL_vector3DY_psi_fields(:, :, z_counter, counter, ell_counter))
+                        endif
+                    end do
                 end do
             end do
-            deallocate(uvel_pol, uvel_tor, &
-                     vvel_pol, vvel_tor)
         end subroutine
 
         

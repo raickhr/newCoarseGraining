@@ -17,60 +17,74 @@ program main
 
     call init_config()
 
-    call init_grid()
+    call init_inputDataInfo()
+
+    call allocate_gridVars()
+
+    if (taskid == MASTER) call get_grid_nc(config%InputPath, config%gridFile)
+    
+    call broadCastGridVars()
+
+    if (taskid == 0) print *, 'GridVars bcasted'
 
     call init_unfilt_fields()
 
+    if (taskid == 0) print *, 'unfilt vars initialized'
+
     call init_helmholtz()
+
+    if (taskid == 0) print *, 'helmholtz initialized'
 
     call init_filtering()
 
-    call setMultiGrid()
+    if (taskid == 0) print *, 'filtering vars initialized'
 
     call dividework()
 
+    if (taskid == 0) print *, 'work division initialized'
+
     call allocate_filtered_fields()
 
-    do file_index = 1, config%num_of_files_to_read
+    if (taskid == 0) print *, 'filtered vars allocated'
+
+    do file_index = 1, num_files
 
         if (taskid .EQ. MASTER) then
-            print *,"AT FILE NUMBER ",file_index,' OF ', config%num_of_files_to_read
+            print *,"AT FILE NUMBER ",file_index,' OF ', num_files
         endif
 
-        do time_index = config%startTimeIndex, config%endTimeIndex
-            call MPI_Barrier(MPI_COMM_WORLD, i_err)
-
+        do time_index = start_timeindex, end_timeindex
             if (taskid .EQ. MASTER) then
-                print *,"AT TIME INDEX ",time_index-config%startTimeIndex+1,' OF ', config%endTimeIndex - config%startTimeIndex +1
-
+                print *, "AT TIME INDEX ",time_index-start_timeindex+1,' OF ', end_timeindex - start_timeindex +1
+                
                 call read_fields(trim(adjustl(config%InputPath))//'/'//trim(adjustl(config%list_filenames(file_index))), &
                                     time_index)
+                
+                call setAtributesOfHelmHoltzFields()
 
             endif
 
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
             call broadCastReadFields()
 
-            call helmholtzDecompAllVecFields()
+            if (taskid .EQ. MASTER) print *, ' Read fields bcasted'
 
-            if (taskid .EQ. MASTER) then
-                WRITE(writefilename, "(A5,I0.3,A5,I0.3,A3)") "phi_psi_file", file_index, "_time", time_index, ".nc"
-                call writeHelmHoltzDeompFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
-                &   'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), trim(adjustl(config%timevar_name)))
-            end if
+            call helmholtzDecompAllVecFields()
 
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
             if (taskid == 0 ) print *, 'completed Helmholtz decomposition'
 
+            if (taskid .EQ. MASTER) then
+                WRITE(writefilename, "(A5,I0.3,A5,I0.3,A3)") "phi_psi_file", file_index, "_time", time_index, ".nc"
+                call writeUnfiltHelmHoltzDeompFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
+                &   'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), trim(adjustl(config%timevar_name)))
+            end if
+
             call broadCastPsiPhiFields()
 
             call filter_allvars()
-
-            ! OL_scalar_fields(:,:,1,:,1) = 1.0d0
-            ! OL_scalar_fields(:,:,2,:,1) = 2.0d0
-
-            ! OL_scalar_fields(:,:,1,:,2) = 10*2.0d0
-            ! OL_scalar_fields(:,:,2,:,2) = 20*2.0d0
 
             if (taskid .EQ. MASTER) then 
                 print *, ''
@@ -86,12 +100,18 @@ program main
                 print *, ''
                 print *, 'all filtered variables collected !'
                 print *, ''
+                print *, 'Now calculating the vectos from the Helmholtz Potentials !'
+                call getVectorsFromFilteredHelmHoltzPotentials(num_filterlengths)
+
             end if
             
             if (taskid .EQ. MASTER) then
                 WRITE(writefilename, "(A5,I0.3,A5,I0.3,A3)") "file", file_index, "_time", time_index, ".nc"
-                call writeHelmHoltzDeompFields(fullfilename, x_dimname, y_dimname, z_dimname, time_dimname) 
-                call writeFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
+                ! call writeDirectFilteredFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
+                ! &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
+                ! &                 'Lengthscale', trim(adjustl(config%timevar_name)))
+
+                call writeCoarseGrainedFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
                 &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
                 &                 'Lengthscale', trim(adjustl(config%timevar_name)))
             end if

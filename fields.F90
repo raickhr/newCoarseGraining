@@ -124,7 +124,7 @@ module fields
             call MPI_BCAST(num_vector3D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
     
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
-    
+
             call allocate_scalar2D_fields(nxu, nyu)
             call allocate_scalar3D_fields(nxu, nyu, nzu)
 
@@ -163,10 +163,6 @@ module fields
             if (.not. allocated(scalar2D_fields) .AND. num_scalar2D_fields > 0) then 
                 allocate(scalar2D_fields(nx, ny, num_scalar2D_fields))
             endif
-
-            if (.not. allocated(scalar2D_fields_info) .AND. num_scalar2D_fields > 0) then 
-                allocate(scalar2D_fields_info(num_scalar2D_fields))
-            endif
                 
         end subroutine
 
@@ -174,10 +170,6 @@ module fields
             integer(kind=int_kind), intent(in) :: nx, ny, nz
             if (.not. allocated(scalar3D_fields) .AND. num_scalar3D_fields > 0) then 
                 allocate(scalar3D_fields(nx, ny, nz, num_scalar3D_fields))
-            endif
-
-            if (.not. allocated(scalar3D_fields_info) .AND. num_scalar3D_fields > 0) then 
-                allocate(scalar3D_fields_info(num_scalar3D_fields))
             endif
                 
         end subroutine
@@ -189,10 +181,6 @@ module fields
                     &    vector2DY_fields(nx, ny, num_vector2D_fields))
             endif
 
-            if (.not. allocated(vector2DX_fields_info) .AND. num_vector2D_fields > 0) then 
-                allocate(vector2DX_fields_info(num_vector2D_fields), &
-                    &    vector2DY_fields_info(num_vector2D_fields))
-            endif
         end subroutine
 
         subroutine allocate_vector3D_fields(nx, ny, nz)
@@ -201,12 +189,6 @@ module fields
                 allocate(vector3DX_fields(nx, ny, nz, num_vector3D_fields), &
                     &    vector3DY_fields(nx, ny, nz, num_vector3D_fields), &
                     &    vector3DZ_fields(nx, ny, nz, num_vector3D_fields))
-            endif
-
-            if (.not. allocated(vector3DX_fields_info) .AND. num_vector3D_fields > 0) then 
-                allocate(vector3DX_fields_info(num_vector3D_fields), &
-                    &    vector3DY_fields_info(num_vector3D_fields), &
-                    &    vector3DZ_fields_info(num_vector3D_fields))
             endif
             
         end subroutine
@@ -262,10 +244,10 @@ module fields
         subroutine allocate_filtered_fields()
             integer(kind=int_kind) :: nx, ny, nz, nell
 
-            nx = nxu 
-            ny = nyu
-            nz = nzu
-            nell = num_filterlengths
+            nx = config%nx
+            ny = config%ny
+            nz = config%nz
+            nell = config%nfilter
 
             if (.not. allocated(OL_scalar2D_fields) .AND. num_scalar2D_fields > 0) then 
                 allocate(OL_scalar2D_fields(nx, ny, num_scalar2D_fields, nell))
@@ -304,6 +286,8 @@ module fields
                     &    OL_vector3DY_psi_fields(nx, ny, nz, num_vector3D_fields, nell))
             endif
 
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
         end subroutine
 
         subroutine set_fieldnames(list_scalar2d_fieldnames, list_scalar3d_fieldnames, &
@@ -315,27 +299,66 @@ module fields
             &                                             list_vector3dx_fieldnames, list_vector3dy_fieldnames, list_vector3dzfieldnames
     
             integer(kind=int_kind) :: counter
+
+            if (.not. allocated(scalar2D_fields_info) .AND. num_scalar2D_fields > 0) then 
+                allocate(scalar2D_fields_info(num_scalar2D_fields))
+            endif
+
+            if (.not. allocated(scalar3D_fields_info) .AND. num_scalar3D_fields > 0) then 
+                allocate(scalar3D_fields_info(num_scalar3D_fields))
+            endif
+
+            if (.not. allocated(vector2DX_fields_info) .AND. num_vector2D_fields > 0) then 
+                allocate(vector2DX_fields_info(num_vector2D_fields), &
+                    &    vector2DY_fields_info(num_vector2D_fields))
+
+                allocate(phi2D_fields_info(num_vector2D_fields), &
+                    &    psi2D_fields_info(num_vector2D_fields))
+
+                allocate(vector2DX_phi_fields_info(num_vector2D_fields), &
+                    &    vector2DY_phi_fields_info(num_vector2D_fields))
+
+                allocate(vector2DX_psi_fields_info(num_vector2D_fields), &
+                    &    vector2DY_psi_fields_info(num_vector2D_fields))
+            endif
+
+            if (.not. allocated(vector3DX_fields_info) .AND. num_vector3D_fields > 0) then 
+                allocate(vector3DX_fields_info(num_vector3D_fields), &
+                    &    vector3DY_fields_info(num_vector3D_fields), &
+                    &    vector3DZ_fields_info(num_vector3D_fields))
+
+                allocate(phi3D_fields_info(num_vector2D_fields), &
+                    &    psi3D_fields_info(num_vector2D_fields))
+
+                allocate(vector3DX_phi_fields_info(num_vector3D_fields), &
+                    &    vector3DY_phi_fields_info(num_vector3D_fields))
+
+                allocate(vector3DX_psi_fields_info(num_vector3D_fields), &
+                    &    vector3DY_psi_fields_info(num_vector3D_fields))
+
+
+            endif
     
     
             do counter = 1, num_scalar2D_fields
                 scalar2D_fields_info(counter)%varname = trim(adjustl(list_scalar2d_fieldnames(counter)))
             end do
-
+            
             do counter = 1, num_scalar3D_fields
                 scalar3D_fields_info(counter)%varname = trim(adjustl(list_scalar3d_fieldnames(counter)))
             end do
-    
+
             do counter = 1, num_vector2D_fields
                 vector2DX_fields_info(counter)%varname = trim(adjustl(list_vector2dx_fieldnames(counter)))
                 vector2DY_fields_info(counter)%varname = trim(adjustl(list_vector2dy_fieldnames(counter)))
             end do
-    
+
             do counter = 1, num_vector3D_fields
                 vector3DX_fields_info(counter)%varname = trim(adjustl(list_vector3dx_fieldnames(counter)))
                 vector3DY_fields_info(counter)%varname = trim(adjustl(list_vector3dy_fieldnames(counter)))
                 vector3DZ_fields_info(counter)%varname = trim(adjustl(list_vector3dzfieldnames(counter)))
             end do    
-            
+
         end subroutine 
 
         subroutine broadCastReadFields()
@@ -531,16 +554,6 @@ module fields
                 end do
                 
                 do counter = 1, num_vector2D_fields
-                    send_buffer(:,:) = OL_vector2DX_fields(:,js:je, counter, filter_index)
-                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
-                            &           OL_vector2DX_fields(:,:, counter, filter_index), recv_size, displacements, MPI_REAL, &
-                            &           MASTER, MPI_COMM_WORLD, i_err)
-                    
-                    send_buffer(:,:) = OL_vector2DY_fields(:,js:je, counter, filter_index)
-                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
-                            &           OL_vector2DY_fields(:,:, counter, filter_index), recv_size, displacements, MPI_REAL, &
-                            &           MASTER, MPI_COMM_WORLD, i_err)
-
                     send_buffer(:,:) = OL_phi2D_fields(:,js:je, counter, filter_index)
                     call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
                             &           OL_phi2D_fields(:,:, counter, filter_index), recv_size, displacements, MPI_REAL, &
@@ -565,16 +578,6 @@ module fields
                         call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
                                 &           OL_psi3D_fields(:,:, zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
                                 &           MASTER, MPI_COMM_WORLD, i_err)
-
-                        send_buffer(:,:) = OL_vector3DX_fields(:,js:je, zcounter, counter, filter_index)
-                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
-                            &           OL_vector3DX_fields(:,:,zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
-                            &           MASTER, MPI_COMM_WORLD, i_err)
-
-                        send_buffer(:,:) = OL_vector3DY_fields(:,js:je, zcounter, counter, filter_index)
-                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
-                            &           OL_vector3DY_fields(:,:,zcounter, counter, filter_index), recv_size, displacements, MPI_REAL, &
-                            &           MASTER, MPI_COMM_WORLD, i_err)
 
                         send_buffer(:,:) = OL_vector3DZ_fields(:,js:je, zcounter, counter, filter_index)
                         call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
@@ -689,6 +692,77 @@ module fields
             if (allocated(OL_phi3D_fields)) deallocate(OL_phi3D_fields)
             if (allocated(OL_psi3D_fields)) deallocate(OL_psi3D_fields)
 
+        end subroutine
+
+        subroutine setAtributesOfHelmHoltzFields()
+            integer :: field_count
+            do field_count=1, num_vector2D_fields
+                if (taskid == MASTER) then
+                    phi2D_fields_info(field_count)%varname = "phi_"//trim(adjustl(vector2DX_fields_info(field_count)%varname)) &
+                                                        //"_"//trim(adjustl(vector2DY_fields_info(field_count)%varname)) 
+                    phi2D_fields_info(field_count)%units = trim(adjustl(vector2DX_fields_info(field_count)%units))//'.meter'
+                    phi2D_fields_info(field_count)%long_name = "scalar potential of "//trim(adjustl(vector2DX_fields_info(field_count)%varname)) &
+                                                            //"_"//trim(adjustl(vector2DY_fields_info(field_count)%varname)) 
+
+                    
+                    psi2D_fields_info(field_count)%varname = "psi_"//trim(adjustl(vector2DX_fields_info(field_count)%varname)) &
+                                                            //"_"//trim(adjustl(vector2DY_fields_info(field_count)%varname)) 
+                    psi2D_fields_info(field_count)%units = trim(adjustl(vector2DX_fields_info(field_count)%units))//'.meter'
+                    psi2D_fields_info(field_count)%long_name = "vector potential of "//trim(adjustl(vector2DX_fields_info(field_count)%varname)) &
+                                                                //"_"//trim(adjustl(vector2DY_fields_info(field_count)%varname))
+
+
+                    vector2DX_phi_fields_info(field_count)%varname = "phi_"//trim(adjustl(vector2DX_fields_info(field_count)%varname)) 
+                    vector2DX_phi_fields_info(field_count)%units = trim(adjustl(vector2DX_fields_info(field_count)%units)) 
+                    vector2DX_phi_fields_info(field_count)%long_name = "poloidal component of "//trim(adjustl(vector2DX_fields_info(field_count)%long_name)) 
+
+                    vector2DX_psi_fields_info(field_count)%varname = "psi_"//trim(adjustl(vector2DX_fields_info(field_count)%varname)) 
+                    vector2DX_psi_fields_info(field_count)%units = trim(adjustl(vector2DX_fields_info(field_count)%units)) 
+                    vector2DX_psi_fields_info(field_count)%long_name = "toroidal component of "//trim(adjustl(vector2DX_fields_info(field_count)%long_name)) 
+
+                    vector2DY_phi_fields_info(field_count)%varname = "phi_"//trim(adjustl(vector2DY_fields_info(field_count)%varname)) 
+                    vector2DY_phi_fields_info(field_count)%units = trim(adjustl(vector2DY_fields_info(field_count)%units)) 
+                    vector2DY_phi_fields_info(field_count)%long_name = "poloidal component of "//trim(adjustl(vector2DY_fields_info(field_count)%long_name)) 
+
+                    vector2DY_psi_fields_info(field_count)%varname = "psi_"//trim(adjustl(vector2DY_fields_info(field_count)%varname)) 
+                    vector2DY_psi_fields_info(field_count)%units = trim(adjustl(vector2DY_fields_info(field_count)%units)) 
+                    vector2DY_psi_fields_info(field_count)%long_name = "toroidal component of "//trim(adjustl(vector2DY_fields_info(field_count)%long_name)) 
+                end if
+            end do
+
+            do field_count=1, num_vector3D_fields
+                if (taskid == MASTER) then
+                    phi3D_fields_info(field_count)%varname = "phi_"//trim(adjustl(vector3DX_fields_info(field_count)%varname)) &
+                                                        //"_"//trim(adjustl(vector3DY_fields_info(field_count)%varname)) 
+                    phi3D_fields_info(field_count)%units = trim(adjustl(vector3DX_fields_info(field_count)%units))//'.meter'
+                    phi3D_fields_info(field_count)%long_name = "scalar potential of "//trim(adjustl(vector3DX_fields_info(field_count)%varname)) &
+                                                            //"_"//trim(adjustl(vector3DY_fields_info(field_count)%varname)) 
+
+                    
+                    psi3D_fields_info(field_count)%varname = "psi_"//trim(adjustl(vector3DX_fields_info(field_count)%varname)) &
+                                                            //"_"//trim(adjustl(vector3DY_fields_info(field_count)%varname)) 
+                    psi3D_fields_info(field_count)%units = trim(adjustl(vector3DX_fields_info(field_count)%units))//'.meter'
+                    psi3D_fields_info(field_count)%long_name = "vector potential of "//trim(adjustl(vector3DX_fields_info(field_count)%varname)) &
+                                                                //"_"//trim(adjustl(vector3DY_fields_info(field_count)%varname))
+
+
+                    vector3DX_phi_fields_info(field_count)%varname = "phi_"//trim(adjustl(vector3DX_fields_info(field_count)%varname)) 
+                    vector3DX_phi_fields_info(field_count)%units = trim(adjustl(vector3DX_fields_info(field_count)%units)) 
+                    vector3DX_phi_fields_info(field_count)%long_name = "poloidal component of "//trim(adjustl(vector3DX_fields_info(field_count)%long_name)) 
+
+                    vector3DX_psi_fields_info(field_count)%varname = "psi_"//trim(adjustl(vector3DX_fields_info(field_count)%varname)) 
+                    vector3DX_psi_fields_info(field_count)%units = trim(adjustl(vector3DX_fields_info(field_count)%units)) 
+                    vector3DX_psi_fields_info(field_count)%long_name = "toroidal component of "//trim(adjustl(vector3DX_fields_info(field_count)%long_name)) 
+
+                    vector3DY_phi_fields_info(field_count)%varname = "phi_"//trim(adjustl(vector3DY_fields_info(field_count)%varname)) 
+                    vector3DY_phi_fields_info(field_count)%units = trim(adjustl(vector3DY_fields_info(field_count)%units)) 
+                    vector3DY_phi_fields_info(field_count)%long_name = "poloidal component of "//trim(adjustl(vector3DY_fields_info(field_count)%long_name)) 
+
+                    vector3DY_psi_fields_info(field_count)%varname = "psi_"//trim(adjustl(vector3DY_fields_info(field_count)%varname)) 
+                    vector3DY_psi_fields_info(field_count)%units = trim(adjustl(vector3DY_fields_info(field_count)%units)) 
+                    vector3DY_psi_fields_info(field_count)%long_name = "toroidal component of "//trim(adjustl(vector3DY_fields_info(field_count)%long_name)) 
+                end if
+            end do
         end subroutine
 
 end module

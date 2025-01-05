@@ -89,14 +89,14 @@ module filterparallel
                 ! WRITE(*, '(A12, I4, A10, I4, A5, I4)') 'At taskid: ', taskid, '  column ', j_index - startJindex + 1, ' of ', endJindex - startJindex +1
                 do i_index = startIindex, endIindex
                     ! condition for skipping the filterpoint for eg land
-                    ! call filter_allVarsAtpoint(i_index, j_index)
+                    ! call direct_filter_allVarsAtpoint(i_index, j_index)
 
-                    call coarseGrain_allVarsAtpoint(i_index, j_index)
+                    call coarseGrain_FieldsAtpoint(i_index, j_index)
                 end do
             end do
         end subroutine
 
-        subroutine coarseGrain_allVarsAtpoint(i_index, j_index)
+        subroutine coarseGrain_FieldsAtpoint(i_index, j_index)
             integer , intent(in) :: i_index, j_index
             ! local variables
 
@@ -112,9 +112,11 @@ module filterparallel
             real(kind=real_kind), allocatable, dimension(:,:) :: kernelVal ! x, y
 
 
-            numvars = num_scalar_fields * nzu + &
-                      2 * nzu * num_2Dvector_fields + & !psi phi not original vectors
-                      3 * nzu * num_3Dvector_fields   
+            numvars = num_scalar2D_fields + &
+                      nzu * num_scalar3D_fields + &
+                      2 * num_vector2D_fields   + & !psi phi ! do not filter vec_2D_phi and vec_2D_psi
+                      3 * nzu * num_vector3D_fields  ! psi phi for 2d fields only vertical is directly filtered
+                     
                       
             allocate(filtered_vars(numvars))
 
@@ -136,15 +138,13 @@ module filterparallel
                 &       east_west_BoxSize, north_south_BoxSize, &
                 &       filterlengthInKM, kernelVal)
 
-                call groupUnfiltvars(unfiltvars, east_west_BoxSize, north_south_BoxSize, numvars, &
+                call groupUnfiltVarsForCoarseGraining(unfiltvars, east_west_BoxSize, north_south_BoxSize, numvars, &
                 &                    west_cornerindex, east_cornerindex, &
                 &                    south_cornerindex, north_cornerindex )
 
                 
                 call get_filteredVals_allVars(east_west_BoxSize, north_south_BoxSize, numvars, unfiltvars, kernelVal, filtered_vars(:) )
                 
-                !call assignFilteredVars(numvars,i_index, j_index, filter_counter, filtered_vars)
-
                 call assignCoarseGrainedVars(numvars,i_index, j_index, filter_counter, filtered_vars)
 
                 deallocate(unfiltvars)
@@ -171,9 +171,10 @@ module filterparallel
             real(kind=real_kind), allocatable, dimension(:,:) :: kernelVal ! x, y
 
 
-            numvars = num_scalar_fields * nzu + &
-                      2 * nzu * num_2Dvector_fields + &
-                      3 * nzu * num_3Dvector_fields   
+            numvars = num_scalar3D_fields + &
+                      nzu * num_scalar3D_fields + &
+                      2 * num_vector2D_fields + &
+                      3 * nzu * num_vector3D_fields   
                       
             allocate(filtered_vars(numvars))
 
@@ -195,7 +196,7 @@ module filterparallel
                 &       east_west_BoxSize, north_south_BoxSize, &
                 &       filterlengthInKM, kernelVal)
 
-                call groupUnfiltvars(unfiltvars, east_west_BoxSize, north_south_BoxSize, numvars, &
+                call groupUnfiltvarsForDirectFiltering(unfiltvars, east_west_BoxSize, north_south_BoxSize, numvars, &
                 &                    west_cornerindex, east_cornerindex, &
                 &                    south_cornerindex, north_cornerindex )
 
@@ -211,7 +212,7 @@ module filterparallel
 
         end subroutine
 
-        subroutine groupUnfiltvars(unfiltvars, nx, ny, nvars, &
+        subroutine groupUnfiltvarsForDirectFiltering(unfiltvars, nx, ny, nvars, &
             &                      west_cornerindex, east_cornerindex, &
             &                      south_cornerindex, north_cornerindex )
 
@@ -224,26 +225,30 @@ module filterparallel
             integer:: counter, varcounter, depth_counter
 
             varcounter = 1
-            do counter=1, num_scalar_fields
+            do counter=1, num_scalar2D_fields
+                unfiltvars(:,:, varcounter) = &
+                    &   scalar2D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
+                varcounter = varcounter + 1
+            enddo
+
+            do counter=1, num_scalar3D_fields
                 do depth_counter = 1, nzu
                     unfiltvars(:,:, varcounter) = &
-                        &   scalar_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
+                        &   scalar3D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
                     varcounter = varcounter + 1
                 end do
             enddo
 
-            do counter=1, num_2Dvector_fields
-                do depth_counter = 1, nzu
-                    unfiltvars(:,:, varcounter) = &
-                        &   vector2DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
-                    varcounter = varcounter + 1
-                    unfiltvars(:,:, varcounter) = &
-                        &   vector2DY_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
-                    varcounter = varcounter + 1
-                end do
+            do counter=1, num_vector2D_fields
+                unfiltvars(:,:, varcounter) = &
+                    &   vector2DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
+                varcounter = varcounter + 1
+                unfiltvars(:,:, varcounter) = &
+                    &   vector2DY_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
+                varcounter = varcounter + 1
             end do
 
-            do counter=1, num_3Dvector_fields
+            do counter=1, num_vector3D_fields
                 do depth_counter = 1, nzu
                     unfiltvars(:,:, varcounter) = &
                         &   vector3DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex,depth_counter, counter)
@@ -260,7 +265,8 @@ module filterparallel
             end do
         end subroutine
 
-        subroutine groupHelmHoltzUnfiltvars(unfiltvars, nx, ny, nvars, &
+
+        subroutine groupUnfiltVarsForCoarseGraining(unfiltvars, nx, ny, nvars, &
             &                      west_cornerindex, east_cornerindex, &
             &                      south_cornerindex, north_cornerindex )
 
@@ -273,33 +279,38 @@ module filterparallel
             integer:: counter, varcounter, depth_counter
 
             varcounter = 1
-            do counter=1, num_scalar_fields
+
+            do counter=1, num_scalar2D_fields
+                unfiltvars(:,:, varcounter) = &
+                    &   scalar2D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
+                varcounter = varcounter + 1
+            enddo
+
+            do counter=1, num_scalar3D_fields
                 do depth_counter = 1, nzu
                     unfiltvars(:,:, varcounter) = &
-                        &   scalar_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
+                        &   scalar3D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
                     varcounter = varcounter + 1
                 end do
             enddo
 
-            do counter=1, num_2Dvector_fields
-                do depth_counter = 1, nzu
-                    unfiltvars(:,:, varcounter) = &
-                        &   phi_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
-                    varcounter = varcounter + 1
-                    unfiltvars(:,:, varcounter) = &
-                        &   psi_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
-                    varcounter = varcounter + 1
-                end do
+            do counter=1, num_vector2D_fields
+                unfiltvars(:,:, varcounter) = &
+                    &   phi2D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
+                varcounter = varcounter + 1
+                unfiltvars(:,:, varcounter) = &
+                    &   psi2D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
+                varcounter = varcounter + 1
             end do
 
-            do counter=1, num_3Dvector_fields
+            do counter=1, num_vector3D_fields
                 do depth_counter = 1, nzu
                     unfiltvars(:,:, varcounter) = &
-                        &   vector3DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex,depth_counter, counter)
+                        &   phi3D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex,depth_counter, counter)
                     varcounter = varcounter + 1
 
                     unfiltvars(:,:, varcounter) = &
-                        &   vector3DY_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex,depth_counter, counter)
+                        &   psi3D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex,depth_counter, counter)
                     varcounter = varcounter + 1
 
                     unfiltvars(:,:, varcounter) = &
@@ -316,29 +327,57 @@ module filterparallel
             integer(kind=int_kind) :: varcounter, depth_index, counter
 
             varcounter = 1
-            do counter=1, num_scalar_fields
+            do counter=1, num_scalar2D_fields
+                OL_scalar2D_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1
+            enddo
+
+            do counter=1, num_scalar3D_fields
                 do depth_index = 1, nzu
-                    OL_scalar_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    OL_scalar3D_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
                     varcounter = varcounter + 1
                 end do
             enddo
 
-            do counter=1, num_2Dvector_fields
-                do depth_index = 1, nzu
-                    OL_vector2DX_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
-                    varcounter = varcounter + 1
-                    OL_vector2DY_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
-                    varcounter = varcounter + 1
-                end do
+
+            do counter=1, num_vector2D_fields
+                OL_vector2DX_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1
+                OL_vector2DY_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1
             end do
 
-            do counter=1, num_3Dvector_fields
+            do counter=1, num_vector3D_fields
                 do depth_index = 1, nzu
                     OL_vector3DX_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
                     varcounter = varcounter + 1
                     OL_vector3DY_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
                     varcounter = varcounter + 1
                     OL_vector3DZ_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    varcounter = varcounter + 1
+                end do
+            end do
+        end subroutine
+
+        subroutine assignFilteredHelmHoltzVars(nvars, i_index, j_index, filter_index, filteredFields)
+            integer, intent(in) :: nvars, i_index, j_index, filter_index
+            real(kind=real_kind) :: filteredFields(nvars)
+
+            integer(kind=int_kind) :: varcounter, depth_index, counter
+
+            varcounter = 1
+            do counter=1, num_vector2D_fields
+                OL_phi2D_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1
+                OL_psi2D_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1
+            end do
+
+            do counter=1, num_vector3D_fields
+                do depth_index = 1, nzu
+                    OL_phi3D_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    varcounter = varcounter + 1
+                    OL_psi3D_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
                     varcounter = varcounter + 1
                 end do
             end do
@@ -351,27 +390,30 @@ module filterparallel
             integer(kind=int_kind) :: varcounter, depth_index, counter
 
             varcounter = 1
-            do counter=1, num_scalar_fields
+            do counter=1, num_scalar2D_fields
+                OL_scalar2D_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1
+            enddo
+
+            do counter=1, num_scalar3D_fields
                 do depth_index = 1, nzu
-                    OL_scalar_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    OL_scalar3D_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
                     varcounter = varcounter + 1
                 end do
             enddo
 
-            do counter=1, num_2Dvector_fields
-                do depth_index = 1, nzu
-                    OL_phi_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
-                    varcounter = varcounter + 1
-                    OL_psi_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
-                    varcounter = varcounter + 1
-                end do
+            do counter=1, num_vector2D_fields
+                OL_phi2D_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1
+                OL_psi2D_fields(i_index, j_index, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1
             end do
 
-            do counter=1, num_3Dvector_fields
+            do counter=1, num_vector3D_fields
                 do depth_index = 1, nzu
-                    OL_vector3DX_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    OL_phi3D_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
                     varcounter = varcounter + 1
-                    OL_vector3DY_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
+                    OL_psi3D_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
                     varcounter = varcounter + 1
                     OL_vector3DZ_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
                     varcounter = varcounter + 1

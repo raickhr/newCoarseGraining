@@ -24,13 +24,10 @@ OBJ = $(SRC:.F90=.o)
 %.o :%.F90
 	$(FC) -c $(FFLAGS) $(DEBUG) $< 
 
-main.o: fields.o configurationMod.o gridModule.o mpiwrapper.o filterparallel.o input_data_info.o read_write.o debug.o multiGridHelmHoltz.o 
+main.o: fields.o configurationMod.o gridModule.o mpiwrapper.o filterparallel.o input_data_info.o read_write.o multiGridHelmHoltz.o 
 	$(FC) -c $(FFLAGS) $(DEBUG) main.F90 ${PETSC_INCLUDE}
 
-debug.o : 
-	$(FC) -c $(FFLAGS) $(DEBUG) debug.F90
-
-configurationMod.o: kinds.o
+configurationMod.o: kinds.o mpiwrapper.o
 	$(FC) -c $(FFLAGS) $(DEBUG) configurationMod.F90
 
 gridModule.o : kinds.o constants.o mpiwrapper.o
@@ -48,7 +45,7 @@ operators.o : kinds.o
 constants.o: kinds.o
 	$(FC) -c $(FFLAGS) $(DEBUG) constants.F90
 
-coarsening.o : kinds.o debug.o
+coarsening.o : kinds.o
 	$(FC) -c $(FFLAGS) $(DEBUG) coarsening.F90
 
 helmHoltzDecomp.o :	kinds.o mpiwrapper.o operators.o

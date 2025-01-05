@@ -71,112 +71,84 @@ module read_write
         if (taskid .EQ. MASTER) then
             call getTimeVar(file_id, trim(adjustl(timevar_name)), &
                                                   timevar_units, timevar_calendar, time_index, &
-                                                  timevar_val, "error getting time variable info ")
+                                                  timevar_val, "error getting time variable info "//timevar_name)
             call getVertDimVals(file_id, nzu, trim(adjustl(vertdim_name)), arr_z_index, vertdim_vals, "error getting vertical dim ")
 
         endif
 
-        do field_count =1, num_scalar_fields
+        do field_count =1, num_scalar2D_fields
+            call getVar2D_WithAttrs_real(file_id, trim(adjustl(scalar2D_fields_info(field_count)%varname)), &
+                        &       time_index, &
+                        &       scalar2D_fields(:,:, field_count), &
+                        &       scalar2D_fields_info(field_count)%units, &
+                        &       scalar2D_fields_info(field_count)%long_name, &
+                        &       "getVar2D_real" )
+            where (abs(scalar2D_fields(:,:,field_count)) > 1d10)
+                scalar2D_fields(:,:, field_count) = 0
+            end where
+        end do
+
+        do field_count =1, num_scalar3D_fields
             do z_count =1, num_zlevels
                 z_index = arr_z_index(z_count)
-                call getVar3DatZlevel_real(file_id, trim(adjustl(scalar_field_info(field_count)%varname)), &
+                call getVar3DatZlevel_real(file_id, trim(adjustl(scalar3D_fields_info(field_count)%varname)), &
                                     &       z_index, time_index, &
-                                    &       scalar_fields(:,:,z_count, field_count), &
-                                    &       scalar_field_info(field_count)%units, &
-                                    &       scalar_field_info(field_count)%long_name, &
+                                    &       scalar3D_fields(:,:,z_count, field_count), &
+                                    &       scalar3D_fields_info(field_count)%units, &
+                                    &       scalar3D_fields_info(field_count)%long_name, &
                                     &       "getVar3DatZlevel_real" )
-                where (abs(scalar_fields(:,:,z_count, field_count)) > 1d10)
-                    scalar_fields(:,:,z_count, field_count) = 0
+                where (abs(scalar3D_fields(:,:,z_count, field_count)) > 1d10)
+                    scalar3D_fields(:,:,z_count, field_count) = 0
                 end where
             end do
         end do
 
-        ! scalar_fields(:,:,:,: ) = 0 
-        ! scalar_fields(1300,1,:,: ) = 10
-        ! scalar_fields(1300,300,:,: ) = 10
-        ! scalar_fields(1300,599,:,: ) = 10
+        do field_count=1, num_vector2D_fields
+            call getVar2D_WithAttrs_real(file_id, trim(adjustl(vector2DX_fields_info(field_count)%varname)), &
+                        &       time_index, &
+                        &       vector2DX_fields(:,:, field_count), &
+                        &       vector2DX_fields_info(field_count)%units, &
+                        &       vector2DX_fields_info(field_count)%long_name, &
+                        &       "getVar2D_real vector2dx" )
 
-        do field_count=1, num_2Dvector_fields
-            do z_count =1, num_zlevels
-                z_index = arr_z_index(z_count)
-                call getVar3DatZlevel_real(file_id, trim(adjustl(vector2DX_field_info(field_count)%varname)), &
-                                    &       z_index, time_index, &
-                                    &       vector2DX_fields(:,:,z_count, field_count), &
-                                    &       vector2DX_field_info(field_count)%units, &
-                                    &       vector2DX_field_info(field_count)%long_name, &
-                                    &       "getVar3DatZlevel_real vector2dx" )
+            call getVar2D_WithAttrs_real(file_id, trim(adjustl(vector2DY_fields_info(field_count)%varname)), &
+                        &       time_index, &
+                        &       vector2DY_fields(:,:, field_count), &
+                        &       vector2DY_fields_info(field_count)%units, &
+                        &       vector2DY_fields_info(field_count)%long_name, &
+                        &       "getVar2D_real vector2dy" )
 
-                call getVar3DatZlevel_real(file_id, trim(adjustl(vector2DY_field_info(field_count)%varname)), &
-                                    &       z_index, time_index, &
-                                    &       vector2DY_fields(:,:,z_count, field_count), &
-                                    &       vector2DY_field_info(field_count)%units, &
-                                    &       vector2DY_field_info(field_count)%long_name, &
-                                    &       "getVar3DatZlevel_real vector2dy" )
+            where (abs(vector2DX_fields(:,:, field_count)) > 1d10)
+                vector2DX_fields(:,:, field_count) = 0
+            end where
 
-                phi_field_info(field_count)%varname = "phi_"//trim(adjustl(vector2DX_field_info(field_count)%varname)) &
-                                                       //"_"//trim(adjustl(vector2DY_field_info(field_count)%varname)) 
-                phi_field_info(field_count)%units = 'N/A' 
-                phi_field_info(field_count)%long_name = "scalar potential of "//trim(adjustl(vector2DX_field_info(field_count)%varname)) &
-                                                        //"_"//trim(adjustl(vector2DY_field_info(field_count)%varname)) 
-
-                
-                psi_field_info(field_count)%varname = "psi_"//trim(adjustl(vector2DX_field_info(field_count)%varname)) &
-                                                       //"_"//trim(adjustl(vector2DY_field_info(field_count)%varname)) 
-                psi_field_info(field_count)%units = 'N/A' 
-                psi_field_info(field_count)%long_name = "vector potential of "//trim(adjustl(vector2DX_field_info(field_count)%varname)) &
-                                                         //"_"//trim(adjustl(vector2DY_field_info(field_count)%varname))
-
-
-                vector2DX_phi_field_info(field_count)%varname = "phi_"//trim(adjustl(vector2DX_field_info(field_count)%varname)) 
-                vector2DX_phi_field_info(field_count)%units = trim(adjustl(vector2DX_field_info(field_count)%units)) 
-                vector2DX_phi_field_info(field_count)%long_name = "poloidal component of "//trim(adjustl(vector2DX_field_info(field_count)%long_name)) 
-
-                vector2DX_psi_field_info(field_count)%varname = "psi_"//trim(adjustl(vector2DX_field_info(field_count)%varname)) 
-                vector2DX_psi_field_info(field_count)%units = trim(adjustl(vector2DX_field_info(field_count)%units)) 
-                vector2DX_psi_field_info(field_count)%long_name = "toroidal component of "//trim(adjustl(vector2DX_field_info(field_count)%long_name)) 
-
-                vector2DY_phi_field_info(field_count)%varname = "phi_"//trim(adjustl(vector2DY_field_info(field_count)%varname)) 
-                vector2DY_phi_field_info(field_count)%units = trim(adjustl(vector2DY_field_info(field_count)%units)) 
-                vector2DY_phi_field_info(field_count)%long_name = "poloidal component of "//trim(adjustl(vector2DY_field_info(field_count)%long_name)) 
-
-                vector2DY_psi_field_info(field_count)%varname = "psi_"//trim(adjustl(vector2DY_field_info(field_count)%varname)) 
-                vector2DY_psi_field_info(field_count)%units = trim(adjustl(vector2DX_field_info(field_count)%units)) 
-                vector2DY_psi_field_info(field_count)%long_name = "toroidal component of "//trim(adjustl(vector2DY_field_info(field_count)%long_name)) 
-
-
-                where (abs(vector2DX_fields(:,:, z_count, field_count)) > 1d10)
-                    vector2DX_fields(:,:, z_count, field_count) = 0
-                end where
-
-                where (abs(vector2DY_fields(:,:, z_count, field_count)) > 1d10)
-                    vector2DY_fields(:,:, z_count, field_count) = 0
-                end where
-                   
-            end do
+            where (abs(vector2DY_fields(:,:, field_count)) > 1d10)
+                vector2DY_fields(:,:, field_count) = 0
+            end where
         end do
 
-        do field_count=1, num_3Dvector_fields
+        do field_count=1, num_vector3D_fields
             do z_count =1, num_zlevels
                 z_index = arr_z_index(z_count)
-                call getVar3DatZlevel_real(file_id, trim(adjustl(vector3DX_field_info(field_count)%varname)), &
+                call getVar3DatZlevel_real(file_id, trim(adjustl(vector3DX_fields_info(field_count)%varname)), &
                                     &       z_index, time_index, &
                                     &       vector3DX_fields(:,:,z_count, field_count), &
-                                    &       vector3DX_field_info(field_count)%units, &
-                                    &       vector3DX_field_info(field_count)%long_name, &
+                                    &       vector3DX_fields_info(field_count)%units, &
+                                    &       vector3DX_fields_info(field_count)%long_name, &
                                     &       "getVar3DatZlevel_real vector3dx" )
 
-                call getVar3DatZlevel_real(file_id, trim(adjustl(vector3DY_field_info(field_count)%varname)), &
+                call getVar3DatZlevel_real(file_id, trim(adjustl(vector3DY_fields_info(field_count)%varname)), &
                                     &       z_index, time_index, &
                                     &       vector3DY_fields(:,:,z_count, field_count), &
-                                    &       vector3DY_field_info(field_count)%units, &
-                                    &       vector3DY_field_info(field_count)%long_name, &
+                                    &       vector3DY_fields_info(field_count)%units, &
+                                    &       vector3DY_fields_info(field_count)%long_name, &
                                     &       "getVar3DatZlevel_real vector3dy" )
 
-                call getVar3DatZlevel_real(file_id, trim(adjustl(vector3DZ_field_info(field_count)%varname)), &
+                call getVar3DatZlevel_real(file_id, trim(adjustl(vector3DZ_fields_info(field_count)%varname)), &
                                     &       z_index, time_index, &
                                     &       vector3DZ_fields(:,:,z_count, field_count), &
-                                    &       vector3DZ_field_info(field_count)%units, &
-                                    &       vector3DZ_field_info(field_count)%long_name, &
+                                    &       vector3DZ_fields_info(field_count)%units, &
+                                    &       vector3DZ_fields_info(field_count)%long_name, &
                                     &       "getVar3DatZlevel_real vector3dz" )
 
                 where (abs(vector3DX_fields(:,:, z_count, field_count)) > 1d10)
@@ -196,7 +168,7 @@ module read_write
         
     end subroutine
 
-    subroutine writeFields(fullfilename, x_dimname, y_dimname, z_dimname, filter_dimname, time_dimname)
+    subroutine writeDirectFilteredFields(fullfilename, x_dimname, y_dimname, z_dimname, filter_dimname, time_dimname)
         character(len=*) , intent(in) :: fullfilename, x_dimname, y_dimname, z_dimname, filter_dimname, time_dimname
         integer :: file_id, xdim_id, ydim_id, zdim_id, filterdim_id, timedim_id, coords_2d(4), coords_3d(5), ncerr , &
                    timevar_id, latvar_id, lonvar_id, zvar_id, filtervar_id, field_count, numvars, var_index, counter
@@ -207,7 +179,13 @@ module read_write
         integer(kind=int_kind), allocatable :: varids(:)
 
         real(kind=real_kind) , allocatable:: dummy2d(:,:,:,:), dummy3d(:,:,:,:,:)  ! x, y, z, filterlength, time
-        numvars = num_scalar_fields + 2*num_2Dvector_fields + 3*num_3Dvector_fields
+
+        integer, parameter :: INT_TYPE = 1, FLOAT_TYPE = 2, DOUBLE_TYPE=3
+
+
+        numvars = num_scalar2D_fields + num_scalar3D_fields + 2*num_vector2D_fields + 3*num_vector3D_fields
+
+        
 
         allocate(varids(numvars))
         allocate(dummy2d(nxu,nyu,1,1), dummy3d(nxu,nyu,nzu,1,1))
@@ -244,7 +222,7 @@ module read_write
     
         att_names(2) = 'calendar'
         att_values(2) = timevar_calendar
-        call defineVariables(file_id, time_dimname, 2, (/timedim_id/), timevar_id, att_names, att_values )
+        call defineVariables(file_id, time_dimname, FLOAT_TYPE, (/timedim_id/), timevar_id, att_names, att_values )
     
         !-------------------------------------------------------------------
         !-- filterlength
@@ -253,7 +231,7 @@ module read_write
     
         att_names(2) = 'long_name'
         att_values(2) = 'coarse graining filtering isotropic xy kernel'
-        call defineVariables(file_id, filter_dimname, 2, (/filterdim_id/), filtervar_id, att_names, att_values )
+        call defineVariables(file_id, filter_dimname, FLOAT_TYPE, (/filterdim_id/), filtervar_id, att_names, att_values )
     
         !-------------------------------------------------------------------
         !-- vertical level
@@ -263,7 +241,7 @@ module read_write
     
         att_names(2) = 'long_name'
         att_values(2) = 'ROMS vertical co-ordinate(s-rho), 0 at surface -1 at bottom'
-        call defineVariables(file_id, z_dimname, 2, (/zdim_id/), zvar_id, att_names, att_values )
+        call defineVariables(file_id, z_dimname, FLOAT_TYPE, (/zdim_id/), zvar_id, att_names, att_values )
     
     
         coords_2d(1)=xdim_id
@@ -280,63 +258,75 @@ module read_write
 
 
         var_index = 1
-        do field_count =1, num_scalar_fields
-            varname = trim(adjustl(scalar_field_info(field_count)%varname))
+        do field_count =1, num_scalar2D_fields
+            varname = trim(adjustl(scalar2D_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(scalar_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(scalar2D_fields_info(field_count)%units))
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(scalar_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(scalar2D_fields_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
             
         end do
 
-        do field_count=1, num_2Dvector_fields
-            varname = trim(adjustl(vector2DX_field_info(field_count)%varname))
+        do field_count =1, num_scalar3D_fields
+            varname = trim(adjustl(scalar3D_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector2DX_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(scalar3D_fields_info(field_count)%units))
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector2DX_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(scalar3D_fields_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+            
+        end do
+
+        do field_count=1, num_vector2D_fields
+            varname = trim(adjustl(vector2DX_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector2DX_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector2DX_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
 
-            varname = trim(adjustl(vector2DY_field_info(field_count)%varname))
+            varname = trim(adjustl(vector2DY_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector2DY_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(vector2DY_fields_info(field_count)%units))
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector2DY_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(vector2DY_fields_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
         end do
 
-        do field_count=1, num_3Dvector_fields
-            varname = trim(adjustl(vector3DX_field_info(field_count)%varname))
+        do field_count=1, num_vector3D_fields
+            varname = trim(adjustl(vector3DX_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector3DX_field_info(field_count)%units))    
+            att_values(1) = trim(adjustl(vector3DX_fields_info(field_count)%units))    
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector3DX_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(vector3DX_fields_info(field_count)%long_name))
 
             call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
 
-            varname = trim(adjustl(vector3DY_field_info(field_count)%varname))
+            varname = trim(adjustl(vector3DY_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector3DY_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(vector3DY_fields_info(field_count)%units))
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector3DY_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(vector3DY_fields_info(field_count)%long_name))
 
             call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
 
 
-            varname = trim(adjustl(vector3DZ_field_info(field_count)%varname))
+            varname = trim(adjustl(vector3DZ_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector3DZ_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(vector3DZ_fields_info(field_count)%units))
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector3DZ_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(vector3DZ_fields_info(field_count)%long_name))
             
             call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
@@ -356,7 +346,6 @@ module read_write
         end do
 
         do counter = 1, num_filterlengths
-            print *, 'arr_filterlengths(counter)', arr_filterlengths(counter)
             ncerr = nf90_put_var(file_id, filtervar_id,(/arr_filterlengths(counter)/),       &
                       start = (/counter/), &
                       count = (/1/))
@@ -372,30 +361,37 @@ module read_write
         ! Start writing variables
         do counter = 1, num_filterlengths
             var_index = 1
-            do field_count =1, num_scalar_fields
-                dummy3d(:,:,:, 1,1) = OL_scalar_fields(:,:,:, field_count, counter)
-                !print*, 'field num', field_count, 'filter_counter' , counter, ' value', OL_scalar_fields(1300,300,1,field_count, counter)
+            do field_count =1, num_scalar2D_fields
+                dummy2d(:,:, 1,1) = OL_scalar2D_fields(:,:, field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                        start = (/1, 1, 1, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
+                var_index = var_index + 1    
+            end do
+
+            do field_count =1, num_scalar3D_fields
+                dummy3d(:,:, :, 1,1) = OL_scalar3D_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
                         start = (/1, 1, 1, 1, counter/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1    
             end do
 
-            do field_count=1, num_2Dvector_fields
-                dummy3d(:, :, :, 1,1) = OL_vector2DX_fields(:, :, :, field_count, counter)
+            do field_count=1, num_vector2D_fields
+                dummy2d(:, :, 1,1) = OL_vector2DX_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, 1, counter/), &
-                        count = (/nxu, nyu, nzu, 1, 1 /))
+                        start = (/1, 1, 1, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
-                dummy3d(:, :, :, 1,1) = OL_vector2DY_fields(:, :, :, field_count, counter)
+                dummy2d(:, :, 1,1) = OL_vector2DY_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, 1, counter/), &
-                        count = (/nxu, nyu, nzu, 1, 1 /))
+                        start = (/1, 1, 1, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
             end do
 
-            do field_count=1, num_3Dvector_fields
+            do field_count=1, num_vector3D_fields
                 dummy3d(:,:,:, 1,1) = OL_vector3DX_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
                         start = (/1, 1, 1, 1, counter/), &
@@ -423,10 +419,9 @@ module read_write
     
     end subroutine
 
-    subroutine writeHelmHoltzDeompFields(fullfilename, x_dimname, y_dimname, z_dimname, time_dimname)
+    subroutine writeUnfiltHelmHoltzDeompFields(fullfilename, x_dimname, y_dimname, z_dimname, time_dimname)
         character(len=*) , intent(in) :: fullfilename, x_dimname, y_dimname, z_dimname, time_dimname
-
-        integer :: file_id, xdim_id, ydim_id, zdim_id, timedim_id, coords_3d(4), ncerr , &
+        integer :: file_id, xdim_id, ydim_id, zdim_id, timedim_id, coords_2d(3), coords_3d(4), ncerr , &
                    timevar_id, latvar_id, lonvar_id, zvar_id, field_count, numvars, var_index, counter
     
         character(len=longname_len) :: att_names(2), att_values(2)
@@ -434,13 +429,18 @@ module read_write
 
         integer(kind=int_kind), allocatable :: varids(:)
 
-        real(kind=real_kind) , allocatable:: dummy3d(:,:,:,:)  ! x, y, z, time
-        numvars = num_scalar_fields + &
-                  6*num_2Dvector_fields + & !(phi, psi, phi_u, psi_u, phi_v, psi_v)
-                  3*num_3Dvector_fields 
+        real(kind=real_kind) , allocatable:: dummy2d(:,:,:), & ! x, y, time
+                                             dummy3d(:,:,:,:)  ! x, y, z, time
+
+        integer, parameter :: INT_TYPE = 1, FLOAT_TYPE = 2, DOUBLE_TYPE=3
+
+        numvars = 6*num_vector2D_fields + &  ! phi, psi, phi_x, phi_y, psi_x, psi_y
+                  6*num_vector3D_fields      ! phi, psi, phi_x, phi_y, psi_x, psi_y
+
+        
 
         allocate(varids(numvars))
-        allocate(dummy2d(nxu,nyu,1,1), dummy3d(nxu,nyu,nzu,1,1))
+        allocate(dummy2d(nxu,nyu,1), dummy3d(nxu,nyu,nzu,1))
     
         print *, 'writing file ', trim(adjustl(fullfilename))
         
@@ -472,7 +472,8 @@ module read_write
     
         att_names(2) = 'calendar'
         att_values(2) = timevar_calendar
-        call defineVariables(file_id, time_dimname, 2, (/timedim_id/), timevar_id, att_names, att_values )
+        call defineVariables(file_id, time_dimname, FLOAT_TYPE, (/timedim_id/), timevar_id, att_names, att_values )
+
     
         !-------------------------------------------------------------------
         !-- vertical level
@@ -482,8 +483,12 @@ module read_write
     
         att_names(2) = 'long_name'
         att_values(2) = 'ROMS vertical co-ordinate(s-rho), 0 at surface -1 at bottom'
-        call defineVariables(file_id, z_dimname, 2, (/zdim_id/), zvar_id, att_names, att_values )
-
+        call defineVariables(file_id, z_dimname, FLOAT_TYPE, (/zdim_id/), zvar_id, att_names, att_values )
+    
+    
+        coords_2d(1)=xdim_id
+        coords_2d(2)=ydim_id
+        coords_2d(3)=timedim_id
     
     
         coords_3d(1)=xdim_id
@@ -493,101 +498,119 @@ module read_write
 
 
         var_index = 1
-        do field_count =1, num_scalar_fields
-            varname = trim(adjustl(scalar_field_info(field_count)%varname))
+        do field_count=1, num_vector2D_fields
+
+            varname = trim(adjustl(phi2D_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(scalar_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(phi2D_fields_info(field_count)%units))
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(scalar_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(phi2D_fields_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
-            var_index = var_index + 1
-            
-        end do
-
-        do field_count=1, num_2Dvector_fields
-            varname = trim(adjustl(phi_field_info(field_count)%varname))
-            att_names(1) = 'units'
-            att_values(1) = trim(adjustl(phi_field_info(field_count)%units))
-            att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(phi_field_info(field_count)%long_name))
-
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
 
-            varname = trim(adjustl(psi_field_info(field_count)%varname))
+            varname = trim(adjustl(psi2D_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(psi_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(psi2D_fields_info(field_count)%units))
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(psi_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(psi2D_fields_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
 
-            varname = trim(adjustl(vector2DX_phi_field_info(field_count)%varname))
-            att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector2DX_phi_field_info(field_count)%units))
-            att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector2DX_phi_field_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            varname = trim(adjustl(vector2DX_phi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector2DX_phi_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector2DX_phi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
 
-            varname = trim(adjustl(vector2DY_phi_field_info(field_count)%varname))
+            varname = trim(adjustl(vector2DY_phi_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector2DY_phi_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(vector2DY_phi_fields_info(field_count)%units))
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector2DY_phi_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(vector2DY_phi_fields_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
 
-            varname = trim(adjustl(vector2DX_psi_field_info(field_count)%varname))
+            varname = trim(adjustl(vector2DX_psi_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector2DX_psi_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(vector2DX_psi_fields_info(field_count)%units))
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector2DX_psi_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(vector2DX_psi_fields_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
 
-            varname = trim(adjustl(vector2DY_psi_field_info(field_count)%varname))
+            varname = trim(adjustl(vector2DY_psi_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector2DY_psi_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(vector2DY_psi_fields_info(field_count)%units))
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector2DY_psi_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(vector2DY_psi_fields_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
         end do
 
-        do field_count=1, num_3Dvector_fields
-            varname = trim(adjustl(vector3DX_field_info(field_count)%varname))
-            att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector3DX_field_info(field_count)%units))    
-            att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector3DX_field_info(field_count)%long_name))
+        do field_count=1, num_vector3D_fields
 
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            varname = trim(adjustl(phi3D_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(phi3D_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(phi3D_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
 
-            varname = trim(adjustl(vector3DY_field_info(field_count)%varname))
+            varname = trim(adjustl(psi3D_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector3DY_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(psi3D_fields_info(field_count)%units))
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector3DY_field_info(field_count)%long_name))
+            att_values(2) = trim(adjustl(psi3D_fields_info(field_count)%long_name))
 
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
 
 
-            varname = trim(adjustl(vector3DZ_field_info(field_count)%varname))
+            varname = trim(adjustl(vector3DX_phi_fields_info(field_count)%varname))
             att_names(1) = 'units'
-            att_values(1) = trim(adjustl(vector3DZ_field_info(field_count)%units))
+            att_values(1) = trim(adjustl(vector3DX_phi_fields_info(field_count)%units))    
             att_names(2) = 'long_name'
-            att_values(2) = trim(adjustl(vector3DZ_field_info(field_count)%long_name))
-            
-            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            att_values(2) = trim(adjustl(vector3DX_phi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector3DY_phi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector3DY_phi_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector3DY_phi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector3DX_psi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector3DX_psi_fields_info(field_count)%units))    
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector3DX_psi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector3DY_psi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector3DY_psi_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector3DY_psi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_3d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
             
         end do
@@ -609,64 +632,445 @@ module read_write
                  count = (/1/))
         if(ncerr /= nf90_noerr) call handle_err(ncerr, 'time co-ordinate vals')
 
+
+        ! Start writing variables
+        var_index = 1
+        do field_count=1, num_vector2D_fields
+            dummy2d(:, :, 1) = phi2D_fields(:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
+                    start = (/1, 1, counter/), &
+                    count = (/nxu, nyu, 1 /))
+            var_index = var_index + 1
+
+            dummy2d(:, :, 1) = psi2D_fields(:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
+                    start = (/1, 1, counter/), &
+                    count = (/nxu, nyu, 1 /))
+            var_index = var_index + 1
+
+            dummy2d(:, :, 1) = vector2DX_phi_fields(:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
+                    start = (/1, 1, counter/), &
+                    count = (/nxu, nyu, 1 /))
+            var_index = var_index + 1
+
+            dummy2d(:, :, 1) = vector2DY_phi_fields(:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
+                    start = (/1, 1, counter/), &
+                    count = (/nxu, nyu, 1 /))
+            var_index = var_index + 1
+
+            dummy2d(:, :, 1) = vector2DX_psi_fields(:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
+                    start = (/1, 1, counter/), &
+                    count = (/nxu, nyu, 1 /))
+            var_index = var_index + 1
+
+            dummy2d(:, :, 1) = vector2DY_psi_fields(:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
+                    start = (/1, 1, counter/), &
+                    count = (/nxu, nyu, 1 /))
+            var_index = var_index + 1
+        end do
+
+        do field_count=1, num_vector3D_fields
+            dummy3d(:,:,:, 1) = phi3D_fields(:,:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                    start = (/1, 1, 1, counter/), &
+                    count = (/nxu, nyu, nzu, 1 /))
+            var_index = var_index + 1
+
+            dummy3d(:,:,:, 1) = psi3D_fields(:,:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                    start = (/1, 1, 1, counter/), &
+                    count = (/nxu, nyu, nzu, 1 /))
+            var_index = var_index + 1
+
+            dummy3d(:,:,:, 1) = vector3DX_phi_fields(:,:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                    start = (/1, 1, 1, counter/), &
+                    count = (/nxu, nyu, nzu, 1 /))
+            var_index = var_index + 1
+
+            dummy3d(:,:,:, 1) = vector3DY_phi_fields(:,:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                    start = (/1, 1, 1, counter/), &
+                    count = (/nxu, nyu, nzu, 1 /))
+            var_index = var_index + 1
+
+            dummy3d(:,:,:, 1) = vector3DX_psi_fields(:,:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                    start = (/1, 1, 1, counter/), &
+                    count = (/nxu, nyu, nzu, 1 /))
+            var_index = var_index + 1
+
+            dummy3d(:,:,:, 1) = vector3DY_psi_fields(:,:, :, field_count)
+            ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                    start = (/1, 1, 1, counter/), &
+                    count = (/nxu, nyu, nzu, 1 /))
+            var_index = var_index + 1
+        end do
+
+
+        ncerr = nf90_close(file_id)
+        if (ncerr /= nf90_noerr) stop 'at close'
+
+    end subroutine
+
+    subroutine writeCoarseGrainedFields(fullfilename, x_dimname, y_dimname, z_dimname, filter_dimname, time_dimname)
+        character(len=*) , intent(in) :: fullfilename, x_dimname, y_dimname, z_dimname, filter_dimname, time_dimname
+        integer :: file_id, xdim_id, ydim_id, zdim_id, filterdim_id, timedim_id, coords_2d(4), coords_3d(5), ncerr , &
+                   timevar_id, latvar_id, lonvar_id, zvar_id, filtervar_id, field_count, numvars, var_index, counter
+    
+        character(len=longname_len) :: att_names(2), att_values(2)
+        character(len=varname_len) :: varname
+
+        integer(kind=int_kind), allocatable :: varids(:)
+
+        real(kind=real_kind) , allocatable:: dummy2d(:,:,:,:), dummy3d(:,:,:,:,:)  ! x, y, z, filterlength, time
+
+        integer, parameter :: INT_TYPE = 1, FLOAT_TYPE = 2, DOUBLE_TYPE=3
+
+
+
+        numvars = num_scalar2D_fields + num_scalar3D_fields + &
+                  6*num_vector2D_fields + &  ! OL_psi, OL_phi, OL_phi_u, OL_phi_v , OL_psi_u, OL_psi_v 
+                  7*num_vector3D_fields      ! OL_psi, OL_phi, OL_phi_u, OL_phi_v , OL_psi_u, OL_psi_v , OL_w
+
+        
+
+        allocate(varids(numvars))
+        allocate(dummy2d(nxu,nyu,1,1), dummy3d(nxu,nyu,nzu,1,1))
+    
+        print *, 'writing file ', trim(adjustl(fullfilename))
+        
+        !-------------------------------------------------------------------
+        !  open netcdf file
+        !-------------------------------------------------------------------
+    
+        ncerr = nf90_create(fullfilename, nf90_clobber, file_id)
+        if (ncerr /= nf90_noerr) call handle_err(ncerr, 'nf90_open to write')
+    
+        !-------------------------------------------------------------------
+        !  define dimensions
+        !-------------------------------------------------------------------
+    
+        call defineDimension(file_id, nxu, xdim_id, x_dimname, 'error in defining xdim')
+        call defineDimension(file_id, nyu, ydim_id, y_dimname, 'error in defining ydim')
+        call defineDimension(file_id, nzu, zdim_id, z_dimname, 'error in defining zdim')
+        call defineDimension(file_id, num_filterlengths, filterdim_id, filter_dimname, 'error in defining filterdim')
+        !call defineDimension(file_id, 1, timedim_id, timedim_name, 'error in defining timedim')
+    
+        ncerr = nf90_def_dim(file_id, trim(adjustl(time_dimname)), 1, timedim_id) !NF90_UNLIMITED
+        if (ncerr /= nf90_noerr) call handle_err(ncerr, 'error in defining time dimension')
+    
+        !-------------------------------------------------------------------
+        !  define coordinates
+        !-------------------------------------------------------------------
+        !-- time
+    
+        att_names(1) = 'units'
+        att_values(1) = timevar_units
+    
+        att_names(2) = 'calendar'
+        att_values(2) = timevar_calendar
+        call defineVariables(file_id, time_dimname, FLOAT_TYPE, (/timedim_id/), timevar_id, att_names, att_values )
+    
+        !-------------------------------------------------------------------
+        !-- filterlength
+        att_names(1) = 'units'
+        att_values(1) = 'kilometers'
+    
+        att_names(2) = 'long_name'
+        att_values(2) = 'coarse graining filtering isotropic xy kernel'
+        call defineVariables(file_id, filter_dimname, FLOAT_TYPE, (/filterdim_id/), filtervar_id, att_names, att_values )
+    
+        !-------------------------------------------------------------------
+        !-- vertical level
+    
+        att_names(1) = 'units'
+        att_values(1) = ' '
+    
+        att_names(2) = 'long_name'
+        att_values(2) = 'ROMS vertical co-ordinate(s-rho), 0 at surface -1 at bottom'
+        call defineVariables(file_id, z_dimname, FLOAT_TYPE, (/zdim_id/), zvar_id, att_names, att_values )
+    
+    
+        coords_2d(1)=xdim_id
+        coords_2d(2)=ydim_id
+        coords_2d(3)=filterdim_id
+        coords_2d(4)=timedim_id
+    
+    
+        coords_3d(1)=xdim_id
+        coords_3d(2)=ydim_id
+        coords_3d(3)=zdim_id
+        coords_3d(4)=filterdim_id
+        coords_3d(5)=timedim_id
+
+
+        var_index = 1
+        do field_count =1, num_scalar2D_fields
+            varname = trim(adjustl(scalar2D_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(scalar2D_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(scalar2D_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+            
+        end do
+
+        do field_count =1, num_scalar3D_fields
+            varname = trim(adjustl(scalar3D_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(scalar3D_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(scalar3D_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+            
+        end do
+
+        do field_count=1, num_vector2D_fields
+            varname = trim(adjustl(phi2D_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(phi2D_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(phi2D_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(psi2D_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(psi2D_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(psi2D_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector2DX_phi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector2DX_phi_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector2DX_phi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector2DY_phi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector2DY_phi_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector2DY_phi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector2DX_psi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector2DX_psi_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector2DX_psi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector2DY_psi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector2DY_psi_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector2DY_psi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+        end do
+
+        do field_count=1, num_vector3D_fields
+            varname = trim(adjustl(phi3D_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(phi3D_fields_info(field_count)%units))    
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(phi3D_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(psi3D_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(psi3D_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(psi3D_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector3DX_phi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector3DX_phi_fields_info(field_count)%units))    
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector3DX_phi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector3DY_phi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector3DY_phi_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector3DY_phi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector3DX_psi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector3DX_psi_fields_info(field_count)%units))    
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector3DX_psi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+            varname = trim(adjustl(vector3DY_psi_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector3DY_psi_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector3DY_psi_fields_info(field_count)%long_name))
+
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+
+
+            varname = trim(adjustl(vector3DZ_fields_info(field_count)%varname))
+            att_names(1) = 'units'
+            att_values(1) = trim(adjustl(vector3DZ_fields_info(field_count)%units))
+            att_names(2) = 'long_name'
+            att_values(2) = trim(adjustl(vector3DZ_fields_info(field_count)%long_name))
+            
+            call defineVariables(file_id, varname, 2, coords_3d, varids(var_index), att_names, att_values )
+            var_index = var_index + 1
+            
+        end do
+
+        ncerr = nf90_enddef(file_id)
+        if (ncerr /= nf90_noerr) stop 'at enddef'
+
+        ! Put time, lengthscale and z co-ordinates value
+
+        do counter = 1, num_zlevels
+            ncerr = nf90_put_var(file_id, zvar_id,(/arr_z_index(counter)/),       &
+                      start = (/counter/), &
+                      count = (/1/))
+            if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing z co-ordinate vals')
+        end do
+
+        do counter = 1, num_filterlengths
+            ncerr = nf90_put_var(file_id, filtervar_id,(/arr_filterlengths(counter)/),       &
+                      start = (/counter/), &
+                      count = (/1/))
+            if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing filterlength co-ordinate vals')
+        end do
+
+        ncerr = nf90_put_var(file_id, timevar_id, (/timevar_val(1)/),       &
+                 start = (/1/), &
+                 count = (/1/))
+        if(ncerr /= nf90_noerr) call handle_err(ncerr, 'time co-ordinate vals')
+
+
         ! Start writing variables
         do counter = 1, num_filterlengths
             var_index = 1
-            do field_count =1, num_scalar_fields
-                dummy3d(:,:,:, 1,1) = OL_scalar_fields(:,:,:, field_count, counter)
-                !print*, 'field num', field_count, 'filter_counter' , counter, ' value', OL_scalar_fields(1300,300,1,field_count, counter)
+            do field_count =1, num_scalar2D_fields
+                dummy2d(:,:, 1,1) = OL_scalar2D_fields(:,:, field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                        start = (/1, 1, 1, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
+                var_index = var_index + 1    
+            end do
+
+            do field_count =1, num_scalar3D_fields
+                dummy3d(:,:, :, 1,1) = OL_scalar3D_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
                         start = (/1, 1, 1, 1, counter/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1    
             end do
 
-            do field_count=1, num_2Dvector_fields
-                dummy3d(:, :, :, 1,1) = phi_fields(:, :, :, field_count, counter)
+            do field_count=1, num_vector2D_fields
+                dummy2d(:, :, 1,1) = OL_phi2D_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, 1, counter/), &
-                        count = (/nxu, nyu, nzu, 1, 1 /))
+                        start = (/1, 1, 1, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
-                dummy3d(:, :, :, 1,1) = psi_fields(:, :, :, field_count, counter)
+                dummy2d(:, :, 1,1) = OL_psi2D_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, 1, counter/), &
-                        count = (/nxu, nyu, nzu, 1, 1 /))
+                        start = (/1, 1, 1, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
-                dummy3d(:, :, :, 1,1) = vector2DX_phi_fields(:, :, :, field_count, counter)
+                dummy2d(:, :, 1,1) = OL_vector2DX_phi_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, 1, counter/), &
-                        count = (/nxu, nyu, nzu, 1, 1 /))
+                        start = (/1, 1, 1, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
-                dummy3d(:, :, :, 1,1) = vector2DY_phi_fields(:, :, :, field_count, counter)
+                dummy2d(:, :, 1,1) = OL_vector2DY_phi_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, 1, counter/), &
-                        count = (/nxu, nyu, nzu, 1, 1 /))
+                        start = (/1, 1, 1, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
-                dummy3d(:, :, :, 1,1) = vector2DX_psi_fields(:, :, :, field_count, counter)
+                dummy2d(:, :, 1,1) = OL_vector2DX_psi_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, 1, counter/), &
-                        count = (/nxu, nyu, nzu, 1, 1 /))
+                        start = (/1, 1, 1, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
-                dummy3d(:, :, :, 1,1) = vector2DY_psi_fields(:, :, :, field_count, counter)
+                dummy2d(:, :, 1,1) = OL_vector2DY_psi_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, 1, counter/), &
-                        count = (/nxu, nyu, nzu, 1, 1 /))
+                        start = (/1, 1, 1, counter/), &
+                        count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
             end do
 
-            do field_count=1, num_3Dvector_fields
-                dummy3d(:,:,:, 1,1) = OL_vector3DX_fields(:,:, :, field_count, counter)
+            do field_count=1, num_vector3D_fields
+                dummy3d(:,:,:, 1,1) = OL_phi3D_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
                         start = (/1, 1, 1, 1, counter/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
 
-                dummy3d(:,:,:, 1,1) = OL_vector3DY_fields(:,:, :, field_count, counter)
+                dummy3d(:,:,:, 1,1) = OL_psi3D_fields(:,:, :, field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                        start = (/1, 1, 1, 1, counter/), &
+                        count = (/nxu, nyu, nzu, 1, 1 /))
+                var_index = var_index + 1
+
+                dummy3d(:,:,:, 1,1) = OL_vector3DX_phi_fields(:,:, :, field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                        start = (/1, 1, 1, 1, counter/), &
+                        count = (/nxu, nyu, nzu, 1, 1 /))
+                var_index = var_index + 1
+
+                dummy3d(:,:,:, 1,1) = OL_vector3DY_phi_fields(:,:, :, field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                        start = (/1, 1, 1, 1, counter/), &
+                        count = (/nxu, nyu, nzu, 1, 1 /))
+                var_index = var_index + 1
+
+                dummy3d(:,:,:, 1,1) = OL_vector3DX_psi_fields(:,:, :, field_count, counter)
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                        start = (/1, 1, 1, 1, counter/), &
+                        count = (/nxu, nyu, nzu, 1, 1 /))
+                var_index = var_index + 1
+
+                dummy3d(:,:,:, 1,1) = OL_vector3DY_psi_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
                         start = (/1, 1, 1, 1, counter/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))

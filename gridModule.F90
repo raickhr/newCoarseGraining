@@ -27,10 +27,10 @@ module gridModule
             nzu = nz
         end subroutine
 
-        subroutine init_grid()
+        subroutine allocate_gridVars()
             integer(kind=int_kind) :: ierr
 
-            if (taskid = MASTER) call set_size(config%nx, config%ny, config%nz)
+            if (taskid == MASTER) call set_size(config%nx, config%ny, config%nz)
             
             call MPI_BCAST(nxu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
             call MPI_BCAST(nyu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
@@ -47,12 +47,10 @@ module gridModule
                 print *,'ERROR : could not allocate xy grid at rank', taskid
                 stop 999
             endif
-        
-            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+            
+        end subroutine
 
-            ! reading grid file
-            if (taskid = MASTER)call get_grid_nc(config%InputPath, config%gridFile)
-
+        subroutine broadCastGridVars()
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
             call MPI_BCAST(DXU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
@@ -65,7 +63,6 @@ module gridModule
             call MPI_BCAST(FCORU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
     
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
-            
         end subroutine
 
         subroutine deallocate_gridVars()

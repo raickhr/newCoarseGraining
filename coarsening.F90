@@ -1,4 +1,5 @@
 module coarsening
+#include "config.h"
     use kinds
     implicit none
     logical:: verbose
