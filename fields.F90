@@ -241,13 +241,8 @@ module fields
         end subroutine
 
 
-        subroutine allocate_filtered_fields()
-            integer(kind=int_kind) :: nx, ny, nz, nell
-
-            nx = config%nx
-            ny = config%ny
-            nz = config%nz
-            nell = config%nfilter
+        subroutine allocate_filtered_fields(nx, ny, nz, nell)
+            integer(kind=int_kind), intent(in) :: nx, ny, nz, nell
 
             if (.not. allocated(OL_scalar2D_fields) .AND. num_scalar2D_fields > 0) then 
                 allocate(OL_scalar2D_fields(nx, ny, num_scalar2D_fields, nell))

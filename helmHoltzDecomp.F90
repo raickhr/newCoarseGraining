@@ -196,6 +196,7 @@ module helmHoltzDecomp
         call VecSetSizes(self%y_globalOnZero, PETSC_DECIDE, 4*mx * my, ierr)
 
         if (rank == 0) then
+            allocate(divU(nx,ny), curlU(nx,ny))
             call calcHozDivVertCurlFD(uvel, vvel, centerDx, centerDy, divU, curlU)
             print *, 'creating RHS vectors grid size size', mx,'x', my
 
@@ -268,6 +269,7 @@ module helmHoltzDecomp
         my = ny
 
         if (rank == 0) then
+            allocate(divU(nx,ny), curlU(nx,ny))
             call calcHozDivVertCurlFD(uvel, vvel, centerDx, centerDy, divU, curlU)
             do Ii = 0, mx * my - 1
                 i = mod(Ii, mx)

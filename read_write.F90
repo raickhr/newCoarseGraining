@@ -632,7 +632,6 @@ module read_write
                  count = (/1/))
         if(ncerr /= nf90_noerr) call handle_err(ncerr, 'time co-ordinate vals')
 
-
         ! Start writing variables
         var_index = 1
         do field_count=1, num_vector2D_fields
@@ -710,7 +709,6 @@ module read_write
                     count = (/nxu, nyu, nzu, 1 /))
             var_index = var_index + 1
         end do
-
 
         ncerr = nf90_close(file_id)
         if (ncerr /= nf90_noerr) stop 'at close'

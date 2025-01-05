@@ -43,7 +43,7 @@ program main
 
     if (taskid == 0) print *, 'work division initialized'
 
-    call allocate_filtered_fields()
+    call allocate_filtered_fields(nxu, nyu, nzu, num_filterlengths)
 
     if (taskid == 0) print *, 'filtered vars allocated'
 
@@ -77,12 +77,14 @@ program main
             if (taskid == 0 ) print *, 'completed Helmholtz decomposition'
 
             if (taskid .EQ. MASTER) then
-                WRITE(writefilename, "(A5,I0.3,A5,I0.3,A3)") "phi_psi_file", file_index, "_time", time_index, ".nc"
+                WRITE(writefilename, "(A12,I0.3,A5,I0.3,A3)") "phi_psi_file", file_index, "_time", time_index, ".nc"
                 call writeUnfiltHelmHoltzDeompFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
                 &   'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), trim(adjustl(config%timevar_name)))
             end if
 
             call broadCastPsiPhiFields()
+
+            if (taskid .EQ. MASTER) print *, 'phi psi broadcasted'
 
             call filter_allvars()
 
@@ -92,9 +94,9 @@ program main
                 print *, ''
             end if
 
-            !call collectFilteredFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
+            call collectFilteredFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
 
-            call collectCoarseGrainedFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
+            !call collectCoarseGrainedFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
 
             if (taskid .EQ. MASTER) then 
                 print *, ''
@@ -107,13 +109,13 @@ program main
             
             if (taskid .EQ. MASTER) then
                 WRITE(writefilename, "(A5,I0.3,A5,I0.3,A3)") "file", file_index, "_time", time_index, ".nc"
-                ! call writeDirectFilteredFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
-                ! &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
-                ! &                 'Lengthscale', trim(adjustl(config%timevar_name)))
-
-                call writeCoarseGrainedFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
+                call writeDirectFilteredFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
                 &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
                 &                 'Lengthscale', trim(adjustl(config%timevar_name)))
+
+                ! call writeCoarseGrainedFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
+                ! &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
+                ! &                 'Lengthscale', trim(adjustl(config%timevar_name)))
             end if
 
         end do !close time loop

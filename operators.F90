@@ -151,7 +151,7 @@ module operators
 
     subroutine calcGradFD(phi, dx, dy, gradX, grady)
         real(kind=real_kind), intent(in), dimension(:,:) :: phi, dx, dy
-        real(kind=real_kind), intent(out), allocatable, dimension(:,:) :: gradX, grady
+        real(kind=real_kind), intent(out), dimension(:,:) :: gradX, grady
 
         real(kind=real_kind), allocatable, dimension(:,:) :: dummy
 
@@ -169,17 +169,6 @@ module operators
             .NOT. all(shape(dy) .EQ. shapeArr)) then
                 stop "calcGradFD:: shape of array inconsistent"
         endif
-
-        if (allocated(gradX)) then
-            deallocate(gradY)
-        endif
-
-        if (allocated(gradY)) then
-            deallocate(gradY)
-        endif
-
-        allocate(gradX(nx, ny), stat = ierr)
-        allocate(gradY(nx, ny), stat = ierr)
         
         allocate(dummy(nx, ny), stat = ierr)
         
@@ -366,7 +355,7 @@ module operators
 
     subroutine calcHozDivVertCurlFD(uvel, vvel, dx, dy, horzDiv, vertCurl)
         real(kind=real_kind), intent(in), dimension(:,:) :: uvel, vvel, dx, dy
-        real(kind=real_kind), intent(out), allocatable, dimension(:,:) :: horzDiv, vertCurl
+        real(kind=real_kind), intent(out), dimension(:,:) :: horzDiv, vertCurl
 
         real(kind=real_kind), allocatable, dimension(:,:) :: gradX_uvel, gradY_uvel, gradX_vvel, gradY_vvel
         integer :: nx, ny, ierr, shapeArr(2)
@@ -385,18 +374,8 @@ module operators
                 stop "calcHozDivVertCurl:: shape of array inconsistent"
         endif
 
-        if (allocated(horzDiv)) then
-            deallocate(horzDiv)
-        endif
-
-        if (allocated(vertCurl)) then
-            deallocate(vertCurl)
-        endif
-
-        allocate(horzDiv(nx, ny), stat = ierr)
-        allocate(vertCurl(nx, ny), stat = ierr)
-
-        
+        allocate(gradX_uvel(nx, ny), gradY_uvel(nx, ny))
+        allocate(gradX_vvel(nx, ny), gradY_vvel(nx, ny))
 
         call calcGradFD(uvel, dx, dy, gradX_uvel, gradY_uvel)
         call calcGradFD(vvel, dx, dy, gradX_vvel, gradY_vvel)
@@ -436,6 +415,14 @@ module operators
         real(kind=real_kind), intent(out), dimension(:,:) :: polUvel, torUvel, polVvel, torVvel
 
         real(kind=real_kind), allocatable, dimension(:,:) :: gradX_psi, gradY_psi, gradX_phi, gradY_phi
+
+        integer :: arrShape(2), nx, ny
+
+        arrShape = shape(psi)
+        nx = arrShape(1)
+        ny = arrShape(2)
+
+        allocate(gradX_phi(nx, ny), gradY_phi(nx, ny), gradX_psi(nx, ny), gradY_psi(nx, ny))
 
         !call calcGradFV(psi, dxBottom, dxTop, dyLeft, dyRight, cellArea, gradX_psi, gradY_psi)
 
