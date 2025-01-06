@@ -2,7 +2,6 @@ module netcdf_io
     use gridModule
     use ncdf_wrapper
     use kinds
-    use fields
     implicit none
 
     contains

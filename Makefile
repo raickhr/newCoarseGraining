@@ -31,7 +31,7 @@ main.o: fields.o configurationMod.o gridModule.o mpiwrapper.o filterparallel.o i
 configurationMod.o: kinds.o mpiwrapper.o
 	$(FC) -c $(FFLAGS) $(DEBUG) configurationMod.F90
 
-gridModule.o : kinds.o constants.o mpiwrapper.o
+gridModule.o : kinds.o constants.o mpiwrapper.o configurationMod.o
 	$(FC) -c $(FFLAGS) $(DEBUG) gridModule.F90
 
 netcdf_io.o : ncdf_wrapper.o gridModule.o

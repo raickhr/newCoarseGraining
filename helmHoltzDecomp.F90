@@ -4,7 +4,6 @@ module helmHoltzDecomp
 #include "petsc/finclude/petscsys.h"
 
     use kinds
-    use mpiwrapper
     use operators
     use petscsys
     use petscmpi
