@@ -250,7 +250,8 @@ module configurationMod
 
             print *, ' Following are the 2D vector fieldnames that will be read'
             do counter=1, num_of_vector2D_fields_to_read
-                WRITE(*,'(A25, A25)') trim(adjustl(list_vector2DX_fieldsNames(counter))), trim(adjustl(list_vector2DY_fieldsNames(counter)))
+                WRITE(*,'(A25, A25)') trim(adjustl(list_vector2DX_fieldsNames(counter))), &
+                                      trim(adjustl(list_vector2DY_fieldsNames(counter)))
                 self%list_vector2DX_fieldsNames(counter) = trim(adjustl(list_vector2DX_fieldsNames(counter)))
                 self%list_vector2DY_fieldsNames(counter) = trim(adjustl(list_vector2DY_fieldsNames(counter)))
             end do

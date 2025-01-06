@@ -386,8 +386,10 @@ module operators
         deallocate(gradX_uvel, gradY_uvel, gradX_vvel, gradY_vvel, stat=ierr)
     end subroutine
 
-    subroutine getPolTorVel(psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea, polUvel, torUvel, polVvel, torVvel)
-        real(kind=real_kind), intent(in), dimension(:,:) :: psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea
+    subroutine getPolTorVel(psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea, &
+                            polUvel, torUvel, polVvel, torVvel)
+        real(kind=real_kind), intent(in), dimension(:,:) :: psi, phi, centerDX, centerDy, dxBottom, &
+                                                            dxTop, dyLeft, dyRight, cellArea
         real(kind=real_kind), intent(out), dimension(:,:) :: polUvel, torUvel, polVvel, torVvel
 
         real(kind=real_kind), allocatable, dimension(:,:) :: gradX_psi, gradY_psi, gradX_phi, gradY_phi

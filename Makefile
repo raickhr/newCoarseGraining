@@ -1,13 +1,14 @@
 CC=mpiicc
-FC=mpiifort
+FC=mpif90
 CFLAGS=`nc-config --cflags`
-FFLAGS=-fpp `nf-config --fflags`
+FFLAGS=-cpp `nf-config --fflags`
 CLIBS=`nc-config --libs`
 FLIBS=`nf-config --flibs`
 DEBUG= 
 #=-g -O0 -traceback -check all -check bounds -check-uninit 
 
-PETSC_DIR=/home/shikhar.rai/myLibraries/petsc
+# PETSC_DIR=/home/shikhar.rai/myLibraries/petsc
+PETSC_DIR=/opt/anaconda3/envs/fortran/
 PETSC_ARCH=
 
 PETSC_INCLUDE=-I${PETSC_DIR}/include

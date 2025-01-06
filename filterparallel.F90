@@ -148,7 +148,8 @@ module filterparallel
                 &                    south_cornerindex, north_cornerindex )
 
                 
-                call get_filteredVals_allVars(east_west_BoxSize, north_south_BoxSize, numvars, unfiltvars, kernelVal, filtered_vars(:) )
+                call get_filteredVals_allVars(east_west_BoxSize, north_south_BoxSize, numvars, &
+                                              unfiltvars, kernelVal, filtered_vars(:) )
                 
                 call assignCoarseGrainedVars(numvars,i_index, j_index, filter_counter, filtered_vars)
 
@@ -207,7 +208,8 @@ module filterparallel
                 &                    south_cornerindex, north_cornerindex )
 
                 
-                call get_filteredVals_allVars(east_west_BoxSize, north_south_BoxSize, numvars, unfiltvars, kernelVal, filtered_vars(:) )
+                call get_filteredVals_allVars(east_west_BoxSize, north_south_BoxSize, numvars, &
+                                              unfiltvars, kernelVal, filtered_vars(:) )
                 call assignFilteredVars(numvars,i_index, j_index, filter_counter, filtered_vars)
 
                 deallocate(unfiltvars)
@@ -240,7 +242,8 @@ module filterparallel
             do counter=1, num_scalar3D_fields
                 do depth_counter = 1, nzu
                     unfiltvars(:,:, varcounter) = &
-                        &   scalar3D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, depth_counter, counter)
+                        &   scalar3D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, &
+                                            depth_counter, counter)
                     varcounter = varcounter + 1
                 end do
             enddo
@@ -257,15 +260,18 @@ module filterparallel
             do counter=1, num_vector3D_fields
                 do depth_counter = 1, nzu
                     unfiltvars(:,:, varcounter) = &
-                        &   vector3DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex,depth_counter, counter)
+                        &   vector3DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, &
+                                             depth_counter, counter)
                     varcounter = varcounter + 1
 
                     unfiltvars(:,:, varcounter) = &
-                        &   vector3DY_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex,depth_counter, counter)
+                        &   vector3DY_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, &
+                                             depth_counter, counter)
                     varcounter = varcounter + 1
 
                     unfiltvars(:,:, varcounter) = &
-                        &   vector3DZ_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex,depth_counter, counter)
+                        &   vector3DZ_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, &
+                                             depth_counter, counter)
                     varcounter = varcounter + 1
                 end do
             end do
@@ -480,7 +486,8 @@ module filterparallel
             arr_ULONG(:,:) = ULONG(west_cornerindex: east_cornerindex, south_cornerindex:north_cornerindex)
             arr_ULAT(:,:) = ULAT(west_cornerindex: east_cornerindex, south_cornerindex:north_cornerindex) 
 
-            call calc_greatCircDist(center_long, center_lat, east_west_BoxSize, north_south_BoxSize, arr_ULONG, arr_ULAT, great_circ_dist)
+            call calc_greatCircDist(center_long, center_lat, east_west_BoxSize, north_south_BoxSize, &
+                                    arr_ULONG, arr_ULAT, great_circ_dist)
 
             great_circ_dist = great_circ_dist * 1d-3 ! turn into kilometers
             Ell_Filter_by2(:,:) =  filterlengthInKM/2 

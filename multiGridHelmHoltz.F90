@@ -8,6 +8,7 @@ module multiGridHelmHoltz
     use helmHoltzDecomp
     use fields
     use gridModule
+    use read_write
     implicit none
 
     type :: grid
@@ -35,6 +36,7 @@ module multiGridHelmHoltz
 
         subroutine init_helmholtz()
             call initPETSC()
+
             if (taskid == MASTER) then
                 call set_ncoarse_factors(config%ncoarse_levels)
                 call set_tolerances(config%abs_tol, config%rel_tol, config%div_tol)
@@ -156,13 +158,15 @@ module multiGridHelmHoltz
                 shapeArr = shape(self%uvel)
                 nx = shapeArr(1)
                 ny = shapeArr(2)
-                if (nx .NE. self%nx .or. ny .NE. self%ny) stop 'Error in coarsening UVEl for HelmHoltz Decomp. First Set Multi Grid'
+                if (nx .NE. self%nx .or. ny .NE. self%ny) stop &
+                'Error in coarsening UVEl for HelmHoltz Decomp. First Set Multi Grid'
 
 
                 shapeArr = shape(self%vvel)
                 nx = shapeArr(1)
                 ny = shapeArr(2)
-                if (nx .NE. self%nx .or. ny .NE. self%ny) stop 'Error in coarsening VVEl for HelmHoltz Decomp. First Set Multi Grid'
+                if (nx .NE. self%nx .or. ny .NE. self%ny) stop &
+                'Error in coarsening VVEl for HelmHoltz Decomp. First Set Multi Grid'
             endif
         end subroutine
 
@@ -183,13 +187,15 @@ module multiGridHelmHoltz
                 shapeArr = shape(self%uvel)
                 nx = shapeArr(1)
                 ny = shapeArr(2)
-                if (nx .NE. self%nx .or. ny .NE. self%ny) stop 'Error in coarsening UVEl for HelmHoltz Decomp. First Set Multi Grid Or Check Multigrid'
+                if (nx .NE. self%nx .or. ny .NE. self%ny) stop &
+                'Error in coarsening UVEl for HelmHoltz Decomp. First Set Multi Grid Or Check Multigrid'
 
 
                 shapeArr = shape(self%vvel)
                 nx = shapeArr(1)
                 ny = shapeArr(2)
-                if (nx .NE. self%nx .or. ny .NE. self%ny) stop 'Error in coarsening VVEl for HelmHoltz Decomp. First Set Multi Grid Or Check Multigrid'
+                if (nx .NE. self%nx .or. ny .NE. self%ny) stop &
+                'Error in coarsening VVEl for HelmHoltz Decomp. First Set Multi Grid Or Check Multigrid'
             endif
 
         end subroutine
@@ -207,13 +213,15 @@ module multiGridHelmHoltz
                 call multiGrid(i)%setGrid(factorList(i), ULAT, ULONG, DXU, DYU, UAREA)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
-                call multiGridMats(i)%setMat(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy)
+                call multiGridMats(i)%setMat(multiGrid(i)%nx, multiGrid(i)%ny, &
+                                            multiGrid(i)%centerDx, multiGrid(i)%centerDy)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
                 allocate(dummy(multiGrid(i)%nx, multiGrid(i)%ny))
                 dummy = 0.0
 
-                call multiGridMats(i)%setRHS(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy, dummy, dummy)
+                call multiGridMats(i)%setRHS(multiGrid(i)%nx, multiGrid(i)%ny, &
+                                            multiGrid(i)%centerDx, multiGrid(i)%centerDy, dummy, dummy)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
                 call multiGridMats(i)%setLHS(multiGrid(i)%nx, multiGrid(i)%ny, dummy, dummy)
@@ -255,6 +263,7 @@ module multiGridHelmHoltz
 
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
             if (taskid == 0) print *, 'Starting Multigrid'
+
             do i = 1, nfactors 
                 factor = factorList(i)
                 if (taskid == 0 ) then
@@ -285,11 +294,17 @@ module multiGridHelmHoltz
 
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
                 
-                call multiGridMats(i)%resetRHS(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy, multiGrid(i)%uvel, multiGrid(i)%vvel)
+                call multiGridMats(i)%resetRHS(multiGrid(i)%nx, multiGrid(i)%ny, &
+                                               multiGrid(i)%centerDx, multiGrid(i)%centerDy, &
+                                               multiGrid(i)%uvel, multiGrid(i)%vvel)
+
                 call multiGridMats(i)%resetLHS(multiGrid(i)%nx, multiGrid(i)%ny, wrk_phi, wrk_psi)
+
                 call multiGridMats(i)%solve(maxIter = max_Iter, relTol = rel_Tol, absTol = abs_Tol, divTol = div_Tol)
 
-                if (taskid == 0) allocate(crs_phi(multiGrid(i)%nx, multiGrid(i)%ny), crs_psi(multiGrid(i)%nx, multiGrid(i)%ny))
+                if (taskid == 0) allocate(crs_phi(multiGrid(i)%nx, multiGrid(i)%ny), &
+                                          crs_psi(multiGrid(i)%nx, multiGrid(i)%ny))
+
                 call multiGridMats(i)%getSol(multiGrid(i)%nx, multiGrid(i)%ny, crs_phi, crs_psi)
 
                 if (taskid == 0 ) then                    
@@ -309,14 +324,18 @@ module multiGridHelmHoltz
                 endif
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
-                call multiGridMats(i)%resetRHS(multiGrid(i)%nx, multiGrid(i)%ny, multiGrid(i)%centerDx, multiGrid(i)%centerDy, res_uvel, res_vvel)
+                call multiGridMats(i)%resetRHS(multiGrid(i)%nx, multiGrid(i)%ny, &
+                                               multiGrid(i)%centerDx, multiGrid(i)%centerDy,&
+                                               res_uvel, res_vvel)
+
                 call multiGridMats(i)%resetLHS(multiGrid(i)%nx, multiGrid(i)%ny, wrk_phi, wrk_psi)
 
                 if (rank == 0 ) print *, 'LHS RHS from residual set'
 
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
-                call multiGridMats(i)%solve(maxIter = max_Iter, relTol = rel_Tol, absTol = abs_Tol, divTol = div_Tol)
+                call multiGridMats(i)%solve(maxIter = max_Iter, relTol = rel_Tol, &
+                                            absTol = abs_Tol, divTol = div_Tol)
                 call multiGridMats(i)%getSol(multiGrid(i)%nx, multiGrid(i)%ny, crs_phi, crs_psi)
                 
                 if (rank == 0) then 
@@ -374,14 +393,20 @@ module multiGridHelmHoltz
                     print *, 'Starting Helmholtz Decomposition for 2D vector field number', counter
                 end if
 
-                call solveByMultiGrid(nx, ny, vector2DX_fields(:, :, counter), vector2DY_fields(:, :, counter), &
-                                    UAREA, phi2D_fields(:,:, counter), psi2D_fields(:,:, counter), &
+                call solveByMultiGrid(nx, ny, &
+                                    vector2DX_fields(:, :, counter), &
+                                    vector2DY_fields(:, :, counter), &
+                                    UAREA, &
+                                    phi2D_fields(:,:, counter), &
+                                    psi2D_fields(:,:, counter), &
                                     max_Iter, rel_Tol, abs_Tol, div_Tol)
 
                 if (taskid == 0) then
                     call getPolTorVelFD(psi2D_fields(:,:, counter), phi2D_fields(:,:, counter), DXU, DYU,  &
                                         vector2DX_phi_fields(:, :, counter), vector2DX_psi_fields(:, :, counter), &
                                         vector2DY_phi_fields(:, :, counter), vector2DY_psi_fields(:, :, counter))
+                    call write2dVar('psi2D.nc', 'psi2D', psi2D_fields(:,:, counter))
+                    call write2dVar('phi2D.nc', 'phi2D', phi2D_fields(:,:, counter))
                 endif
             end do
 
@@ -389,17 +414,25 @@ module multiGridHelmHoltz
             do counter=1, num_vector3D_fields
                 do z_counter =1, nz
                     if (taskid == 0 ) then
-                        print *, 'Starting Helmholtz Decomposition for 3D vector field number', counter, ' at z count ', z_counter
+                        print *, 'Starting Helmholtz Decomposition for 3D vector field number', counter, &
+                                 ' at z count ', z_counter
                     end if
 
-                    call solveByMultiGrid(nx, ny, vector3DX_fields(:, :, z_counter, counter), vector3DY_fields(:, :, z_counter, counter), &
-                                        UAREA, phi3D_fields(:,:,z_counter, counter), psi3D_fields(:,:,z_counter, counter), &
+                    call solveByMultiGrid(nx, ny, &
+                                        vector3DX_fields(:, :, z_counter, counter), &
+                                        vector3DY_fields(:, :, z_counter, counter), &
+                                        UAREA, &
+                                        phi3D_fields(:,:,z_counter, counter), &
+                                        psi3D_fields(:,:,z_counter, counter), &
                                         max_Iter, rel_Tol, abs_Tol, div_Tol)
 
                     if (taskid == 0) then
-                        call getPolTorVelFD(psi3D_fields(:,:,z_counter, counter), phi3D_fields(:,:,z_counter, counter), DXU, DYU, &
-                                            vector3DX_phi_fields(:, :, z_counter, counter), vector3DX_psi_fields(:, :, z_counter, counter), &
-                                            vector3DY_phi_fields(:, :, z_counter, counter), vector3DY_psi_fields(:, :, z_counter, counter))
+                        call getPolTorVelFD(psi3D_fields(:,:,z_counter, counter), &
+                                            phi3D_fields(:,:,z_counter, counter), DXU, DYU, &
+                                            vector3DX_phi_fields(:, :, z_counter, counter), &
+                                            vector3DX_psi_fields(:, :, z_counter, counter), &
+                                            vector3DY_phi_fields(:, :, z_counter, counter), &
+                                            vector3DY_psi_fields(:, :, z_counter, counter))
                     endif
                 end do
             end do
@@ -424,9 +457,13 @@ module multiGridHelmHoltz
             do ell_counter =1, num_filterlengths
                 do counter=1, num_vector2D_fields
                     if (taskid == 0) then
-                        call getPolTorVelFD(OL_psi2D_fields(:,:, counter, ell_counter), OL_phi2D_fields(:,:, counter, ell_counter), DXU, DYU,  &
-                                            OL_vector2DX_phi_fields(:, :, counter, ell_counter), OL_vector2DX_psi_fields(:, :, counter, ell_counter), &
-                                            OL_vector2DY_phi_fields(:, :, counter, ell_counter), OL_vector2DY_psi_fields(:, :, counter, ell_counter))
+                        call getPolTorVelFD(OL_psi2D_fields(:,:, counter, ell_counter),&
+                                            OL_phi2D_fields(:,:, counter, ell_counter),&
+                                            DXU, DYU,  &
+                                            OL_vector2DX_phi_fields(:, :, counter, ell_counter), &
+                                            OL_vector2DX_psi_fields(:, :, counter, ell_counter), &
+                                            OL_vector2DY_phi_fields(:, :, counter, ell_counter), &
+                                            OL_vector2DY_psi_fields(:, :, counter, ell_counter))
                     endif
                 end do
 
@@ -434,9 +471,13 @@ module multiGridHelmHoltz
                 do counter=1, num_vector3D_fields
                     do z_counter =1, nz
                         if (taskid == 0) then
-                            call getPolTorVelFD(OL_psi3D_fields(:,:,z_counter, counter, ell_counter), OL_phi3D_fields(:,:,z_counter, counter, ell_counter), DXU, DYU, &
-                                                OL_vector3DX_phi_fields(:, :, z_counter, counter, ell_counter), OL_vector3DX_psi_fields(:, :, z_counter, counter, ell_counter), &
-                                                OL_vector3DY_phi_fields(:, :, z_counter, counter, ell_counter), OL_vector3DY_psi_fields(:, :, z_counter, counter, ell_counter))
+                            call getPolTorVelFD(OL_psi3D_fields(:,:,z_counter, counter, ell_counter), &
+                                                OL_phi3D_fields(:,:,z_counter, counter, ell_counter), &
+                                                DXU, DYU, &
+                                                OL_vector3DX_phi_fields(:, :, z_counter, counter, ell_counter), &
+                                                OL_vector3DX_psi_fields(:, :, z_counter, counter, ell_counter), &
+                                                OL_vector3DY_phi_fields(:, :, z_counter, counter, ell_counter), &
+                                                OL_vector3DY_psi_fields(:, :, z_counter, counter, ell_counter))
                         endif
                     end do
                 end do
