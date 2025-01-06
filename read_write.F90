@@ -364,7 +364,7 @@ module read_write
             do field_count =1, num_scalar2D_fields
                 dummy2d(:,:, 1,1) = OL_scalar2D_fields(:,:, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, counter/), &
+                        start = (/1, 1, counter, 1/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1    
             end do
@@ -372,7 +372,7 @@ module read_write
             do field_count =1, num_scalar3D_fields
                 dummy3d(:,:, :, 1,1) = OL_scalar3D_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1    
             end do
@@ -380,13 +380,13 @@ module read_write
             do field_count=1, num_vector2D_fields
                 dummy2d(:, :, 1,1) = OL_vector2DX_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, counter/), &
+                        start = (/1, 1, counter, 1/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy2d(:, :, 1,1) = OL_vector2DY_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, counter/), &
+                        start = (/1, 1, counter, 1/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
             end do
@@ -394,19 +394,19 @@ module read_write
             do field_count=1, num_vector3D_fields
                 dummy3d(:,:,:, 1,1) = OL_vector3DX_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy3d(:,:,:, 1,1) = OL_vector3DY_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
                 
                 dummy3d(:,:,:, 1,1) = OL_vector3DZ_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
                 
@@ -438,7 +438,7 @@ module read_write
                   6*num_vector3D_fields      ! phi, psi, phi_x, phi_y, psi_x, psi_y
 
         allocate(varids(numvars))
-        allocate(dummy2d(nxu,nyu,1), dummy3d(nxu,nyu,nzu,1))
+        allocate(dummy2d(nxu, nyu, 1), dummy3d(nxu, nyu, nzu,1))
     
         print *, 'writing file ', trim(adjustl(fullfilename))
         
@@ -632,40 +632,41 @@ module read_write
 
         ! Start writing variables
         var_index = 1
+
         do field_count=1, num_vector2D_fields
             dummy2d(:, :, 1) = phi2D_fields(:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                    start = (/1, 1, counter/), &
+                    start = (/1, 1, 1/), &
                     count = (/nxu, nyu, 1 /))
             var_index = var_index + 1
 
             dummy2d(:, :, 1) = psi2D_fields(:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                    start = (/1, 1, counter/), &
+                    start = (/1, 1, 1/), &
                     count = (/nxu, nyu, 1 /))
             var_index = var_index + 1
 
             dummy2d(:, :, 1) = vector2DX_phi_fields(:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                    start = (/1, 1, counter/), &
+                    start = (/1, 1, 1/), &
                     count = (/nxu, nyu, 1 /))
             var_index = var_index + 1
 
             dummy2d(:, :, 1) = vector2DY_phi_fields(:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                    start = (/1, 1, counter/), &
+                    start = (/1, 1, 1/), &
                     count = (/nxu, nyu, 1 /))
             var_index = var_index + 1
 
             dummy2d(:, :, 1) = vector2DX_psi_fields(:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                    start = (/1, 1, counter/), &
+                    start = (/1, 1, 1/), &
                     count = (/nxu, nyu, 1 /))
             var_index = var_index + 1
 
             dummy2d(:, :, 1) = vector2DY_psi_fields(:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                    start = (/1, 1, counter/), &
+                    start = (/1, 1, 1/), &
                     count = (/nxu, nyu, 1 /))
             var_index = var_index + 1
         end do
@@ -673,37 +674,37 @@ module read_write
         do field_count=1, num_vector3D_fields
             dummy3d(:,:,:, 1) = phi3D_fields(:,:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                    start = (/1, 1, 1, counter/), &
+                    start = (/1, 1, 1, 1/), &
                     count = (/nxu, nyu, nzu, 1 /))
             var_index = var_index + 1
 
             dummy3d(:,:,:, 1) = psi3D_fields(:,:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                    start = (/1, 1, 1, counter/), &
+                    start = (/1, 1, 1, 1/), &
                     count = (/nxu, nyu, nzu, 1 /))
             var_index = var_index + 1
 
             dummy3d(:,:,:, 1) = vector3DX_phi_fields(:,:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                    start = (/1, 1, 1, counter/), &
+                    start = (/1, 1, 1, 1/), &
                     count = (/nxu, nyu, nzu, 1 /))
             var_index = var_index + 1
 
             dummy3d(:,:,:, 1) = vector3DY_phi_fields(:,:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                    start = (/1, 1, 1, counter/), &
+                    start = (/1, 1, 1, 1/), &
                     count = (/nxu, nyu, nzu, 1 /))
             var_index = var_index + 1
 
             dummy3d(:,:,:, 1) = vector3DX_psi_fields(:,:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                    start = (/1, 1, 1, counter/), &
+                    start = (/1, 1, 1, 1/), &
                     count = (/nxu, nyu, nzu, 1 /))
             var_index = var_index + 1
 
             dummy3d(:,:,:, 1) = vector3DY_psi_fields(:,:, :, field_count)
             ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                    start = (/1, 1, 1, counter/), &
+                    start = (/1, 1, 1, 1/), &
                     count = (/nxu, nyu, nzu, 1 /))
             var_index = var_index + 1
         end do
@@ -984,7 +985,7 @@ module read_write
             do field_count =1, num_scalar2D_fields
                 dummy2d(:,:, 1,1) = OL_scalar2D_fields(:,:, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, counter/), &
+                        start = (/1, 1, counter, 1/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1    
             end do
@@ -992,7 +993,7 @@ module read_write
             do field_count =1, num_scalar3D_fields
                 dummy3d(:,:, :, 1,1) = OL_scalar3D_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1    
             end do
@@ -1000,37 +1001,37 @@ module read_write
             do field_count=1, num_vector2D_fields
                 dummy2d(:, :, 1,1) = OL_phi2D_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, counter/), &
+                        start = (/1, 1, counter, 1/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy2d(:, :, 1,1) = OL_psi2D_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, counter/), &
+                        start = (/1, 1, counter, 1/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy2d(:, :, 1,1) = OL_vector2DX_phi_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, counter/), &
+                        start = (/1, 1, counter, 1/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy2d(:, :, 1,1) = OL_vector2DY_phi_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, counter/), &
+                        start = (/1, 1, counter, 1/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy2d(:, :, 1,1) = OL_vector2DX_psi_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, counter/), &
+                        start = (/1, 1, counter, 1/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy2d(:, :, 1,1) = OL_vector2DY_psi_fields(:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
-                        start = (/1, 1, 1, counter/), &
+                        start = (/1, 1, counter, 1/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
             end do
@@ -1038,43 +1039,43 @@ module read_write
             do field_count=1, num_vector3D_fields
                 dummy3d(:,:,:, 1,1) = OL_phi3D_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy3d(:,:,:, 1,1) = OL_psi3D_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy3d(:,:,:, 1,1) = OL_vector3DX_phi_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy3d(:,:,:, 1,1) = OL_vector3DY_phi_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy3d(:,:,:, 1,1) = OL_vector3DX_psi_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
 
                 dummy3d(:,:,:, 1,1) = OL_vector3DY_psi_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
                 
                 dummy3d(:,:,:, 1,1) = OL_vector3DZ_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
-                        start = (/1, 1, 1, 1, counter/), &
+                        start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
                 
