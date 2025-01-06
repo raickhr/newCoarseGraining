@@ -4,6 +4,7 @@ module filterparallel
     use gridModule
     use fields
     use configurationMod
+    use netcdf_io
     implicit none
 
     integer(kind=int_kind) :: num_filterlengths
@@ -57,9 +58,10 @@ module filterparallel
                 endif
                 arr_numcols_inallprocs(counter) = ncols
                 arr_startcolindex_inallprocs(counter) = offset
-                ! if (taskid .EQ. MASTER) then
-                !     WRITE(*,'(A7, I4, A10, I4, A15, I4, A15, I4)') 'taskid',  counter-1, 'ncols', ncols, 'start', offset , 'end', offset + ncols -1
-                ! endif
+                if (taskid .EQ. MASTER) then
+                    WRITE(*,'(A7, I4, A10, I4, A15, I4, A15, I4)') 'taskid',  &
+                    counter-1, 'ncols', ncols, 'start', offset , 'end', offset + ncols -1
+                endif
                 offset = offset + ncols
                 
             end do  
@@ -235,14 +237,14 @@ module filterparallel
             varcounter = 1
             do counter=1, num_scalar2D_fields
                 unfiltvars(:,:, varcounter) = &
-                    &   scalar2D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
+                    &   scalar2D_fields(west_cornerindex:east_cornerindex, south_cornerindex:north_cornerindex, counter)
                 varcounter = varcounter + 1
             enddo
 
             do counter=1, num_scalar3D_fields
                 do depth_counter = 1, nzu
                     unfiltvars(:,:, varcounter) = &
-                        &   scalar3D_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, &
+                        &   scalar3D_fields(west_cornerindex:east_cornerindex, south_cornerindex:north_cornerindex, &
                                             depth_counter, counter)
                     varcounter = varcounter + 1
                 end do
@@ -250,27 +252,28 @@ module filterparallel
 
             do counter=1, num_vector2D_fields
                 unfiltvars(:,:, varcounter) = &
-                    &   vector2DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
+                    &   vector2DX_fields(west_cornerindex:east_cornerindex, south_cornerindex:north_cornerindex, counter)
                 varcounter = varcounter + 1
+
                 unfiltvars(:,:, varcounter) = &
-                    &   vector2DY_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, counter)
+                    &   vector2DY_fields(west_cornerindex:east_cornerindex, south_cornerindex:north_cornerindex, counter)
                 varcounter = varcounter + 1
             end do
 
             do counter=1, num_vector3D_fields
                 do depth_counter = 1, nzu
                     unfiltvars(:,:, varcounter) = &
-                        &   vector3DX_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, &
+                        &   vector3DX_fields(west_cornerindex:east_cornerindex, south_cornerindex:north_cornerindex, &
                                              depth_counter, counter)
                     varcounter = varcounter + 1
 
                     unfiltvars(:,:, varcounter) = &
-                        &   vector3DY_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, &
+                        &   vector3DY_fields(west_cornerindex:east_cornerindex, south_cornerindex:north_cornerindex, &
                                              depth_counter, counter)
                     varcounter = varcounter + 1
 
                     unfiltvars(:,:, varcounter) = &
-                        &   vector3DZ_fields(west_cornerindex:east_cornerindex,south_cornerindex:north_cornerindex, &
+                        &   vector3DZ_fields(west_cornerindex:east_cornerindex, south_cornerindex:north_cornerindex, &
                                              depth_counter, counter)
                     varcounter = varcounter + 1
                 end do

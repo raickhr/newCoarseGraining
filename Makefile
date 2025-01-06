@@ -1,5 +1,5 @@
 CC=mpiicc
-FC=mpif90
+FC=mpiifort
 CFLAGS=`nc-config --cflags`
 FFLAGS=-cpp `nf-config --fflags`
 CLIBS=`nc-config --libs`
@@ -7,8 +7,8 @@ FLIBS=`nf-config --flibs`
 DEBUG= 
 #=-g -O0 -traceback -check all -check bounds -check-uninit 
 
-# PETSC_DIR=/home/shikhar.rai/myLibraries/petsc
-PETSC_DIR=/opt/anaconda3/envs/fortran/
+PETSC_DIR=/home/shikhar.rai/myLibraries/petsc
+# PETSC_DIR=/opt/anaconda3/envs/fortran/
 PETSC_ARCH=
 
 PETSC_INCLUDE=-I${PETSC_DIR}/include
@@ -63,6 +63,10 @@ fields.o: kinds.o gridModule.o
 
 mpiwrapper.o: mpiwrapper.F90
 	$(FC) -c $(FFLAGS) $(DEBUG) mpiwrapper.F90	
+
+filterparallel.o : netcdf_io.o kinds.o mpiwrapper.o fields.o configurationMod.o 
+	$(FC) -c $(FFLAGS) $(DEBUG) filterparallel.F90	
+
 
 all: $(OBJ)
 	$(FC) $^ -o main.exe  ${PETSC_LIBS} ${NC_LIBS}

@@ -77,11 +77,6 @@ program main
             if (taskid == 0 ) print *, 'completed Helmholtz decomposition'
 
             if (taskid == 0 ) then
-                ! call write2dVar('uvel_3D.nc', 'uvel_tot', vector3DX_phi_fields(:, :, 1, 1) + &
-                !                                            vector3DX_psi_fields(:, :, 1, 1))
-                ! call write2dVar('vvel_3D.nc', 'vvel_tot', vector3DY_phi_fields(:, :, 1, 1) + &
-                !                                     vector3DY_psi_fields(:, :, 1, 1))
-
                 WRITE(writefilename, "(A12,I0.3,A5,I0.3,A3)") "phi_psi_file", file_index, "_time", time_index, ".nc"
                 call writeUnfiltHelmHoltzDeompFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
                 &   'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), trim(adjustl(config%timevar_name)))
@@ -90,17 +85,17 @@ program main
             call broadCastPsiPhiFields()
 
             if (taskid .EQ. MASTER) print *, 'phi psi broadcasted'
-
+            
             call filter_allvars()
-
+            
             if (taskid .EQ. MASTER) then 
                 print *, ''
-                print *, 'filtering all variables completed !'
+                print *, "TIME INDEX ",time_index-start_timeindex+1,' OF ', end_timeindex - start_timeindex +1, ' COMPLETED'
+                print *, "FILE NUMBER ",file_index,' OF ', num_files, ' COMPLETED '
                 print *, ''
             end if
 
             !call collectFilteredFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
-
             call collectCoarseGrainedFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
 
             if (taskid .EQ. MASTER) then 
