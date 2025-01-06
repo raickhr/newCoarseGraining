@@ -76,10 +76,15 @@ program main
 
             if (taskid == 0 ) print *, 'completed Helmholtz decomposition'
 
-            if (taskid .EQ. MASTER) then
-                WRITE(writefilename, "(A12,I0.3,A5,I0.3,A3)") "phi_psi_file", file_index, "_time", time_index, ".nc"
-                call writeUnfiltHelmHoltzDeompFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
-                &   'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), trim(adjustl(config%timevar_name)))
+            if (taskid == 0 ) then
+                call write2dVar('uvel_3D.nc', 'uvel_tot', vector3DX_phi_fields(:, :, 1, 1) + &
+                                                           vector3DX_psi_fields(:, :, 1, 1))
+                call write2dVar('vvel_3D.nc', 'vvel_tot', vector3DY_phi_fields(:, :, 1, 1) + &
+                                                    vector3DY_psi_fields(:, :, 1, 1))
+
+                ! WRITE(writefilename, "(A12,I0.3,A5,I0.3,A3)") "phi_psi_file", file_index, "_time", time_index, ".nc"
+                ! call writeUnfiltHelmHoltzDeompFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
+                ! &   'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), trim(adjustl(config%timevar_name)))
             end if
 
             call broadCastPsiPhiFields()
@@ -108,7 +113,7 @@ program main
             end if
             
             if (taskid .EQ. MASTER) then
-                WRITE(writefilename, "(A5,I0.3,A5,I0.3,A3)") "file", file_index, "_time", time_index, ".nc"
+                WRITE(writefilename, "(A4,I0.3,A5,I0.3,A3)") "file", file_index, "_time", time_index, ".nc"
                 call writeDirectFilteredFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
                 &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
                 &                 'Lengthscale', trim(adjustl(config%timevar_name)))

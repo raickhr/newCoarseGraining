@@ -437,8 +437,6 @@ module read_write
         numvars = 6*num_vector2D_fields + &  ! phi, psi, phi_x, phi_y, psi_x, psi_y
                   6*num_vector3D_fields      ! phi, psi, phi_x, phi_y, psi_x, psi_y
 
-        
-
         allocate(varids(numvars))
         allocate(dummy2d(nxu,nyu,1), dummy3d(nxu,nyu,nzu,1))
     
