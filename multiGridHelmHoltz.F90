@@ -405,8 +405,6 @@ module multiGridHelmHoltz
                     call getPolTorVelFD(psi2D_fields(:,:, counter), phi2D_fields(:,:, counter), DXU, DYU,  &
                                         vector2DX_phi_fields(:, :, counter), vector2DX_psi_fields(:, :, counter), &
                                         vector2DY_phi_fields(:, :, counter), vector2DY_psi_fields(:, :, counter))
-                    call write2dVar('psi2D.nc', 'psi2D', psi2D_fields(:,:, counter))
-                    call write2dVar('phi2D.nc', 'phi2D', phi2D_fields(:,:, counter))
                 endif
             end do
 
@@ -433,6 +431,10 @@ module multiGridHelmHoltz
                                             vector3DX_psi_fields(:, :, z_counter, counter), &
                                             vector3DY_phi_fields(:, :, z_counter, counter), &
                                             vector3DY_psi_fields(:, :, z_counter, counter))
+                        call write2dVar('uvel_3D.nc', 'uvel_tot', vector3DX_phi_fields(:, :, z_counter, counter) + &
+                                                           vector3DX_psi_fields(:, :, z_counter, counter))
+                        call write2dVar('vvel_3D.nc', 'vvel_tot', vector3DY_phi_fields(:, :, z_counter, counter) + &
+                                                           vector3DY_psi_fields(:, :, z_counter, counter))
                     endif
                 end do
             end do
