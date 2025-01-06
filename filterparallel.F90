@@ -89,9 +89,9 @@ module filterparallel
                 ! WRITE(*, '(A12, I4, A10, I4, A5, I4)') 'At taskid: ', taskid, '  column ', j_index - startJindex + 1, ' of ', endJindex - startJindex +1
                 do i_index = startIindex, endIindex
                     ! condition for skipping the filterpoint for eg land
-                    call direct_filter_allVarsAtpoint(i_index, j_index)
+                    !call direct_filter_allVarsAtpoint(i_index, j_index)
 
-                    !call coarseGrain_FieldsAtpoint(i_index, j_index)
+                    call coarseGrain_FieldsAtpoint(i_index, j_index)
                     
                 end do
             end do

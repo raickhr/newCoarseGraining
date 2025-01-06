@@ -99,9 +99,9 @@ program main
                 print *, ''
             end if
 
-            call collectFilteredFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
+            !call collectFilteredFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
 
-            !call collectCoarseGrainedFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
+            call collectCoarseGrainedFields(arr_numcols_inallprocs, arr_startcolindex_inallprocs, num_filterlengths)
 
             if (taskid .EQ. MASTER) then 
                 print *, ''
@@ -114,13 +114,13 @@ program main
             
             if (taskid .EQ. MASTER) then
                 WRITE(writefilename, "(A4,I0.3,A5,I0.3,A3)") "file", file_index, "_time", time_index, ".nc"
-                call writeDirectFilteredFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
-                &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
-                &                 'Lengthscale', trim(adjustl(config%timevar_name)))
-
-                ! call writeCoarseGrainedFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
+                ! call writeDirectFilteredFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
                 ! &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
                 ! &                 'Lengthscale', trim(adjustl(config%timevar_name)))
+
+                call writeCoarseGrainedFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
+                &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
+                &                 'Lengthscale', trim(adjustl(config%timevar_name)))
             end if
 
         end do !close time loop
