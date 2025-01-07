@@ -46,7 +46,7 @@ operators.o : kinds.o
 constants.o: kinds.o
 	$(FC) -c $(FFLAGS) $(DEBUG) constants.F90
 
-coarsening.o : kinds.o
+coarsening.o : kinds.o mpiwrapper.o
 	$(FC) -c $(FFLAGS) $(DEBUG) coarsening.F90
 
 helmHoltzDecomp.o :	kinds.o mpiwrapper.o operators.o

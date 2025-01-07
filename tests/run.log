@@ -2,14 +2,14 @@
                                        InputPath :./input
                                         gridFile :WPE_ROMS_grid.nc
                             num_of_files_to_read :   1
-                  num_of_scalar2D_fields_to_read :   1
-                  num_of_scalar3D_fields_to_read :   1
-                  num_of_vector2D_fields_to_read :   1
-                  num_of_vector3D_fields_to_read :   1
+                  num_of_scalar2D_fields_to_read :   0
+                  num_of_scalar3D_fields_to_read :   4
+                  num_of_vector2D_fields_to_read :   0
+                  num_of_vector3D_fields_to_read :   2
                                     timevar_name :ocean_time                    
                                     vertdim_name :s_rho                         
                                   startTimeIndex :   1
-                                    endTimeIndex :   3
+                                    endTimeIndex :  26
                                   nx, ny, nz, nt :2599 599   4   1
                                   ncoarse_levels :   5
                                   max_iterations : 500
@@ -19,30 +19,32 @@
                                       OutputPath :output
   
   Following are the filenames that will be read
-                                      ocean_avg.nc
+                                   temp_terms_1.nc
   
   
   Following are the 2D scalar fieldnames that will be read
-                     zeta
   
   
   Following are the 3D scalar fieldnames that will be read
-                     temp
+                        H
+                       HT
+              Htemp_hdiff
+              Htemp_vdiff
   
   
   Following are the 2D vector fieldnames that will be read
-            ubar_eastward           vbar_northward
   
   
   Following are the 3D vector fieldnames that will be read
-               u_eastward              v_northward                        w
+                      HUT                      HVT                    HOmgT
+                       HU                       HV                     HOmg
   
   
   Following are the vertical level indices that will be read
-                                                30
-                                                29
-                                                28
-                                                27
+                                                10
+                                                 9
+                                                 8
+                                                 7
   
   
   Following are the coarsening levels for Helmholtz decomposition 
@@ -54,7 +56,7 @@
   
   
   Following are the filterlengths 
-                                           500.000
+                                          1000.000
   
   
  Configuration read and set SUCCESS 
@@ -74,151 +76,8 @@
   
  GridVars bcasted
  unfilt vars initialized
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Original cellArea size        2599         599
- Coarsening by factor           9
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           2           2
- Coarsening to         289          67
- Matrix Memory Allocated       77452 x       38726
+ Setting mat for grid size         289 x          67 MAT SIZE =       77452 x
+       38726
  Matrix assembly complete
  creating RHS vectors grid size size         289 x          67
  RHS vectors assigned values Set
@@ -232,151 +91,8 @@
  creating LHS vector for distributing across processors COMPLETE
  scattering LHS vector  ... 
  scattering LHS vectors COMPLETE
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Original cellArea size        2599         599
- Coarsening by factor           5
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to         520         120
- Matrix Memory Allocated      249600 x      124800
+ Setting mat for grid size         520 x         120 MAT SIZE =      249600 x
+      124800
  Matrix assembly complete
  creating RHS vectors grid size size         520 x         120
  RHS vectors assigned values Set
@@ -390,151 +106,8 @@
  creating LHS vector for distributing across processors COMPLETE
  scattering LHS vector  ... 
  scattering LHS vectors COMPLETE
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Original cellArea size        2599         599
- Coarsening by factor           3
- pad_x1, pad_x2, pad_y1, pad_y2           1           1           0           1
- Coarsening to         867         200
- Matrix Memory Allocated      693600 x      346800
+ Setting mat for grid size         867 x         200 MAT SIZE =      693600 x
+      346800
  Matrix assembly complete
  creating RHS vectors grid size size         867 x         200
  RHS vectors assigned values Set
@@ -548,151 +121,8 @@
  creating LHS vector for distributing across processors COMPLETE
  scattering LHS vector  ... 
  scattering LHS vectors COMPLETE
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- Original cellArea size        2599         599
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Original cellArea size        2599         599
- Coarsening by factor           2
- pad_x1, pad_x2, pad_y1, pad_y2           0           1           0           1
- Coarsening to        1300         300
- Matrix Memory Allocated     1560000 x      780000
+ Setting mat for grid size        1300 x         300 MAT SIZE =     1560000 x
+      780000
  Matrix assembly complete
  creating RHS vectors grid size size        1300 x         300
  RHS vectors assigned values Set
@@ -706,7 +136,8 @@
  creating LHS vector for distributing across processors COMPLETE
  scattering LHS vector  ... 
  scattering LHS vectors COMPLETE
- Matrix Memory Allocated     6227204 x     3113602
+ Setting mat for grid size        2599 x         599 MAT SIZE =     6227204 x
+     3113602
  Matrix assembly complete
  creating RHS vectors grid size size        2599 x         599
  RHS vectors assigned values Set
@@ -761,2575 +192,270 @@
  work division initialized
  filtered vars allocated
  AT FILE NUMBER            1  OF            1
- AT TIME INDEX            1  OF            3
+ AT TIME INDEX            1  OF           26
  
- Opening file  ./input/ocean_avg.nc ... 
+ Opening file  ./input/temp_terms_1.nc ... 
  
- Opened  ./input/ocean_avg.nc
- complete reading zeta
- complete reading temp
- complete reading temp
- complete reading temp
- complete reading temp
- complete reading ubar_eastward
- complete reading vbar_northward
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- closed file  ./input/ocean_avg.nc ... 
+ Opened  ./input/temp_terms_1.nc
+ complete reading H
+ complete reading H
+ complete reading H
+ complete reading H
+ complete reading HT
+ complete reading HT
+ complete reading HT
+ complete reading HT
+ complete reading Htemp_hdiff
+ complete reading Htemp_hdiff
+ complete reading Htemp_hdiff
+ complete reading Htemp_hdiff
+ complete reading Htemp_vdiff
+ complete reading Htemp_vdiff
+ complete reading Htemp_vdiff
+ complete reading Htemp_vdiff
+ complete reading HUT
+ complete reading HVT
+ complete reading HOmgT
+ complete reading HUT
+ complete reading HVT
+ complete reading HOmgT
+ complete reading HUT
+ complete reading HVT
+ complete reading HOmgT
+ complete reading HUT
+ complete reading HVT
+ complete reading HOmgT
+ complete reading HU
+ complete reading HV
+ complete reading HOmg
+ complete reading HU
+ complete reading HV
+ complete reading HOmg
+ complete reading HU
+ complete reading HV
+ complete reading HOmg
+ complete reading HU
+ complete reading HV
+ complete reading HOmg
+ closed file  ./input/temp_terms_1.nc ... 
   Read fields bcasted
- Starting Helmholtz Decomposition for 2D vector field number           1
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   788365.551991745     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   311670.744422458     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   1391732.29531233     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   326835.870747901     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   2319852.98329512     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   337289.906172930     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   3483816.55452951     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   346703.260776277     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   6965776.30841744     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   362633.327334882     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
  Starting Helmholtz Decomposition for 3D vector field number           1 
   at z count            1
  Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   28615734.0927739     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1814098.11287034     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   51283689.4117665     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1806375.41910252     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   85560680.3662207     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2083624.76438154     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   128362575.997897     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2383187.21176271     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   256418821.053674     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   3105259.17411351     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- Starting Helmholtz Decomposition for 3D vector field number           1 
-  at z count            2
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   23427934.0882969     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1651327.77578826     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   42063959.4265887     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1578983.39420418     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   70192152.5812612     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1771127.93812222     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   105310183.005318     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1981199.52236201     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   210380405.873993     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2493912.41503739     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- Starting Helmholtz Decomposition for 3D vector field number           1 
-  at z count            3
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   18910792.6131753     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1523173.54818700     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   34038011.4660275     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1394859.48380788     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   56812781.6475784     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1513739.04409917     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   85238796.6217426     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1646116.79305301     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   170326111.973849     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1971580.57351863     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- Starting Helmholtz Decomposition for 3D vector field number           1 
-  at z count            4
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   16536675.8196501     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1420004.84014851     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   29785605.2798335     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1300628.35197920     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   49719527.9720946     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1384856.78889970     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   74592745.5863548     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1475595.70733374     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   149095674.440608     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1696622.20306134     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- completed Helmholtz decomposition
- writing file output/phi_psi_file001_time001.nc
- phi psi broadcasted
- 
- TIME INDEX            1  OF            3  COMPLETED
- FILE NUMBER            1  OF            1  COMPLETED 
- 
- 
- all filtered variables collected !
- 
- Now calculating the vectos from the Helmholtz Potentials !
- writing file output/file001_time001.nc
- AT TIME INDEX            2  OF            3
- 
- Opening file  ./input/ocean_avg.nc ... 
- 
- Opened  ./input/ocean_avg.nc
- complete reading zeta
- complete reading temp
- complete reading temp
- complete reading temp
- complete reading temp
- complete reading ubar_eastward
- complete reading vbar_northward
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- closed file  ./input/ocean_avg.nc ... 
-  Read fields bcasted
- Starting Helmholtz Decomposition for 2D vector field number           1
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   847125.457625328     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   314512.006303311     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   1500103.78844421     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   328995.037800274     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   2502437.51751036     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   340603.154552585     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   3756951.71356062     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   350506.286515785     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   7513188.59421895     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   365728.475233386     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- Starting Helmholtz Decomposition for 3D vector field number           1 
-  at z count            1
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   28564861.9567019     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1816350.66779220     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   51207239.7449172     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1813432.88630828     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   85431688.8004762     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2089303.79274839     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   128173393.278517     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2395490.81505607     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   256041576.418297     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   3127612.10915694     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- Starting Helmholtz Decomposition for 3D vector field number           1 
-  at z count            2
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   23613720.7582709     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1672182.96473826     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   42405543.4324631     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1586139.98055695     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   70762230.3266660     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1781575.50969682     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   106168137.756744     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2001705.00583266     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   212098227.519174     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2532345.18612538     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- Starting Helmholtz Decomposition for 3D vector field number           1 
-  at z count            3
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   19156553.1959319     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1541238.71142841     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   34478211.9034945     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1403029.51767780     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   57547108.5562540     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1526719.49368763     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   86340916.1064850     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1669705.27237249     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   172530271.851388     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2017209.90424347     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- Starting Helmholtz Decomposition for 3D vector field number           1 
-  at z count            4
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   16487586.1342912     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1418273.13494576     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   29694510.2900682     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1304219.60713496     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   49566931.5472625     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1389455.57473759     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   74364073.6985064     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1487376.52666870     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   148636923.401247     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1721023.19139310     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- completed Helmholtz decomposition
- writing file output/phi_psi_file001_time002.nc
- phi psi broadcasted
- 
- TIME INDEX            2  OF            3  COMPLETED
- FILE NUMBER            1  OF            1  COMPLETED 
- 
- 
- all filtered variables collected !
- 
- Now calculating the vectos from the Helmholtz Potentials !
- writing file output/file001_time002.nc
- AT TIME INDEX            3  OF            3
- 
- Opening file  ./input/ocean_avg.nc ... 
- 
- Opened  ./input/ocean_avg.nc
- complete reading zeta
- complete reading temp
- complete reading temp
- complete reading temp
- complete reading temp
- complete reading ubar_eastward
- complete reading vbar_northward
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- complete reading u_eastward
- complete reading v_northward
- complete reading w
- closed file  ./input/ocean_avg.nc ... 
-  Read fields bcasted
- Starting Helmholtz Decomposition for 2D vector field number           1
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   899109.834146081     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   324125.028902715     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   1596849.09143701     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   336515.593772403     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   2664394.30853666     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   348583.801631860     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   3999471.49352133     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   360509.052900548     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   7998620.54578602     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   377995.810175723     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- Starting Helmholtz Decomposition for 3D vector field number           1 
-  at z count            1
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   27734569.4777172     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1750579.91096864     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   49704716.2933730     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1750619.75200380     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   82925773.7251807     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2012985.09827823     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   124409667.114211     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2300308.14958310     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   248551555.712491     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2985446.20882930     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- Starting Helmholtz Decomposition for 3D vector field number           1 
-  at z count            2
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   23042171.7703991     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1615242.99717680     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   41373029.5769245     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1541374.64433402     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   69039613.6160261     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1725185.38075461     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   103579346.170091     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1930678.82931170     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   206953706.922782     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   2422630.92510448     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- Starting Helmholtz Decomposition for 3D vector field number           1 
-  at z count            3
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   18981250.3461156     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1510160.94410548     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   34159546.4391129     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1378091.01430669     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   57017925.2402118     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1494080.10570223     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   85544850.1934865     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1628562.19045588     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   170964933.213374     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1949422.05933720     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- Starting Helmholtz Decomposition for 3D vector field number           1 
-  at z count            4
- Setting UVEL VVEL at coarse scale           9
- Setting UVEL VVEL at coarse scale           5
- Setting UVEL VVEL at coarse scale           3
- Setting UVEL VVEL at coarse scale           2
- Setting UVEL VVEL at coarse scale           1
- Starting Multigrid
- 
- 
- helmholtz at coarse level           9
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   16802546.7844861     
- gather complete
- global size of solution vec       38726
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1424827.41042984     
- gather complete
- global size of solution vec       38726
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           5
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   30247123.4512515     
- gather complete
- global size of solution vec      124800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1307542.53978396     
- gather complete
- global size of solution vec      124800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           3
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   50489884.6423698     
- gather complete
- global size of solution vec      346800
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1393815.59160378     
- gather complete
- global size of solution vec      346800
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           2
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   75747668.7754042     
- gather complete
- global size of solution vec      780000
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1494677.71770361     
- gather complete
- global size of solution vec      780000
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- 
- 
- helmholtz at coarse level           1
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- now solving
- Solution vector 2-norm:   151414102.922428     
- gather complete
- global size of solution vec     3113602
- residual calculation complete
- RHS vectors reassigned values
- scattering RHS vector  ... 
- scattering RHS vectors COMPLETE
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- LHS RHS from residual set
- now solving
- Solution vector 2-norm:   1730573.98235169     
- gather complete
- global size of solution vec     3113602
- collected solutions in original grid
- LHS vectors reassigned values
- scattering LHS vector  ... 
- scattering LHS vectors COMPLETE
- Loop completed
- 
- 
- completed Helmholtz decomposition
- writing file output/phi_psi_file001_time003.nc
- phi psi broadcasted
- 
- TIME INDEX            3  OF            3  COMPLETED
- FILE NUMBER            1  OF            1  COMPLETED 
- 
- 
- all filtered variables collected !
- 
- Now calculating the vectos from the Helmholtz Potentials !
- writing file output/file001_time003.nc
- Ending program
+malloc(): unsorted double linked list corrupted
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 0 PID 1238489 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 6 (Aborted)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 1 PID 1238490 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 2 PID 1238491 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 3 PID 1238492 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 4 PID 1238493 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 5 PID 1238494 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 6 PID 1238495 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 7 PID 1238496 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 8 PID 1238497 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 9 PID 1238498 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 10 PID 1238499 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 11 PID 1238500 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 12 PID 1238501 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 13 PID 1238502 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 14 PID 1238503 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 15 PID 1238504 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 16 PID 1238505 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 17 PID 1238506 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 18 PID 1238507 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 19 PID 1238508 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 20 PID 1238509 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 21 PID 1238510 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 22 PID 1238511 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 23 PID 1238512 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 24 PID 1238513 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 25 PID 1238514 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 26 PID 1238515 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 27 PID 1238516 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 28 PID 1238517 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 29 PID 1238518 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 30 PID 1238519 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 31 PID 1238520 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 32 PID 1238521 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 33 PID 1238522 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 34 PID 1238523 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   RANK 35 PID 1238524 RUNNING AT kumo.admin.whoi.edu
+=   KILLED BY SIGNAL: 9 (Killed)
+===================================================================================

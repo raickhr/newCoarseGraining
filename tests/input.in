@@ -2,14 +2,14 @@
 InputPath = './input'
 gridFile = 'WPE_ROMS_grid.nc'
 num_of_files_to_read = 1
-num_of_scalar2D_fields_to_read = 1
-num_of_scalar3D_fields_to_read = 1
-num_of_vector2D_fields_to_read = 1
-num_of_vector3D_fields_to_read = 1
+num_of_scalar2D_fields_to_read = 0
+num_of_scalar3D_fields_to_read = 4
+num_of_vector2D_fields_to_read = 0
+num_of_vector3D_fields_to_read = 2
 timevar_name = "ocean_time"
 vertdim_name = "s_rho"
 startTimeIndex = 1
-endTimeIndex = 3
+endTimeIndex = 26
 nx = 2599
 ny = 599
 nz = 4
@@ -24,22 +24,22 @@ OutputPath = 'output'
 /
 
 &Lists
-list_filenames = "ocean_avg.nc"
+list_filenames = "temp_terms_1.nc"
 
 ! "ocean_avg_20180127_20180216.nc"
 
-list_scalar2D_fieldsNames = "zeta"
-list_scalar3D_fieldsNames = "temp"
+list_scalar2D_fieldsNames = ""
+list_scalar3D_fieldsNames = "H", "HT", "Htemp_hdiff", "Htemp_vdiff"
 ! "salt"
 
-list_vector2DX_fieldsNames = "ubar_eastward"
-list_vector2DY_fieldsNames = "vbar_northward"
+list_vector2DX_fieldsNames = ""
+list_vector2DY_fieldsNames = ""
 
-list_vector3DX_fieldsNames = "u_eastward",
-list_vector3DY_fieldsNames = "v_northward",
-list_vector3DZ_fieldsNames = "w"
+list_vector3DX_fieldsNames = "HUT", "HU"
+list_vector3DY_fieldsNames = "HVT", "HV"
+list_vector3DZ_fieldsNames = "HOmgT", "HOmg"
 
-list_zlevels = 30 , 29, 28, 27
+list_zlevels = 10, 9, 8, 7
 list_coarse_factor_levels = 9, 5, 3, 2, 1
-list_filterLength = 500
+list_filterLength = 1000
 /

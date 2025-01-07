@@ -1,17 +1,12 @@
 module coarsening
-#include "config.h"
     use kinds
+    use mpiwrapper
     implicit none
     logical:: verbose
 
-#ifdef VERBOSE
-    parameter (verbose = .TRUE.)
-#else
-    parameter (verbose = .FALSE.)
-#endif
-
     contains
     subroutine coarsenField(nx, ny, factor, field, cellArea, outField, fieldWithPadding_out, cellAreaWithPadding_out)
+#include "config.h"
         integer, intent(in):: nx, ny, factor
         real(kind=real_kind), intent(in) :: field(nx,  ny), cellArea(nx, ny)
         real(kind=real_kind), allocatable, intent(out) :: outField(:,:)
@@ -25,7 +20,13 @@ module coarsening
         real(kind=real_kind), allocatable :: fieldWithPadding(:,:) , &
                                              cellAreaWithPadding(:,:)
 
-        if (verbose) then
+#ifdef VERBOSE
+        verbose = .TRUE.
+#else
+        verbose = .FALSE.
+#endif
+
+        if (verbose .and. taskid ==0 ) then
             print *, 'Coarsening field '
             print *, 'Original field size', nx, ny
             print *, 'Coarsening by factor', factor
@@ -54,7 +55,7 @@ module coarsening
             pad_y2 = 0
         endif
 
-        if (verbose) then
+        if (verbose .and. taskid == 0 ) then
             print *, 'Padding for x and y direction'
             print *, 'left pad x1, right pad x2, bottom pad y1, top pad y2', pad_x1, pad_x2, pad_y1, pad_y2
             print *, 'Grid Size with padding', coarse_nx, coarse_ny
@@ -112,13 +113,15 @@ module coarsening
 
         deallocate(fieldWithPadding, cellAreaWithPadding)
 
-        if (verbose) then
+        if (verbose .and. taskid == 0) then
             print *, 'Finished coarsening fields'
         endif
 
     end subroutine
 
     subroutine coarsenFieldWeighted(nx, ny, factor, field, cellArea, outField, fieldWithPadding_out, cellAreaWithPadding_out)
+#include "config.h"
+
         integer, intent(in):: nx, ny, factor
         real(kind=real_kind), intent(in) :: field(nx,  ny), cellArea(nx, ny)
         real(kind=real_kind), allocatable, intent(out) :: outField(:,:)
@@ -134,8 +137,15 @@ module coarsening
                                              kernelShapeX(:,:), kernelShapeY(:,:), &
                                              kernelShapeR(:,:)
 
+#ifdef VERBOSE
+        verbose = .TRUE.
+#else
+        verbose = .FALSE.
+#endif
+        if (verbose .and. taskid == 0) then
         print *, 'Original field size', nx, ny
         print *, 'Coarsening by factor', factor
+        endif
 
         coarse_nx = nx/factor
         coarse_ny = ny/factor
@@ -160,8 +170,10 @@ module coarsening
             pad_y2 = 0
         endif
 
+        if (verbose .and. taskid == 0) then
         print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
         print *, 'Coarsening to', coarse_nx, coarse_ny
+        endif
         if (allocated(outField)) deallocate(outField)
         allocate(outField(coarse_nx, coarse_ny), stat=ierr)
         
@@ -238,6 +250,7 @@ module coarsening
     end subroutine
 
     subroutine coarsenLatLon(nx, ny, factor, LAT, LON, cLAT, cLON, latWithPadding_out, lonWithPadding_out)
+#include "config.h"
         integer, intent(in):: nx, ny, factor
         real(kind=real_kind), intent(in) :: LAT(nx,  ny), LON(nx, ny)
         real(kind=real_kind), allocatable, intent(out) :: cLAT(:,:), cLON(:,:)
@@ -249,8 +262,12 @@ module coarsening
         real(kind=real_kind), allocatable ::  weightsWithPadding(:,:), deltax_lon(:), &
                                               deltay_lon(:), deltax_lat(:), deltay_lat(:), &
                                               latWithPadding(:,:) , lonWithPadding(:,:)
-
-        if (verbose) then
+#ifdef VERBOSE
+        verbose = .TRUE.
+#else
+        verbose = .FALSE.
+#endif
+        if (verbose .and. taskid == 0) then
             print *, 'Coarsening lat lon by factor', factor
             print *, 'Original field size', nx, ny
         endif 
@@ -278,7 +295,7 @@ module coarsening
             pad_y2 = 0
         endif
 
-        if (verbose) then
+        if (verbose .and. taskid == 0) then
             print *, 'Padding for x and y direction'
             print *, 'left pad x1, right pad x2, bottom pad y1, top pad y2', pad_x1, pad_x2, pad_y1, pad_y2
             print *, 'Grid Size with padding', coarse_nx, coarse_ny
@@ -366,13 +383,14 @@ module coarsening
 
         deallocate(latWithPadding, lonWithPadding, weightsWithPadding)
 
-        if (verbose) then
+        if (verbose .and. taskid == 0) then
             print *, 'coarsening latitude and longitude complete'
         endif 
 
     end subroutine
 
     subroutine coarsenDXDY(nx, ny, factor, DX, DY, cDX, cDY, dxWithPadding_out, dyWithPadding_out, downCenterUp)
+#include "config.h"
         integer, intent(in):: nx, ny, factor, &
                               & downCenterUp       ! this variable is for location of the grid Distances
                                                    ! up(1) will sum the top edges, down(-1) will sum with bottom edges, center(0) will average the edges.
@@ -389,8 +407,12 @@ module coarsening
         real(kind=real_kind), allocatable :: dyWithPadding(:,:) , dxWithPadding(:,:)
         real(kind=real_kind), allocatable ::  weightsWithPadding(:,:)
 
-
-        if (verbose) then
+#ifdef VERBOSE
+        verbose = .TRUE.
+#else
+        verbose = .FALSE.
+#endif
+        if (verbose .and. taskid == 0) then
             print *, 'Coarsening dx, dy by factor', factor
             print *, 'Original field size', nx, ny
             print *, 'DownCenterUP value', downCenterUp
@@ -422,7 +444,7 @@ module coarsening
             pad_y2 = 0
         endif
 
-        if (verbose) then
+        if (verbose .and. taskid == 0) then
             print *, 'Padding for x and y direction'
             print *, 'left pad x1, right pad x2, bottom pad y1, top pad y2', pad_x1, pad_x2, pad_y1, pad_y2
             print *, 'Grid Size with padding', coarse_nx, coarse_ny
@@ -509,6 +531,7 @@ module coarsening
     end subroutine
 
     subroutine coarsenAREA(nx, ny, factor, cellArea, coarseCellArea, cellAreaWithPadding_out)
+#include "config.h"
         integer, intent(in):: nx, ny, factor
         real(kind=real_kind), intent(in) :: cellArea(nx,  ny)
         real(kind=real_kind), allocatable, intent(out) :: coarseCellArea(:,:)
@@ -518,10 +541,18 @@ module coarsening
         integer :: i,j, dummy, is, ie, js, je
         real(kind=real_kind), allocatable, optional, intent(inout) :: cellAreaWithPadding_out(:,:)
         real(kind=real_kind), allocatable :: cellAreaWithPadding(:,:)
-    
-        print *, 'Original cellArea size', nx, ny
-    
-        print *, 'Coarsening by factor', factor
+
+#ifdef VERBOSE
+        verbose = .TRUE.
+#else
+        verbose = .FALSE.
+#endif
+
+        if (verbose .and. taskid == 0) then
+            print *, 'Original cellArea size', nx, ny
+        
+            print *, 'Coarsening by factor', factor
+        endif
     
         coarse_nx = nx/factor
         coarse_ny = ny/factor
@@ -546,8 +577,10 @@ module coarsening
             pad_y2 = 0
         endif
     
-        print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
-        print *, 'Coarsening to', coarse_nx, coarse_ny
+        if (verbose .and. taskid == 0) then
+            print *, 'pad_x1, pad_x2, pad_y1, pad_y2', pad_x1, pad_x2, pad_y1, pad_y2
+            print *, 'Coarsening to', coarse_nx, coarse_ny
+        endif
         if (allocated(coarseCellArea)) deallocate(coarseCellArea)
         allocate(coarseCellArea(coarse_nx, coarse_ny), stat=ierr)
         

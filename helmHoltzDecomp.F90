@@ -61,13 +61,18 @@ module helmHoltzDecomp
         mx = nx
         my = ny
 
+        if (rank == 0) then 
+            print *, 'Setting mat for grid size', mx,'x', my
+            print *, 'MAT SIZE =', 4 * mx * my,'x', 2 * mx * my
+        endif
+
         call MatCreate(PETSC_COMM_WORLD, self%A, ierr)
         call MatSetSizes(self%A, PETSC_DECIDE, PETSC_DECIDE, 4 * mx * my, 2 * mx * my, ierr)
         
         call MatSetType(self%A, MATAIJ, ierr) 
         call MatSetUp(self%A, ierr)
 
-        if (rank == 0) print *, 'Matrix Memory Allocated', 4 * mx * my,'x', 2 * mx * my
+        
 
         ! Get ownership ranges for rows
         call MatGetOwnershipRange(self%A, Istart, Iend, ierr)
