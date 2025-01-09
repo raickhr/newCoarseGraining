@@ -2,9 +2,9 @@
 InputPath = './input'
 gridFile = 'WPE_ROMS_grid.nc'
 num_of_files_to_read = 1
-num_of_scalar2D_fields_to_read = 0
-num_of_scalar3D_fields_to_read = 4
-num_of_vector2D_fields_to_read = 0
+num_of_scalar2D_fields_to_read = 1
+num_of_scalar3D_fields_to_read = 6
+num_of_vector2D_fields_to_read = 1
 num_of_vector3D_fields_to_read = 2
 timevar_name = "ocean_time"
 vertdim_name = "s_rho"
@@ -24,22 +24,22 @@ OutputPath = 'output'
 /
 
 &Lists
-list_filenames = "temp_terms_1.nc"
+list_filenames = "temp_terms_file01.nc"
 
 ! "ocean_avg_20180127_20180216.nc"
 
-list_scalar2D_fieldsNames = ""
-list_scalar3D_fieldsNames = "H", "HT", "Htemp_hdiff", "Htemp_vdiff"
+list_scalar2D_fieldsNames = "D"
+list_scalar3D_fieldsNames = "H", "HT", "Htemp_hdiff", "Htemp_vdiff", 'resHeq', 'resHTeq'
 ! "salt"
 
-list_vector2DX_fieldsNames = ""
-list_vector2DY_fieldsNames = ""
+list_vector2DX_fieldsNames = "Dubar"
+list_vector2DY_fieldsNames = "Dvbar"
 
 list_vector3DX_fieldsNames = "HUT", "HU"
 list_vector3DY_fieldsNames = "HVT", "HV"
 list_vector3DZ_fieldsNames = "HOmgT", "HOmg"
 
-list_zlevels = 10, 9, 8, 7
-list_coarse_factor_levels = 9, 5, 3, 2, 1
-list_filterLength = 1000
+list_zlevels = 7, 8, 9, 10
+list_coarse_factor_levels = 9, 5, 3, 2, 1  ! always should have one in the end
+list_filterLength = 500
 /

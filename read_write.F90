@@ -87,7 +87,7 @@ module read_write
                         &       scalar2D_fields_info(field_count)%units, &
                         &       scalar2D_fields_info(field_count)%long_name, &
                         &       "getVar2D_real" )
-            where (abs(scalar2D_fields(:,:,field_count)) > 1d10)
+            where (abs(scalar2D_fields(:,:,field_count)) > 1d20)
                 scalar2D_fields(:,:, field_count) = 0
             end where
         end do
@@ -101,7 +101,7 @@ module read_write
                                     &       scalar3D_fields_info(field_count)%units, &
                                     &       scalar3D_fields_info(field_count)%long_name, &
                                     &       "getVar3DatZlevel_real" )
-                where (abs(scalar3D_fields(:,:,z_count, field_count)) > 1d10)
+                where (abs(scalar3D_fields(:,:,z_count, field_count)) > 1d20)
                     scalar3D_fields(:,:,z_count, field_count) = 0
                 end where
             end do
@@ -122,11 +122,11 @@ module read_write
                         &       vector2DY_fields_info(field_count)%long_name, &
                         &       "getVar2D_real vector2dy" )
 
-            where (abs(vector2DX_fields(:,:, field_count)) > 1d10)
+            where (abs(vector2DX_fields(:,:, field_count)) > 1d20)
                 vector2DX_fields(:,:, field_count) = 0
             end where
 
-            where (abs(vector2DY_fields(:,:, field_count)) > 1d10)
+            where (abs(vector2DY_fields(:,:, field_count)) > 1d20)
                 vector2DY_fields(:,:, field_count) = 0
             end where
         end do
@@ -155,13 +155,13 @@ module read_write
                                     &       vector3DZ_fields_info(field_count)%long_name, &
                                     &       "getVar3DatZlevel_real vector3dz" )
 
-                where (abs(vector3DX_fields(:,:, z_count, field_count)) > 1d10)
+                where (abs(vector3DX_fields(:,:, z_count, field_count)) > 1d20)
                     vector3DX_fields(:,:, z_count, field_count) = 0
                 end where
-                where (abs(vector3DY_fields(:,:, z_count, field_count)) > 1d10)
+                where (abs(vector3DY_fields(:,:, z_count, field_count)) > 1d20)
                     vector3DY_fields(:,:, z_count, field_count) = 0
                 end where
-                where (abs(vector3DZ_fields(:,:, z_count, field_count)) > 1d10)
+                where (abs(vector3DZ_fields(:,:, z_count, field_count)) > 1d20)
                     vector3DZ_fields(:,:, z_count, field_count) = 0
                 end where
             end do

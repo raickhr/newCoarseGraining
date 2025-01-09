@@ -324,8 +324,8 @@ module fields
                     &    vector3DY_fields_info(num_vector3D_fields), &
                     &    vector3DZ_fields_info(num_vector3D_fields))
 
-                allocate(phi3D_fields_info(num_vector2D_fields), &
-                    &    psi3D_fields_info(num_vector2D_fields))
+                allocate(phi3D_fields_info(num_vector3D_fields), &
+                    &    psi3D_fields_info(num_vector3D_fields))
 
                 allocate(vector3DX_phi_fields_info(num_vector3D_fields), &
                     &    vector3DY_phi_fields_info(num_vector3D_fields))
