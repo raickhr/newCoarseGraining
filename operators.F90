@@ -741,4 +741,22 @@ module operators
         
         end select
     end subroutine
+
+    SUBROUTINE makeFileName(readFileName, suffix)
+        IMPLICIT NONE
+        CHARACTER(LEN=*), INTENT(IN) :: readFileName
+        CHARACTER(LEN=filename_len), INTENT(OUT) :: suffix
+        INTEGER :: length
+    
+        ! Get the length of the string excluding trailing spaces
+        length = LEN_TRIM(trim(adjustl(readFileName)))
+    
+        ! Trim the last three characters if the string is longer than three characters
+        IF (length > 3) THEN
+            suffix = trim(adjustl(readFileName(:length-3)))//trim(adjustl(suffix))
+        ELSE
+            suffix = trim(adjustl(readFileName))//trim(adjustl(suffix))
+        ENDIF
+        
+    END SUBROUTINE makeFileName
 end module

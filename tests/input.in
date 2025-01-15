@@ -1,15 +1,15 @@
 &input
 InputPath = './input'
 gridFile = 'WPE_ROMS_grid.nc'
-num_of_files_to_read = 1
+num_of_files_to_read = 8
 num_of_scalar2D_fields_to_read = 1
 num_of_scalar3D_fields_to_read = 6
 num_of_vector2D_fields_to_read = 1
 num_of_vector3D_fields_to_read = 2
 timevar_name = "ocean_time"
 vertdim_name = "s_rho"
-startTimeIndex = 1
-endTimeIndex = 26
+startTimeIndex = 11
+endTimeIndex = 27
 nx = 2599
 ny = 599
 nz = 4
@@ -24,7 +24,7 @@ OutputPath = 'output'
 /
 
 &Lists
-list_filenames = "temp_terms_file01.nc"
+list_filenames = "temp_terms_file_001.nc", "temp_terms_file_0002.nc", "temp_terms_file_0003.nc", "temp_terms_file_0004.nc", "temp_terms_file_0005.nc", "temp_terms_file_0006.nc", "temp_terms_file_0007.nc", "temp_terms_file_0008.nc"
 
 ! "ocean_avg_20180127_20180216.nc"
 

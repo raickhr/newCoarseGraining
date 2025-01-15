@@ -343,7 +343,7 @@ module read_write
         ! Put time, lengthscale and z co-ordinates value
 
         do counter = 1, num_zlevels
-            ncerr = nf90_put_var(file_id, zvar_id,(/arr_z_index(counter)/),       &
+            ncerr = nf90_put_var(file_id, zvar_id,(/vertDim_vals(counter)/),       &
                       start = (/counter/), &
                       count = (/1/))
             if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing z co-ordinate vals')
@@ -623,7 +623,7 @@ module read_write
         ! Put time, lengthscale and z co-ordinates value
 
         do counter = 1, num_zlevels
-            ncerr = nf90_put_var(file_id, zvar_id,(/arr_z_index(counter)/),       &
+            ncerr = nf90_put_var(file_id, zvar_id,(/vertDim_vals(counter)/),       &
                       start = (/counter/), &
                       count = (/1/))
             if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing z co-ordinate vals')
@@ -964,7 +964,7 @@ module read_write
         ! Put time, lengthscale and z co-ordinates value
 
         do counter = 1, num_zlevels
-            ncerr = nf90_put_var(file_id, zvar_id,(/arr_z_index(counter)/),       &
+            ncerr = nf90_put_var(file_id, zvar_id,(/vertDim_vals(counter)/),       &
                       start = (/counter/), &
                       count = (/1/))
             if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing z co-ordinate vals')
