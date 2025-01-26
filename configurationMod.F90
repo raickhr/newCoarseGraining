@@ -36,10 +36,11 @@ module configurationMod
 
             character (len = varname_len) :: timevar_name
             character (len = varname_len) :: vertdim_name
+            character (len = varname_len) :: wvertdim_name
             integer :: startTimeIndex   !Start Time index for each file
             integer :: endTimeIndex   !End Time index for each file
             integer :: nx, ny, nz, nt        ! size of the array in each file
-            integer, allocatable :: list_zlevels(:)  ! list of zlevels to read
+            integer, allocatable :: list_zlevels(:) , list_wzlevels(:) ! list of zlevels to read
 
             integer :: ncoarse_levels
             integer, allocatable :: list_coarse_factor_levels(:)
@@ -94,11 +95,12 @@ module configurationMod
 
             character (len = varname_len) :: timevar_name
             character (len = varname_len) :: vertdim_name
+            character (len = varname_len) :: wvertdim_name
 
             integer :: startTimeIndex   !Start Time index for each file
             integer :: endTimeIndex   !End Time index for each file
             integer :: nx, ny, nz, nt        ! size of the array in each file
-            integer, allocatable , dimension(:):: list_zlevels
+            integer, allocatable , dimension(:):: list_zlevels, list_wzlevels
 
 
             integer :: ncoarse_levels ! number of coarsening levels for Helmholtz decomposition
@@ -127,6 +129,7 @@ module configurationMod
                     & num_of_vector3D_fields_to_read, &
                     & timevar_name, &
                     & vertdim_name, &
+                    & wvertdim_name, &
                     & startTimeIndex, &
                     & endTimeIndex, &
                     & nx, ny, nz, nt, &
@@ -145,7 +148,7 @@ module configurationMod
                     & list_vector3DX_fieldsNames, &
                     & list_vector3DY_fieldsNames, &
                     & list_vector3DZ_fieldsNames, &
-                    & list_zlevels, &
+                    & list_zlevels, list_wzlevels, &
                     & list_coarse_factor_levels, &
                     & list_filterLength
 
@@ -162,6 +165,7 @@ module configurationMod
             WRITE(*,'(A50, I4)') 'num_of_vector3D_fields_to_read :', num_of_vector3D_fields_to_read
             WRITE(*,'(A50, A30)') 'timevar_name :', timevar_name
             WRITE(*,'(A50, A30)') 'vertdim_name :', vertdim_name
+            WRITE(*,'(A50, A30)') 'wvertdim_name :', wvertdim_name
             WRITE(*,'(A50, I4)') 'startTimeIndex :', startTimeIndex
             WRITE(*,'(A50, I4)') 'endTimeIndex :', endTimeIndex
             WRITE(*,'(A50, I4, I4, I4, I4)') 'nx, ny, nz, nt :', nx, ny, nz, nt
@@ -179,6 +183,7 @@ module configurationMod
             self%gridFile  = trim(adjustl(gridFile))
             self%timevar_name = trim(adjustl(timevar_name))
             self%vertdim_name = trim(adjustl(vertdim_name))
+            self%wvertdim_name = trim(adjustl(wvertdim_name))
             self%startTimeIndex   = startTimeIndex
             self%endTimeIndex   = endTimeIndex
             self%nx = nx
@@ -206,7 +211,7 @@ module configurationMod
             allocate(list_vector3DX_fieldsNames(num_of_vector3D_fields_to_read))
             allocate(list_vector3DY_fieldsNames(num_of_vector3D_fields_to_read))
             allocate(list_vector3DZ_fieldsNames(num_of_vector3D_fields_to_read))
-            allocate(list_zlevels(nz))
+            allocate(list_zlevels(nz), list_wzlevels(nz+1))
             allocate(list_coarse_factor_levels(ncoarse_levels))
             allocate(list_filterLength(nfilter))
 
@@ -218,7 +223,7 @@ module configurationMod
             allocate(self%list_vector3DX_fieldsNames(num_of_vector3D_fields_to_read))
             allocate(self%list_vector3DY_fieldsNames(num_of_vector3D_fields_to_read))
             allocate(self%list_vector3DZ_fieldsNames(num_of_vector3D_fields_to_read))
-            allocate(self%list_zlevels(nz))
+            allocate(self%list_zlevels(nz), self%list_wzlevels(nz+1))
             allocate(self%list_coarse_factor_levels(ncoarse_levels))
             allocate(self%list_filterLength(nfilter))
 
@@ -278,6 +283,14 @@ module configurationMod
             print *, ' '
             print *, ' '
 
+            print *, ' Following are the vertical level indices for top/bottom faces that will be read'
+            do counter=1, nz+1
+                WRITE(*,'(I50)') list_wzlevels(counter)
+                self%list_wzlevels(counter) = list_wzlevels(counter)
+            end do
+            print *, ' '
+            print *, ' '
+
             print *, ' Following are the coarsening levels for Helmholtz decomposition ' 
             do counter=1, ncoarse_levels
                 WRITE(*,'(I50)') list_coarse_factor_levels(counter)
@@ -304,7 +317,7 @@ module configurationMod
             deallocate(list_vector3DX_fieldsNames)
             deallocate(list_vector3DY_fieldsNames)
             deallocate(list_vector3DZ_fieldsNames)
-            deallocate(list_zlevels)
+            deallocate(list_zlevels, list_wzlevels)
             deallocate(list_coarse_factor_levels)
             deallocate(list_filterLength)
 

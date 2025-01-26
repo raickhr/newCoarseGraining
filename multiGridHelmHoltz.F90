@@ -437,8 +437,8 @@ module multiGridHelmHoltz
 
         end subroutine
 
-        subroutine getVectorsFromFilteredHelmHoltzPotentials(num_filterlengths)
-            integer, intent(in) :: num_filterlengths
+        subroutine getVectorsFromFilteredHelmHoltzPotentials(n_filterlengths)
+            integer, intent(in) :: n_filterlengths
             integer :: ell_counter, counter, z_counter, nx, ny, nz
             integer :: max_Iter
             real :: rel_Tol, abs_Tol, div_Tol
@@ -452,7 +452,7 @@ module multiGridHelmHoltz
             ny = nyu
             nz = nzu
 
-            do ell_counter =1, num_filterlengths
+            do ell_counter =1, n_filterlengths
                 do counter=1, num_vector2D_fields
                     if (taskid == 0) then
                         call getPolTorVelFD(OL_psi2D_fields(:,:, counter, ell_counter),&

@@ -56,6 +56,33 @@ module netcdf_io
 
     end subroutine
 
+
+    subroutine getwVertDimVals(fileid, nz, varname_in_ncfile, vertdim_indices, wvertdim_vals, error_string)
+        integer, intent(in) :: fileid, nz  ! nz is number of z indices in cell center
+        character(*), intent(in) :: varname_in_ncfile, error_string
+        integer, intent(in) :: vertdim_indices(nz+1)
+        real(kind=real_kind), intent(out) :: wvertdim_vals(nz+1)
+
+        integer :: ncerr, varid, vert_index, vert_index_count, startcount(1), endcount(1)
+        real(kind=real_kind) :: readval(1)
+        
+        endcount = (/1/)
+        do vert_index_count=1, nz+1
+            vert_index = vertdim_indices(vert_index_count)
+            startcount = (/vert_index/)
+
+            ncerr = nf90_inq_varid(fileid, varname_in_ncfile, varid)
+            if ( ncerr .NE. nf90_noerr )  call handle_err(ncerr, error_string)
+
+            ncerr = nf90_get_var(fileid, varid, readval, startcount, endcount)
+            if (ncerr .NE. nf90_noerr) call handle_err(ncerr, "error obtaining value of "//varname_in_ncfile)
+            wvertdim_vals(vert_index_count) = readval(1)
+
+        end do
+
+
+    end subroutine
+
     subroutine getVar2D_real(fileid, varname_in_ncfile, varArr,  error_string )
         integer, intent(in) :: fileid
         character (*), intent(in) :: varname_in_ncfile, error_string

@@ -121,7 +121,8 @@ module filterparallel
             numvars = num_scalar2D_fields + &
                       nzu * num_scalar3D_fields + &
                       2 * num_vector2D_fields   + & !psi phi ! do not filter vec_2D_phi and vec_2D_psi
-                      3 * nzu * num_vector3D_fields  ! psi phi for 2d fields only vertical is directly filtered
+                      2 * nzu * num_vector3D_fields  + &! psi phi for 2d fields only vertical is directly filtered
+                      1 * (nzu+1) * num_vector3D_fields  !There is one additional layer for vertical vel
                      
                       
             
@@ -347,6 +348,12 @@ module filterparallel
                                              depth_counter, counter)
                     varcounter = varcounter + 1
                 end do
+                ! additional layer because they are in face
+                unfiltvars(:,:, varcounter) = &
+                        &   vector3DZ_fields(west_cornerindex:east_cornerindex, &
+                                             south_cornerindex:north_cornerindex, &
+                                             nzu+1, counter)
+                varcounter = varcounter + 1
             end do
         end subroutine
 
@@ -386,6 +393,9 @@ module filterparallel
                     OL_vector3DZ_fields(i_index, j_index, depth_index, counter, filter_index) = filteredFields(varcounter)
                     varcounter = varcounter + 1
                 end do
+                ! additional layer because they are in face
+                OL_vector3DZ_fields(i_index, j_index, nzu+1, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1  
             end do
         end subroutine
 
@@ -456,6 +466,9 @@ module filterparallel
                     varcounter = varcounter + 1
 
                 end do
+                ! additional layer because they are in face
+                OL_vector3DZ_fields(i_index, j_index, nzu+1, counter, filter_index) = filteredFields(varcounter)
+                varcounter = varcounter + 1
             end do
         end subroutine
 

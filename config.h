@@ -1,1 +1,2 @@
 #undef VERBOSE
+#undef HELMHOLTZ

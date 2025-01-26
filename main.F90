@@ -1,4 +1,5 @@
 program main
+#include "config.h"
     use configurationMod
     use gridModule
     use mpiwrapper
@@ -7,6 +8,7 @@ program main
     use input_data_info
     use read_write
     use multiGridHelmHoltz
+
 
     implicit none
     
@@ -31,7 +33,9 @@ program main
 
     if (taskid == 0) print *, 'unfilt vars initialized'
 
+#ifdef HELMHOLTZ
     call init_helmholtz()
+#endif
 
     if (taskid == 0) print *, 'helmholtz initialized'
 
@@ -70,8 +74,8 @@ program main
 
             if (taskid .EQ. MASTER) print *, ' Read fields bcasted'
 
+#ifdef HELMHOLTZ
             call helmholtzDecompAllVecFields()
-
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
             if (taskid == 0 ) print *, 'completed Helmholtz decomposition'
@@ -82,6 +86,14 @@ program main
                 call writeUnfiltHelmHoltzDeompFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
                 &   'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), trim(adjustl(config%timevar_name)))
             end if
+#else
+            if (taskid == 0 ) then
+                WRITE(writefilename, "(A13,I0.3,A3)") "_phi_psi_time", time_index, ".nc"
+                call makeFileName(config%list_filenames(file_index), writefilename)
+                call readHelmHoltzDeompFields(trim(adjustl(config%OutputPath))//'/'//writefilename, time_index)
+            end if
+            
+#endif
 
             call broadCastPsiPhiFields()
 
@@ -92,7 +104,7 @@ program main
             if (taskid .EQ. MASTER) then 
                 print *, ''
                 print *, "TIME INDEX ",time_index-start_timeindex+1,' OF ', end_timeindex - start_timeindex +1, ' COMPLETED'
-                print *, "FILE NUMBER ",file_index,' OF ', num_files, ' COMPLETED '
+                print *, "AT FILE NUMBER ",file_index,' OF ', num_files
                 print *, ''
             end if
 
@@ -117,14 +129,16 @@ program main
                 ! &                 'Lengthscale', trim(adjustl(config%timevar_name)))
 
                 call writeCoarseGrainedFields( trim(adjustl(config%OutputPath))//'/'//writefilename, &
-                &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), &
+                &                 'xi_rho', 'eta_rho', trim(adjustl(config%vertdim_name)), trim(adjustl(config%wvertdim_name)), &
                 &                 'Lengthscale', trim(adjustl(config%timevar_name)))
             end if
 
         end do !close time loop
     end do ! close
 
+#ifdef HELMHOLTZ
     call delMultiGrid()
+#endif
     
     call deallocate_gridVars()
     call deallocate_filtervars()

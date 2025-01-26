@@ -132,8 +132,8 @@ module fields
             call allocate_vector2D_fields(nxu, nyu)
             call allocate_phipsi2D_fields(nxu, nyu)
 
-            call allocate_vector3D_fields(nxu, nyu, nzu)
-            call allocate_phipsi3D_fields(nxu, nyu, nzu)
+            call allocate_vector3D_fields(nxu, nyu, nzu+1) ! extra layer because top/bottom face
+            call allocate_phipsi3D_fields(nxu, nyu, nzu) !psi phi are still in cell center.
             
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
@@ -189,7 +189,7 @@ module fields
             if (.not. allocated(vector3DX_fields) .AND. num_vector3D_fields > 0) then 
                 allocate(vector3DX_fields(nx, ny, nz, num_vector3D_fields), &
                     &    vector3DY_fields(nx, ny, nz, num_vector3D_fields), &
-                    &    vector3DZ_fields(nx, ny, nz, num_vector3D_fields))
+                    &    vector3DZ_fields(nx, ny, nz + 1, num_vector3D_fields))   ! The z co-ordinate is on top and bottom face
             endif
             
         end subroutine
@@ -270,7 +270,7 @@ module fields
             if (.not. allocated(OL_vector3DX_fields) .AND. num_vector3D_fields > 0) then 
                 allocate(OL_vector3DX_fields(nx, ny, nz, num_vector3D_fields, nell), &
                     &    OL_vector3DY_fields(nx, ny, nz, num_vector3D_fields, nell), &
-                    &    OL_vector3DZ_fields(nx, ny, nz, num_vector3D_fields, nell))
+                    &    OL_vector3DZ_fields(nx, ny, nz+1, num_vector3D_fields, nell))  ! the velocities are on top and bottom faces
 
                 allocate(OL_phi3D_fields(nx, ny, nz, num_vector3D_fields, nell), &
                     &    OL_psi3D_fields(nx, ny, nz, num_vector3D_fields, nell))
@@ -382,7 +382,7 @@ module fields
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
                 call MPI_BCAST(vector3DY_fields(:,:,:, counter), nxu * nyu * nzu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
-                call MPI_BCAST(vector3DZ_fields(:,:,:, counter), nxu * nyu * nzu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+                call MPI_BCAST(vector3DZ_fields(:,:,:, counter), nxu * nyu * (nzu+1), MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
             end do 
             
@@ -470,11 +470,13 @@ module fields
                     call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
                             &           OL_vector2DX_fields(:,:, counter, filter_index), recv_size, displacements, MPI_REAL, &
                             &           MASTER, MPI_COMM_WORLD, i_err)
+                    call MPI_Barrier(MPI_COMM_WORLD, i_err)
                     
                     send_buffer(:,:) = OL_vector2DY_fields(:,js:je, counter, filter_index)
                     call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
                             &           OL_vector2DY_fields(:,:, counter, filter_index), recv_size, displacements, MPI_REAL, &
                             &           MASTER, MPI_COMM_WORLD, i_err)
+                    call MPI_Barrier(MPI_COMM_WORLD, i_err)
                 end do
 
                 call MPI_Barrier(MPI_COMM_WORLD, i_err)
@@ -485,17 +487,25 @@ module fields
                         call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
                             &           OL_vector3DX_fields(:,:,zcounter, counter, filter_index), recv_size, displacements, & 
                             &           MPI_REAL, MASTER, MPI_COMM_WORLD, i_err)
+                        call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
                         send_buffer(:,:) = OL_vector3DY_fields(:,js:je, zcounter, counter, filter_index)
                         call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
                             &           OL_vector3DY_fields(:,:,zcounter, counter, filter_index), recv_size, displacements, &
                             &           MPI_REAL, MASTER, MPI_COMM_WORLD, i_err)
+                        call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
                         send_buffer(:,:) = OL_vector3DZ_fields(:,js:je, zcounter, counter, filter_index)
                         call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
                             &           OL_vector3DZ_fields(:,:,zcounter, counter, filter_index), recv_size, displacements, &
                             &           MPI_REAL, MASTER, MPI_COMM_WORLD, i_err)
+                        call MPI_Barrier(MPI_COMM_WORLD, i_err)
                     end do
+                    !extra for top layer because wvel is in top/bottom faces
+                    send_buffer(:,:) = OL_vector3DZ_fields(:,js:je, nzu+1, counter, filter_index)
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                        &           OL_vector3DZ_fields(:,:,nzu+1, counter, filter_index), recv_size, displacements, &
+                        &           MPI_REAL, MASTER, MPI_COMM_WORLD, i_err)
                     call MPI_Barrier(MPI_COMM_WORLD, i_err)
                 end do 
 
@@ -588,6 +598,11 @@ module fields
                         &           OL_vector3DZ_fields(:,:,zcounter, counter, filter_index), recv_size, displacements, &
                         &           MPI_REAL, MASTER, MPI_COMM_WORLD, i_err)
                     end do
+                    ! additional layer because they are in top/bottom faces/edges
+                    send_buffer(:,:) = OL_vector3DZ_fields(:,js:je, nzu+1, counter, filter_index)
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+                    &           OL_vector3DZ_fields(:,:,nzu+1, counter, filter_index), recv_size, displacements, &
+                    &           MPI_REAL, MASTER, MPI_COMM_WORLD, i_err)
                     call MPI_Barrier(MPI_COMM_WORLD, i_err)
                 end do 
 
