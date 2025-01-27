@@ -2,25 +2,26 @@
 InputPath = './input'
 gridFile = 'WPE_ROMS_grid.nc'
 num_of_files_to_read = 1
-num_of_scalar2D_fields_to_read = 1
+num_of_scalar2D_fields_to_read = 2
 num_of_scalar3D_fields_to_read = 6
 num_of_vector2D_fields_to_read = 1
 num_of_vector3D_fields_to_read = 2
 timevar_name = "ocean_time"
 vertdim_name = "s_rho"
-wvertdim_name = "s_w"
+wvertdim_name = "s_w"  ! This is the vertical co-ordinate name for vertical velocity
 startTimeIndex = 1
-endTimeIndex = 2
+endTimeIndex = 10
 nx = 2599
 ny = 599
 nz = 4
 nt = 3 
 ncoarse_levels = 5
-max_iterations = 500
-abs_tol = 1d-10
-rel_tol = 1d-10
-div_tol = 1d10
+max_iterations = 500 ! This is the number of iterations for Helmholtz decomposition
+abs_tol = 1d-10      ! absolute tolerance for Helmholtz decomposition
+rel_tol = 1d-10      ! relative tolerance for Helmholtz decomposition
+div_tol = 1d10       ! divergence tolerance for Helmholtz decomposition
 nfilter = 1
+num_iti_laplace_smooth = 200 ! This is the number of iterations for gaussian smootihg in land points
 OutputPath = 'output'
 /
 
@@ -29,7 +30,7 @@ list_filenames = "temp_terms_file_000.nc"
 
 ! "ocean_avg_20180127_20180216.nc"
 
-list_scalar2D_fieldsNames = "D"
+list_scalar2D_fieldsNames = "D", "hshflux"
 list_scalar3D_fieldsNames = "H", "HT", "Htemp_hdiff", "Htemp_vdiff", 'resHeq', 'resHTeq'
 ! "salt"
 

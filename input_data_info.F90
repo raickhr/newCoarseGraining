@@ -12,6 +12,8 @@ module input_data_info
     character (len=varname_len) :: vertdim_name
     character (len=varname_len) :: wvertdim_name  ! vert dim name where vertical velocities are located
     character (len=units_len) :: timevar_units, timevar_calendar
+    integer :: niter_laplace_smooth  ! number of iterations for gaussian smoothing at land points
+
     contains
 
     subroutine set_numfiles_numzlevels_ntimesinafile(n1, n2, n3, n4, tvar_name, vdim_name, wvdim_name)
@@ -52,7 +54,8 @@ module input_data_info
         if (.not. allocated(arr_z_index)) allocate(arr_z_index(num_zlevels))
         if (.not. allocated(arr_wz_index)) allocate(arr_wz_index(num_zlevels))
         if (.not. allocated(vertDim_vals)) allocate(vertDim_vals(num_zlevels)) ! they are in cell center
-        if (.not. allocated(wvertDim_vals)) allocate(wvertDim_vals(num_zlevels + 1))  ! vertical dim vals are 1 node excess because they are in faces/edges
+        ! vertical dim vals are 1 node excess because they are in faces/edges
+        if (.not. allocated(wvertDim_vals)) allocate(wvertDim_vals(num_zlevels + 1))  
 
         if (taskid == MASTER) then
             arr_z_index = config%list_zlevels
@@ -63,6 +66,11 @@ module input_data_info
         call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
         call MPI_BCAST(arr_wz_index, num_zlevels+1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+        call MPI_Barrier(MPI_COMM_WORLD, i_err)
+
+        niter_laplace_smooth = config%num_iti_laplace_smooth
+
+        call MPI_BCAST(niter_laplace_smooth, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
         call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
     end subroutine

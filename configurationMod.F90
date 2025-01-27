@@ -45,11 +45,13 @@ module configurationMod
             integer :: ncoarse_levels
             integer, allocatable :: list_coarse_factor_levels(:)
 
-            integer :: max_iterations
+            integer :: max_iterations   ! for helmholtz decomp
             real(kind=real_kind) :: abs_tol, rel_tol, div_tol
 
             integer :: nfilter               ! number of filterlengths
             real, allocatable :: list_filterLength(:)   ! array of the filterlength
+
+            integer:: num_iti_laplace_smooth  ! number of iteration for laplace smoothing for extending values at land values
 
             character (len=pathname_len):: OutputPath 
         contains
@@ -111,6 +113,8 @@ module configurationMod
 
             integer :: nfilter               ! number of filterlengths
             real, allocatable , dimension(:):: list_filterLength   ! array of the filterlength
+
+            integer:: num_iti_laplace_smooth  ! number of iteration for laplace smoothing for extending values at land values
             
             character (len=pathname_len):: OutputPath   
 
@@ -137,6 +141,7 @@ module configurationMod
                     & max_iterations, &
                     & abs_tol, rel_tol, div_tol, &
                     & nfilter, &
+                    & num_iti_laplace_smooth, &
                     & OutputPath
 
             namelist /Lists/ &
@@ -174,6 +179,7 @@ module configurationMod
             WRITE(*,'(A50, E9.2, E9.2, E9.2)') 'abs_tol, rel_tol, div_tol :', abs_tol, rel_tol, div_tol
             WRITE(*,'(A50, I4)') 'ncoarse_levels :', ncoarse_levels
             WRITE(*,'(A50, I4)') 'nfilter :', nfilter
+            WRITE(*,'(A50, I4)') 'iterations laplace smooth :', num_iti_laplace_smooth
             WRITE(*,'(A50, A)') 'OutputPath :', trim(adjustl(OutputPath))
 
             print *, ' '
@@ -202,6 +208,7 @@ module configurationMod
             self%rel_tol = rel_tol
             self%div_tol = div_tol
             self%nfilter = nfilter
+            self%num_iti_laplace_smooth = num_iti_laplace_smooth
 
             allocate(list_filenames(num_of_files_to_read))
             allocate(list_scalar2D_fieldsNames(num_of_scalar2D_fields_to_read))
@@ -307,7 +314,7 @@ module configurationMod
             print *, ' '
             print *, ' '
 
-	        print *, "Configuration read and set SUCCESS "
+            print *, "Configuration read and set SUCCESS "
 
             deallocate(list_filenames)
             deallocate(list_scalar2D_fieldsNames)
@@ -339,7 +346,8 @@ module configurationMod
         end subroutine
 
         subroutine init_config()
-            if (taskid .EQ. MASTER) call config%construct()   ! Run the constructor for configuration object which also reads the configuration file
+            ! Run the constructor for configuration object which also reads the configuration file
+            if (taskid .EQ. MASTER) call config%construct()   
         end subroutine
 
 end module

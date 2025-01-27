@@ -2,7 +2,7 @@
                                        InputPath :./input
                                         gridFile :WPE_ROMS_grid.nc
                             num_of_files_to_read :   1
-                  num_of_scalar2D_fields_to_read :   1
+                  num_of_scalar2D_fields_to_read :   2
                   num_of_scalar3D_fields_to_read :   6
                   num_of_vector2D_fields_to_read :   1
                   num_of_vector3D_fields_to_read :   2
@@ -10,13 +10,14 @@
                                     vertdim_name :s_rho                         
                                    wvertdim_name :s_w                           
                                   startTimeIndex :   1
-                                    endTimeIndex :   2
+                                    endTimeIndex :  10
                                   nx, ny, nz, nt :2599 599   4   3
                                   ncoarse_levels :   5
                                   max_iterations : 500
                        abs_tol, rel_tol, div_tol : 0.10E-09 0.10E-09 0.10E+11
                                   ncoarse_levels :   5
                                          nfilter :   1
+                       iterations laplace smooth : 200
                                       OutputPath :output
   
   Following are the filenames that will be read
@@ -25,6 +26,7 @@
   
   Following are the 2D scalar fieldnames that will be read
                         D
+                  hshflux
   
   
   Following are the 3D scalar fieldnames that will be read
@@ -90,6 +92,81 @@
   
  GridVars bcasted
  unfilt vars initialized
+ Setting mat for grid size         289 x          67
+ MAT SIZE =       77452 x       38726
+ Matrix assembly complete
+ creating RHS vectors grid size size         289 x          67
+ RHS vectors assigned values Set
+ creating RHS vector for distributing across processors
+ creating RHS vector for distributing across processors COMPLETE
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ creating LHS vectors for grid size         289 x          67
+ LHS vectors assigned values Set
+ creating LHS vector for distributing across processors
+ creating LHS vector for distributing across processors COMPLETE
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Setting mat for grid size         520 x         120
+ MAT SIZE =      249600 x      124800
+ Matrix assembly complete
+ creating RHS vectors grid size size         520 x         120
+ RHS vectors assigned values Set
+ creating RHS vector for distributing across processors
+ creating RHS vector for distributing across processors COMPLETE
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ creating LHS vectors for grid size         520 x         120
+ LHS vectors assigned values Set
+ creating LHS vector for distributing across processors
+ creating LHS vector for distributing across processors COMPLETE
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Setting mat for grid size         867 x         200
+ MAT SIZE =      693600 x      346800
+ Matrix assembly complete
+ creating RHS vectors grid size size         867 x         200
+ RHS vectors assigned values Set
+ creating RHS vector for distributing across processors
+ creating RHS vector for distributing across processors COMPLETE
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ creating LHS vectors for grid size         867 x         200
+ LHS vectors assigned values Set
+ creating LHS vector for distributing across processors
+ creating LHS vector for distributing across processors COMPLETE
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Setting mat for grid size        1300 x         300
+ MAT SIZE =     1560000 x      780000
+ Matrix assembly complete
+ creating RHS vectors grid size size        1300 x         300
+ RHS vectors assigned values Set
+ creating RHS vector for distributing across processors
+ creating RHS vector for distributing across processors COMPLETE
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ creating LHS vectors for grid size        1300 x         300
+ LHS vectors assigned values Set
+ creating LHS vector for distributing across processors
+ creating LHS vector for distributing across processors COMPLETE
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Setting mat for grid size        2599 x         599
+ MAT SIZE =     6227204 x     3113602
+ Matrix assembly complete
+ creating RHS vectors grid size size        2599 x         599
+ RHS vectors assigned values Set
+ creating RHS vector for distributing across processors
+ creating RHS vector for distributing across processors COMPLETE
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ creating LHS vectors for grid size        2599 x         599
+ LHS vectors assigned values Set
+ creating LHS vector for distributing across processors
+ creating LHS vector for distributing across processors COMPLETE
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
  helmholtz initialized
  filtering vars initialized
  taskid   0     ncols  17          start   1            end  17
@@ -131,12 +208,13 @@
  work division initialized
  filtered vars allocated
  AT FILE NUMBER            1  OF            1
- AT TIME INDEX            1  OF            2
+ AT TIME INDEX            1  OF           10
  
  Opening file  ./input/temp_terms_file_000.nc ... 
  
  Opened  ./input/temp_terms_file_000.nc
  complete reading D
+ complete reading hshflux
  complete reading H
  complete reading H
  complete reading H
@@ -191,68 +269,1514 @@
  complete reading HOmg
  closed file  ./input/temp_terms_file_000.nc ... 
   Read fields bcasted
+  extending values at land points by laplace smoothing
+           1           1           1           1
+           2           1           2           2
+           3           1           3           3
+           4           1           4           4
+           5           1           5           5
+           6           1           6           6
+           7           1           7           7
+           8           1           8           8
+           9           1           9           9
+          10           1          10          10
+          11           1          11          11
+          12           1          12          12
+          13           1          13          13
+          14           1          14          14
+          15           1          15          15
+          16           1          16          16
+          17           1          17          17
+          18           1          18          18
+          19           1          19          19
+          20           1          20          20
+          21           1          21          21
+          22           1          22          22
+          23           1          23          23
+          24           1          24          24
+          25           1          25          25
+          26           1          26          26
+  extending values at land points by laplace smoothing DONE!
+ Starting Helmholtz Decomposition for 2D vector field number           1
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
  
- Opening file  output/temp_terms_file_000_phi_psi_time001.nc ... 
  
- Opened  output/temp_terms_file_000_phi_psi_time001.nc
- complete reading phi_Dubar_Dvbar
- complete reading psi_Dubar_Dvbar
- complete reading phi_Dubar
- complete reading phi_Dvbar
- complete reading psi_Dubar
- complete reading psi_Dvbar
- complete reading phi_HUT_HVT
- complete reading psi_HUT_HVT
- complete reading phi_HUT
- complete reading phi_HVT
- complete reading psi_HUT
- complete reading psi_HVT
- complete reading phi_HUT_HVT
- complete reading psi_HUT_HVT
- complete reading phi_HUT
- complete reading phi_HVT
- complete reading psi_HUT
- complete reading psi_HVT
- complete reading phi_HUT_HVT
- complete reading psi_HUT_HVT
- complete reading phi_HUT
- complete reading phi_HVT
- complete reading psi_HUT
- complete reading psi_HVT
- complete reading phi_HUT_HVT
- complete reading psi_HUT_HVT
- complete reading phi_HUT
- complete reading phi_HVT
- complete reading psi_HUT
- complete reading psi_HVT
- complete reading phi_HU_HV
- complete reading psi_HU_HV
- complete reading phi_HU
- complete reading phi_HV
- complete reading psi_HU
- complete reading psi_HV
- complete reading phi_HU_HV
- complete reading psi_HU_HV
- complete reading phi_HU
- complete reading phi_HV
- complete reading psi_HU
- complete reading psi_HV
- complete reading phi_HU_HV
- complete reading psi_HU_HV
- complete reading phi_HU
- complete reading phi_HV
- complete reading psi_HU
- complete reading psi_HV
- complete reading phi_HU_HV
- complete reading psi_HU_HV
- complete reading phi_HU
- complete reading phi_HV
- complete reading psi_HU
- complete reading psi_HV
- closed file  output/temp_terms_file_000_phi_psi_time001.nc ... 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   2523684590.62769     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   994131914.160513     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   4450065782.91580     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   1092244269.75339     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   7385577597.60543     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   1107582363.75683     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   11087337791.5134     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   1128062724.18102     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   22158697267.6146     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   1154926096.47505     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           1 
+  at z count            1
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   137178160116.923     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13334928021.6424     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   246782907616.286     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   12981116240.3680     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   411822278572.378     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13749934401.2341     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   617885467121.018     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   14590103834.6260     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   1234537209041.27     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   16532769812.5443     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           1 
+  at z count            2
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   153391150116.662     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13294494174.1901     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   275656668239.367     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13034029087.2474     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   459911097029.110     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   14180550965.0607     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   690073239701.234     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   15458604646.9098     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   1378441415502.74     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   18521694314.7053     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           1 
+  at z count            3
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   175924631588.711     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13447906470.2266     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   315752374280.674     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13412430653.9610     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   526766574916.288     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   15005402448.1870     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   790380684440.895     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   16767004340.1392     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   1578571527305.84     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   20992834274.8126     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           1 
+  at z count            4
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   198980233795.084     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13781907104.5054     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   356646172618.596     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13864151152.7667     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   594970300419.870     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   15886743344.6754     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   892689284599.282     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   18120639393.3849     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   1782935971570.97     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   23429221548.0191     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           2 
+  at z count            1
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   4870971439.31393     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   503756737.660879     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   8766776679.40736     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   487979423.085949     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   14630631247.5207     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   514193966.545844     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   21951523725.3396     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   542336690.199357     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   43859123245.4528     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   605943671.820630     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           2 
+  at z count            2
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   5482499047.82767     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   494402848.131169     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   9853708799.14833     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   482535555.147074     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   16440970902.0476     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   521590151.334182     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   24668568301.5426     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   565007349.551692     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   49275616220.1980     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   668494424.887052     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           2 
+  at z count            3
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   6394931921.94215     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   498133825.732048     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   11477436424.9283     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   493495279.581734     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   19148520192.3373     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   549310419.018024     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   28730629448.7902     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   611046507.999888     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   57381605170.0903     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   759445005.888713     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           2 
+  at z count            4
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   7350186763.46358     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   514051067.182655     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   13172041433.2112     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   513114715.565331     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   21974846814.0574     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   586698695.104025     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   32970490588.0766     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   668207793.752376     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   65851579031.2008     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   861893729.104683     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ completed Helmholtz decomposition
+ writing file output/temp_terms_file_000_phi_psi_time001.nc
  phi psi broadcasted
  
- TIME INDEX            1  OF            2  COMPLETED
+ TIME INDEX            1  OF           10  COMPLETED
  AT FILE NUMBER            1  OF            1
  
  
@@ -260,39 +1784,13 @@
  
  Now calculating the vectos from the Helmholtz Potentials !
  writing file output/temp_terms_file_000_filt_time001.nc
- coords definition complete
- 2D scalar definition complete
- 3D scalar definition complete
- 2D vector definition complete
- 3D scalar definition complete
- s_rho write complete
- s_w write complete
- filterlength write complete
- time write complete
- 2d scalar write complete           1 of           1
- 3d scalar write complete           1 of           1
- 2d vector write complete           1 of           1
- 3d phi write complete
- 3d psi write complete
- 3d xvec phi write complete
- 3d yvec phi write complete
- 3d xvec psi write complete
- 3d yvec psi write complete
- 3d zvec write complete
- 3d phi write complete
- 3d psi write complete
- 3d xvec phi write complete
- 3d yvec phi write complete
- 3d xvec psi write complete
- 3d yvec psi write complete
- 3d zvec write complete
- 3d vector write complete           1 of           1
- AT TIME INDEX            2  OF            2
+ AT TIME INDEX            2  OF           10
  
  Opening file  ./input/temp_terms_file_000.nc ... 
  
  Opened  ./input/temp_terms_file_000.nc
  complete reading D
+ complete reading hshflux
  complete reading H
  complete reading H
  complete reading H
@@ -347,100 +1845,840 @@
  complete reading HOmg
  closed file  ./input/temp_terms_file_000.nc ... 
   Read fields bcasted
- 
- Opening file  output/temp_terms_file_000_phi_psi_time002.nc ... 
- 
- Opened  output/temp_terms_file_000_phi_psi_time002.nc
- complete reading phi_Dubar_Dvbar
- complete reading psi_Dubar_Dvbar
- complete reading phi_Dubar
- complete reading phi_Dvbar
- complete reading psi_Dubar
- complete reading psi_Dvbar
- complete reading phi_HUT_HVT
- complete reading psi_HUT_HVT
- complete reading phi_HUT
- complete reading phi_HVT
- complete reading psi_HUT
- complete reading psi_HVT
- complete reading phi_HUT_HVT
- complete reading psi_HUT_HVT
- complete reading phi_HUT
- complete reading phi_HVT
- complete reading psi_HUT
- complete reading psi_HVT
- complete reading phi_HUT_HVT
- complete reading psi_HUT_HVT
- complete reading phi_HUT
- complete reading phi_HVT
- complete reading psi_HUT
- complete reading psi_HVT
- complete reading phi_HUT_HVT
- complete reading psi_HUT_HVT
- complete reading phi_HUT
- complete reading phi_HVT
- complete reading psi_HUT
- complete reading psi_HVT
- complete reading phi_HU_HV
- complete reading psi_HU_HV
- complete reading phi_HU
- complete reading phi_HV
- complete reading psi_HU
- complete reading psi_HV
- complete reading phi_HU_HV
- complete reading psi_HU_HV
- complete reading phi_HU
- complete reading phi_HV
- complete reading psi_HU
- complete reading psi_HV
- complete reading phi_HU_HV
- complete reading psi_HU_HV
- complete reading phi_HU
- complete reading phi_HV
- complete reading psi_HU
- complete reading psi_HV
- complete reading phi_HU_HV
- complete reading psi_HU_HV
- complete reading phi_HU
- complete reading phi_HV
- complete reading psi_HU
- complete reading psi_HV
- closed file  output/temp_terms_file_000_phi_psi_time002.nc ... 
- phi psi broadcasted
- 
- TIME INDEX            2  OF            2  COMPLETED
- AT FILE NUMBER            1  OF            1
+  extending values at land points by laplace smoothing
+           1           1           1           1
+           2           1           2           2
+           3           1           3           3
+           4           1           4           4
+           5           1           5           5
+           6           1           6           6
+           7           1           7           7
+           8           1           8           8
+           9           1           9           9
+          10           1          10          10
+          11           1          11          11
+          12           1          12          12
+          13           1          13          13
+          14           1          14          14
+          15           1          15          15
+          16           1          16          16
+          17           1          17          17
+          18           1          18          18
+          19           1          19          19
+          20           1          20          20
+          21           1          21          21
+          22           1          22          22
+          23           1          23          23
+          24           1          24          24
+          25           1          25          25
+          26           1          26          26
+  extending values at land points by laplace smoothing DONE!
+ Starting Helmholtz Decomposition for 2D vector field number           1
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
  
  
- all filtered variables collected !
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   2549613398.56823     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   1026095180.60394     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
  
- Now calculating the vectos from the Helmholtz Potentials !
- writing file output/temp_terms_file_000_filt_time002.nc
- coords definition complete
- 2D scalar definition complete
- 3D scalar definition complete
- 2D vector definition complete
- 3D scalar definition complete
- s_rho write complete
- s_w write complete
- filterlength write complete
- time write complete
- 2d scalar write complete           1 of           1
- 3d scalar write complete           1 of           1
- 2d vector write complete           1 of           1
- 3d phi write complete
- 3d psi write complete
- 3d xvec phi write complete
- 3d yvec phi write complete
- 3d xvec psi write complete
- 3d yvec psi write complete
- 3d zvec write complete
- 3d phi write complete
- 3d psi write complete
- 3d xvec phi write complete
- 3d yvec phi write complete
- 3d xvec psi write complete
- 3d yvec psi write complete
- 3d zvec write complete
- 3d vector write complete           1 of           1
- Ending program
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   4485093131.47197     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   1112416613.49778     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   7445196175.34246     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   1126607576.49975     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   11177253075.1102     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   1148531204.88722     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   22339445390.1188     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   1174936527.18115     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           1 
+  at z count            1
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   140721187732.335     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13340035598.7816     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   253275527420.276     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   12948790876.4394     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   422681944897.143     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13679395270.7689     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   634169082327.120     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   14485752017.8550     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   1267394289106.99     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   16353519130.8876     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           1 
+  at z count            2
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   155984647782.055     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13402435390.4325     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   280481157322.606     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   12993992191.0608     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   467999881060.889     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   14081713217.4795     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   702204413340.958     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   15306515462.2777     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   1403046440163.65     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   18248494820.0025     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           1 
+  at z count            3
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   177016549634.224     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13488918817.9221     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   317915215135.607     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13304974040.1316     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   530387525139.267     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   14785028588.3005     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   795789260329.861     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   16442969668.3482     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   1589765437504.01     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   20416966263.7951     
+ gather complete
+ global size of solution vec     3113602
+ collected solutions in original grid
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ Starting Helmholtz Decomposition for 3D vector field number           1 
+  at z count            4
+ Setting UVEL VVEL at coarse scale           9
+ Setting UVEL VVEL at coarse scale           5
+ Setting UVEL VVEL at coarse scale           3
+ Setting UVEL VVEL at coarse scale           2
+ Setting UVEL VVEL at coarse scale           1
+ Starting Multigrid
+ 
+ 
+ helmholtz at coarse level           9
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   197467288117.256     
+ gather complete
+ global size of solution vec       38726
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13503235495.3289     
+ gather complete
+ global size of solution vec       38726
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           5
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   354084099494.385     
+ gather complete
+ global size of solution vec      124800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   13605902323.5766     
+ gather complete
+ global size of solution vec      124800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           3
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   590669936135.043     
+ gather complete
+ global size of solution vec      346800
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   15444802755.2326     
+ gather complete
+ global size of solution vec      346800
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           2
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   886186668910.410     
+ gather complete
+ global size of solution vec      780000
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving
+ Solution vector 2-norm:   17498589546.6247     
+ gather complete
+ global size of solution vec      780000
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ Loop completed
+ 
+ 
+ 
+ 
+ helmholtz at coarse level           1
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ now solving
+ Solution vector 2-norm:   1770300982957.48     
+ gather complete
+ global size of solution vec     3113602
+ residual calculation complete
+ RHS vectors reassigned values
+ scattering RHS vector  ... 
+ scattering RHS vectors COMPLETE
+ LHS vectors reassigned values
+ scattering LHS vector  ... 
+ scattering LHS vectors COMPLETE
+ LHS RHS from residual set
+ now solving

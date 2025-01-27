@@ -1,5 +1,5 @@
 CC=mpiicc
-FC=mpiifort
+FC=mpiifort -stand=f08
 CFLAGS=`nc-config --cflags`
 FFLAGS=-cpp `nf-config --fflags`
 CLIBS=`nc-config --libs`
@@ -25,7 +25,7 @@ OBJ = $(SRC:.F90=.o)
 %.o :%.F90
 	$(FC) -c $(FFLAGS) $(DEBUG) $< 
 
-main.o: fields.o configurationMod.o gridModule.o mpiwrapper.o filterparallel.o input_data_info.o read_write.o multiGridHelmHoltz.o 
+main.o: fields.o configurationMod.o gridModule.o mpiwrapper.o filterparallel.o input_data_info.o read_write.o multiGridHelmHoltz.o preprocess.o
 	$(FC) -c $(FFLAGS) $(DEBUG) main.F90 ${PETSC_INCLUDE}
 
 configurationMod.o: kinds.o mpiwrapper.o
@@ -48,6 +48,9 @@ constants.o: kinds.o
 
 coarsening.o : kinds.o mpiwrapper.o
 	$(FC) -c $(FFLAGS) $(DEBUG) coarsening.F90
+
+preprocess.o : kinds.o constants.o gridModule.o mpiwrapper.o fields.o input_data_info.o
+	$(FC) -c $(FFLAGS) $(DEBUG) preprocess.F90
 
 helmHoltzDecomp.o :	kinds.o mpiwrapper.o operators.o
 	$(FC) -c $(FFLAGS) ${PETSC_INCLUDE} $(DEBUG) helmHoltzDecomp.F90 

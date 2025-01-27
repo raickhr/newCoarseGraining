@@ -9,7 +9,7 @@ module ncdf_wrapper
         implicit none
 
         integer status
-        character*(*) string
+        character(len=*) string
 
         write (*,*) nf90_strerror(status),': ',string
         print *, ''

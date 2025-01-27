@@ -76,8 +76,10 @@ module read_write
             call getTimeVar(file_id, trim(adjustl(timevar_name)), &
                                                   timevar_units, timevar_calendar, time_index, &
                                                   timevar_val, "error getting time variable info "//timevar_name)
-            call getVertDimVals(file_id, nzu, trim(adjustl(vertdim_name)), arr_z_index, vertdim_vals, "error getting vertical dim ")
-            call getwVertDimVals(file_id, nzu, trim(adjustl(wvertdim_name)), arr_wz_index, wvertdim_vals, "error getting w vertical dim "//wvertdim_name)
+            call getVertDimVals(file_id, nzu, trim(adjustl(vertdim_name)), arr_z_index, vertdim_vals, &
+                                "error getting vertical dim ")
+            call getwVertDimVals(file_id, nzu, trim(adjustl(wvertdim_name)), arr_wz_index, wvertdim_vals, &
+                                "error getting w vertical dim "//wvertdim_name)
         endif
 
         do field_count =1, num_scalar2D_fields
@@ -746,7 +748,10 @@ module read_write
         call getTimeVar(file_id, trim(adjustl(timevar_name)), &
                                                 check_timevar_units, check_timevar_calendar, 1, &
                                                 check_timevar_val, "error getting time variable info "//timevar_name)
-        call getVertDimVals(file_id, nzu, trim(adjustl(vertdim_name)), (/(dummy_count, dummy_count=1,nzu, 1)/), check_vertdim_vals, "error getting vertical dim ")
+
+        call getVertDimVals(file_id, nzu, trim(adjustl(vertdim_name)), &
+                            (/(dummy_count, dummy_count=1,nzu, 1)/), &
+                            check_vertdim_vals, "error getting vertical dim ")
 
         if (trim(adjustl(check_timevar_units)) .NE. trim(adjustl(timevar_units))) then
             print *, "TIME UNITS ARE DIFFERENT BETWEEN HELMHOLTZ DECOMP FILES AND MAIN INPUT FILES"
@@ -865,17 +870,23 @@ module read_write
 
     end subroutine
 
-    subroutine writeCoarseGrainedFields(fullfilename, x_dimname, y_dimname, z_dimname, wz_dimname, filter_dimname, time_dimname)
-        character(len=*) , intent(in) :: fullfilename, x_dimname, y_dimname, z_dimname, wz_dimname, filter_dimname, time_dimname
-        integer :: file_id, xdim_id, ydim_id, zdim_id, wzdim_id, filterdim_id, timedim_id, coords_2d(4), coords_3d(5), wcoords_3d(5), ncerr , &
-                   timevar_id, latvar_id, lonvar_id, zvar_id, wzvar_id, filtervar_id, field_count, numvars, var_index, counter
+    subroutine writeCoarseGrainedFields(fullfilename, x_dimname, y_dimname, &
+                                        z_dimname, wz_dimname, filter_dimname, time_dimname)
+        character(len=*) , intent(in) :: fullfilename, x_dimname, y_dimname, z_dimname, &
+                                         wz_dimname, filter_dimname, time_dimname
+
+        integer :: file_id, xdim_id, ydim_id, zdim_id, wzdim_id, filterdim_id, timedim_id, &
+                   coords_2d(4), coords_3d(5), wcoords_3d(5), ncerr , &
+                   timevar_id, latvar_id, lonvar_id, zvar_id, wzvar_id, &
+                   filtervar_id, field_count, numvars, var_index, counter
     
         character(len=longname_len) :: att_names(2), att_values(2)
         character(len=varname_len) :: varname
 
         integer(kind=int_kind), allocatable :: varids(:)
 
-        real(kind=real_kind) , allocatable:: dummy2d(:,:,:,:), dummy3d(:,:,:,:,:) , dummy3d_2(:,:,:,:,:) ! x, y, z, filterlength, time
+        real(kind=real_kind) , allocatable:: dummy2d(:,:,:,:), dummy3d(:,:,:,:,:) , &
+                                             dummy3d_2(:,:,:,:,:) ! x, y, z, filterlength, time
 
         integer, parameter :: INT_TYPE = 1, FLOAT_TYPE = 2, DOUBLE_TYPE=3
 
@@ -967,7 +978,7 @@ module read_write
         wcoords_3d(4)=filterdim_id
         wcoords_3d(5)=timedim_id
 
-        print *, 'coords definition complete'
+        ! print *, 'coords definition complete'
         var_index = 1
         do field_count =1, num_scalar2D_fields
             varname = trim(adjustl(scalar2D_fields_info(field_count)%varname))
@@ -980,7 +991,7 @@ module read_write
             var_index = var_index + 1
             
         end do
-        print *, '2D scalar definition complete'
+        ! print *, '2D scalar definition complete'
 
         do field_count =1, num_scalar3D_fields
             varname = trim(adjustl(scalar3D_fields_info(field_count)%varname))
@@ -993,7 +1004,7 @@ module read_write
             var_index = var_index + 1
             
         end do
-        print *, '3D scalar definition complete'
+        ! print *, '3D scalar definition complete'
 
         do field_count=1, num_vector2D_fields
             varname = trim(adjustl(phi2D_fields_info(field_count)%varname))
@@ -1050,7 +1061,7 @@ module read_write
             call defineVariables(file_id, varname, FLOAT_TYPE, coords_2d, varids(var_index), att_names, att_values )
             var_index = var_index + 1
         end do
-        print *, '2D vector definition complete'
+        ! print *, '2D vector definition complete'
 
         do field_count=1, num_vector3D_fields
             varname = trim(adjustl(phi3D_fields_info(field_count)%varname))
@@ -1118,7 +1129,7 @@ module read_write
             var_index = var_index + 1
             
         end do
-        print *, '3D scalar definition complete'
+        ! print *, '3D scalar definition complete'
 
         ncerr = nf90_enddef(file_id)
         if (ncerr /= nf90_noerr) stop 'at enddef'
@@ -1131,7 +1142,7 @@ module read_write
                       count = (/1/))
             if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing z co-ordinate vals')
         end do
-        print *, 's_rho write complete'
+        ! print *, 's_rho write complete'
 
         do counter = 1, num_zlevels + 1
             ncerr = nf90_put_var(file_id, wzvar_id,(/wvertDim_vals(counter)/),       &
@@ -1139,7 +1150,7 @@ module read_write
                       count = (/1/))
             if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing z co-ordinate vals for faces')
         end do
-        print *, 's_w write complete'
+        ! print *, 's_w write complete'
 
         do counter = 1, num_filterlengths
             ncerr = nf90_put_var(file_id, filtervar_id,(/arr_filterlengths(counter)/),       &
@@ -1147,13 +1158,13 @@ module read_write
                       count = (/1/))
             if(ncerr /= nf90_noerr) call handle_err(ncerr, 'writing filterlength co-ordinate vals')
         end do
-        print *, 'filterlength write complete'
+        ! print *, 'filterlength write complete'
 
         ncerr = nf90_put_var(file_id, timevar_id, (/timevar_val(1)/),       &
                  start = (/1/), &
                  count = (/1/))
         if(ncerr /= nf90_noerr) call handle_err(ncerr, 'time co-ordinate vals')
-        print *, 'time write complete'
+        ! print *, 'time write complete'
 
 
         ! Start writing variables
@@ -1166,7 +1177,7 @@ module read_write
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1    
             end do
-            print *, '2d scalar write complete', counter, 'of', num_filterlengths
+            ! print *, '2d scalar write complete', counter, 'of', num_filterlengths
 
             do field_count =1, num_scalar3D_fields
                 dummy3d(:,:, :, 1,1) = OL_scalar3D_fields(:,:, :, field_count, counter)
@@ -1175,7 +1186,7 @@ module read_write
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1    
             end do
-            print *, '3d scalar write complete', counter, 'of', num_filterlengths
+            ! print *, '3d scalar write complete', counter, 'of', num_filterlengths
 
             do field_count=1, num_vector2D_fields
                 dummy2d(:, :, 1,1) = OL_phi2D_fields(:, :, field_count, counter)
@@ -1214,7 +1225,7 @@ module read_write
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1
             end do
-            print *, '2d vector write complete', counter, 'of', num_filterlengths
+            ! print *, '2d vector write complete', counter, 'of', num_filterlengths
 
             do field_count=1, num_vector3D_fields
                 dummy3d(:,:,:, 1,1) = OL_phi3D_fields(:,:, :, field_count, counter)
@@ -1222,52 +1233,52 @@ module read_write
                         start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
-                print *, '3d phi write complete'
+                ! print *, '3d phi write complete'
 
                 dummy3d(:,:,:, 1,1) = OL_psi3D_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
                         start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
-                print *, '3d psi write complete'
+                ! print *, '3d psi write complete'
 
                 dummy3d(:,:,:, 1,1) = OL_vector3DX_phi_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
                         start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
-                print *, '3d xvec phi write complete'
+                ! print *, '3d xvec phi write complete'
 
                 dummy3d(:,:,:, 1,1) = OL_vector3DY_phi_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
                         start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
-                print *, '3d yvec phi write complete'
+                ! print *, '3d yvec phi write complete'
 
                 dummy3d(:,:,:, 1,1) = OL_vector3DX_psi_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
                         start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
-                print *, '3d xvec psi write complete'
+                !print *, '3d xvec psi write complete'
 
                 dummy3d(:,:,:, 1,1) = OL_vector3DY_psi_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
                         start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu, 1, 1 /))
                 var_index = var_index + 1
-                print *, '3d yvec psi write complete'
+                !print *, '3d yvec psi write complete'
                 
                 dummy3d_2(:,:,:, 1,1) = OL_vector3DZ_fields(:,:, :, field_count, counter)
                 ncerr = nf90_put_var(file_id, varids(var_index), dummy3d_2,       &
                         start = (/1, 1, 1, counter, 1/), &
                         count = (/nxu, nyu, nzu+1, 1, 1 /))
                 var_index = var_index + 1
-                print *, '3d zvec write complete'
+                !print *, '3d zvec write complete'
                 
             end do
-            print *, '3d vector write complete', counter, 'of', num_filterlengths
+            ! print *, '3d vector write complete', counter, 'of', num_filterlengths
         end do
 
         deallocate(varids)

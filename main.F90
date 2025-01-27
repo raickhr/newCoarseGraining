@@ -8,6 +8,7 @@ program main
     use input_data_info
     use read_write
     use multiGridHelmHoltz
+    use preprocess
 
 
     implicit none
@@ -73,6 +74,10 @@ program main
             call broadCastReadFields()
 
             if (taskid .EQ. MASTER) print *, ' Read fields bcasted'
+
+#ifdef GAUSSLANDSMOOTH
+            call laplaceSmoothLand()
+#endif
 
 #ifdef HELMHOLTZ
             call helmholtzDecompAllVecFields()
