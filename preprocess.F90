@@ -72,8 +72,8 @@ module preprocess
         if (arr_num2D_fields_in_thisproc(taskid) > 0 ) then
             do counter = start_indices(taskid), end_indices(taskid)
                 dummy2D = all2D_fields(:,:, counter)
-                dummy2D_new = 0.0
                 do iti =1, niter_laplace_smooth
+                    dummy2D_new = 0.0
                     dummy2D_new = dummy2D_new + 0.25* cshift(dummy2D, shift= 1, dim=1) 
                     dummy2D_new = dummy2D_new + 0.25* cshift(dummy2D, shift=-1, dim=1)
                     dummy2D_new = dummy2D_new + 0.25* cshift(dummy2D, shift= 1, dim=2)
