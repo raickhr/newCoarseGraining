@@ -119,7 +119,7 @@ module preprocess
         end do
 
         deallocate(start_indices, end_indices, arr_num2D_fields_in_thisproc)
-        deallocate(all2D_fields, dummy2D)
+        deallocate(all2D_fields, dummy2D, dummy2D_new)
 
         if (taskid .EQ. 0) print *,' extending values at land points by laplace smoothing DONE!'
 

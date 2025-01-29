@@ -1,3 +1,3 @@
 #undef VERBOSE
-#undef HELMHOLTZ
-#undef GAUSSLANDSMOOTH
+#define HELMHOLTZ
+#define GAUSSLANDSMOOTH
