@@ -1,11 +1,11 @@
 CC=mpiicc
-FC=mpiifort -stand=f08
+FC=mpiifort 
 CFLAGS=`nc-config --cflags`
 FFLAGS=-cpp `nf-config --fflags`
 CLIBS=`nc-config --libs`
 FLIBS=`nf-config --flibs`
-DEBUG= 
-#=-g -O0 -traceback -check all -check bounds -check-uninit 
+DEBUG=
+#-stand f08 -warn all -g -O0 -traceback -check all -check bounds -check uninit 
 
 PETSC_DIR=/home/shikhar.rai/myLibraries/petsc
 # PETSC_DIR=/opt/anaconda3/envs/fortran/

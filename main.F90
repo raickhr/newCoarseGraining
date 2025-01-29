@@ -102,7 +102,10 @@ program main
 
             call broadCastPsiPhiFields()
 
-            if (taskid .EQ. MASTER) print *, 'phi psi broadcasted'
+            if (taskid .EQ. MASTER) then 
+                print *, 'phi psi broadcasted'
+                print *, 'STARTING FILTERING'
+            end if
             
             call filter_allvars()
             
@@ -120,7 +123,7 @@ program main
                 print *, ''
                 print *, 'all filtered variables collected !'
                 print *, ''
-                print *, 'Now calculating the vectos from the Helmholtz Potentials !'
+                print *, 'Now calculating the vectors from the Helmholtz Potentials !'
                 call getVectorsFromFilteredHelmHoltzPotentials(num_filterlengths)
 
             end if

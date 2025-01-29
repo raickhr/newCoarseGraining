@@ -104,7 +104,7 @@ module netcdf_io
         character (len=longname_len), intent(out) :: long_name
         real (kind=real_kind), intent(out):: varArr(:,:)
 
-        integer :: ncerr, varid, endcount(4),startcount(4), unitlength, longnamelength
+        integer :: ncerr, varid, endcount(4),startcount(4)! ,  longnamelength !,unitlength
 
         ! check to see if variable is present
         ncerr = nf90_inq_varid(fileid, varname_in_ncfile, varid)
@@ -133,7 +133,7 @@ module netcdf_io
         character (len=longname_len), intent(out) :: long_name
         real (kind=real_kind), intent(out):: varArr(:,:)
 
-        integer :: ncerr, varid, endcount(3),startcount(3), unitlength, longnamelength
+        integer :: ncerr, varid, endcount(3),startcount(3) !, longnamelength !, unitlength
 
         ! check to see if variable is present
         ncerr = nf90_inq_varid(fileid, varname_in_ncfile, varid)

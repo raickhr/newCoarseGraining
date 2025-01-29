@@ -1,0 +1,422 @@
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  kinds.F90 
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  mpiwrapper.F90	
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  coarsening.F90
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  configurationMod.F90
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  constants.F90
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  gridModule.F90
+gridModule.F90(35): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(nxu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+gridModule.F90(36): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(nyu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+gridModule.F90(37): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(nzu, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+gridModule.F90(56): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(DXU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+gridModule.F90(57): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(DYU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+gridModule.F90(58): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(ULAT, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+gridModule.F90(59): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(ULONG, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+gridModule.F90(60): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(KMU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+gridModule.F90(61): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(UAREA, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+gridModule.F90(62): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(HU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+gridModule.F90(63): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(FCORU, nxu*nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  fields.F90	
+fields.F90(122): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(num_scalar2D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+fields.F90(123): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(num_scalar3D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+fields.F90(124): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(num_vector2D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+fields.F90(125): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(num_vector3D_fields, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+fields.F90(364): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(scalar2D_fields(:,:, counter), nxu * nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(369): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(scalar3D_fields(:,:,:, counter), nxu * nyu * nzu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(374): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector2DX_fields(:,:, counter), nxu * nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(376): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector2DY_fields(:,:, counter), nxu * nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(381): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector3DX_fields(:,:,:, counter), nxu * nyu * nzu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(383): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector3DY_fields(:,:,:, counter), nxu * nyu * nzu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(385): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector3DZ_fields(:,:,:, counter), nxu * nyu * (nzu+1), MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(394): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(phi2D_fields(:,:, counter), nxu * nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(395): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(psi2D_fields(:,:, counter), nxu * nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(397): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector2DX_phi_fields(:,:, counter), nxu * nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(398): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector2DX_psi_fields(:,:, counter), nxu * nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(400): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector2DY_phi_fields(:,:, counter), nxu * nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(401): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector2DY_psi_fields(:,:, counter), nxu * nyu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(405): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(phi3D_fields(:,:, :, counter), nxu * nyu * nzu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(406): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(psi3D_fields(:,:, :, counter), nxu * nyu * nzu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(408): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector3DX_phi_fields(:,:, :, counter), nxu * nyu * nzu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(409): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector3DX_psi_fields(:,:, :, counter), nxu * nyu * nzu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(411): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector3DY_phi_fields(:,:, :, counter), nxu * nyu * nzu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(412): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                call MPI_BCAST(vector3DY_psi_fields(:,:, :, counter), nxu * nyu * nzu, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+---------------------^
+fields.F90(450): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-------------------------^
+fields.F90(459): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-----------------------------^
+fields.F90(470): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-------------------------^
+fields.F90(476): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-------------------------^
+fields.F90(487): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-----------------------------^
+fields.F90(493): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-----------------------------^
+fields.F90(499): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-----------------------------^
+fields.F90(506): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-------------------------^
+fields.F90(553): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-------------------------^
+fields.F90(562): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-----------------------------^
+fields.F90(572): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-------------------------^
+fields.F90(577): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-------------------------^
+fields.F90(587): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-----------------------------^
+fields.F90(592): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-----------------------------^
+fields.F90(597): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                        call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-----------------------------^
+fields.F90(603): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_GATHERV]
+                    call MPI_GATHERV(send_buffer, send_size, MPI_REAL , &
+-------------------------^
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  ncdf_wrapper.F90 
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  netcdf_io.F90
+netcdf_io.F90(185): remark #7712: This variable has not been used.   [NUM_COORDS]
+        integer(kind=int_kind) :: num_atts, num_coords, ncerr, counter
+--------------------------------------------^
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  filterparallel.F90	
+filterparallel.F90(19): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(num_filterlengths, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+filterparallel.F90(27): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(arr_filterlengths, num_filterlengths, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+filterparallel.F90(173): remark #7712: This variable has not been used.   [COUNTER]
+            integer :: filter_counter, depth_counter, varcounter, numvars, counter, &
+---------------------------------------------------------------------------^
+filterparallel.F90(113): remark #7712: This variable has not been used.   [COUNTER]
+            integer :: filter_counter, depth_counter, varcounter, numvars, counter, &
+---------------------------------------------------------------------------^
+filterparallel.F90(173): remark #7712: This variable has not been used.   [DEPTH_COUNTER]
+            integer :: filter_counter, depth_counter, varcounter, numvars, counter, &
+---------------------------------------^
+filterparallel.F90(113): remark #7712: This variable has not been used.   [DEPTH_COUNTER]
+            integer :: filter_counter, depth_counter, varcounter, numvars, counter, &
+---------------------------------------^
+filterparallel.F90(173): remark #7712: This variable has not been used.   [VARCOUNTER]
+            integer :: filter_counter, depth_counter, varcounter, numvars, counter, &
+------------------------------------------------------^
+filterparallel.F90(113): remark #7712: This variable has not been used.   [VARCOUNTER]
+            integer :: filter_counter, depth_counter, varcounter, numvars, counter, &
+------------------------------------------------------^
+filterparallel.F90(534): remark #7712: This variable has not been used.   [DEBUGFLAG]
+        subroutine calc_greatCircDist(center_long, center_lat, xshape, yshape, arr_ULONG, arr_ULAT, distance, debugflag)
+--------------------------------------------------------------------------------------------------------------^
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  operators.F90
+operators.F90(389): remark #7712: This variable has not been used.   [DXBOTTOM]
+    subroutine getPolTorVel(psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea, &
+----------------------------------------------------------^
+operators.F90(389): remark #7712: This variable has not been used.   [DXTOP]
+    subroutine getPolTorVel(psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea, &
+--------------------------------------------------------------------^
+operators.F90(389): remark #7712: This variable has not been used.   [DYLEFT]
+    subroutine getPolTorVel(psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea, &
+---------------------------------------------------------------------------^
+operators.F90(389): remark #7712: This variable has not been used.   [DYRIGHT]
+    subroutine getPolTorVel(psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea, &
+-----------------------------------------------------------------------------------^
+operators.F90(389): remark #7712: This variable has not been used.   [CELLAREA]
+    subroutine getPolTorVel(psi, phi, centerDX, centerDy, dxBottom, dxTop, dyLeft, dyRight, cellArea, &
+--------------------------------------------------------------------------------------------^
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -I/home/shikhar.rai/myLibraries/petsc/include -g -O0 -traceback -check all -check bounds -check uninit  helmHoltzDecomp.F90 
+helmHoltzDecomp.F90(213): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%y_globalOnZero, Ii, val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(216): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%y_globalOnZero, Ii + (mx * my), val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(219): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%y_globalOnZero, Ii + 2 * (mx * my), val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(222): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%y_globalOnZero, Ii + 3 * (mx * my), val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(248): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERCREATE]
+        call VecScatterCreate(self%y_globalOnZero, yis_localVec, self%y_local, yis_localVec, scattery, ierr)
+-------------^
+helmHoltzDecomp.F90(251): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERBEGIN]
+        call VecScatterBegin(scattery, self%y_globalOnZero, self%y_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+-------------^
+helmHoltzDecomp.F90(252): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTEREND]
+        call VecScatterEnd(scattery, self%y_globalOnZero, self%y_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+-------------^
+helmHoltzDecomp.F90(256): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERDESTROY]
+        call VecScatterDestroy(scattery, ierr)
+-------------^
+helmHoltzDecomp.F90(284): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%y_globalOnZero, Ii, val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(287): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%y_globalOnZero, Ii + (mx * my), val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(290): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%y_globalOnZero, Ii + 2 * (mx * my), val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(293): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%y_globalOnZero, Ii + 3 * (mx * my), val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(309): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERCREATE]
+        call VecScatterCreate(self%y_globalOnZero, yis_localVec, self%y_local, yis_localVec, scattery, ierr)
+-------------^
+helmHoltzDecomp.F90(312): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERBEGIN]
+        call VecScatterBegin(scattery, self%y_globalOnZero, self%y_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+-------------^
+helmHoltzDecomp.F90(313): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTEREND]
+        call VecScatterEnd(scattery, self%y_globalOnZero, self%y_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+-------------^
+helmHoltzDecomp.F90(317): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERDESTROY]
+        call VecScatterDestroy(scattery, ierr)
+-------------^
+helmHoltzDecomp.F90(348): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%x_globalOnZero, Ii, val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(351): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%x_globalOnZero, Ii + (mx * my), val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(376): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERCREATE]
+        call VecScatterCreate(self%x_globalOnZero, xis_localVec, self%x_local, xis_localVec, scatterx, ierr)
+-------------^
+helmHoltzDecomp.F90(379): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERBEGIN]
+        call VecScatterBegin(scatterx, self%x_globalOnZero, self%x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+-------------^
+helmHoltzDecomp.F90(380): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTEREND]
+        call VecScatterEnd(scatterx, self%x_globalOnZero, self%x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+-------------^
+helmHoltzDecomp.F90(384): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERDESTROY]
+        call VecScatterDestroy(scatterx, ierr)
+-------------^
+helmHoltzDecomp.F90(407): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%x_globalOnZero, Ii, val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(410): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSETVALUE]
+                call VecSetValue(self%x_globalOnZero, Ii + (mx * my), val, INSERT_VALUES, ierr)
+---------------------^
+helmHoltzDecomp.F90(425): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERCREATE]
+        call VecScatterCreate(self%x_globalOnZero, xis_localVec, self%x_local, xis_localVec, scatterx, ierr)
+-------------^
+helmHoltzDecomp.F90(428): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERBEGIN]
+        call VecScatterBegin(scatterx, self%x_globalOnZero, self%x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+-------------^
+helmHoltzDecomp.F90(429): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTEREND]
+        call VecScatterEnd(scatterx, self%x_globalOnZero, self%x_local, INSERT_VALUES, SCATTER_FORWARD, ierr)
+-------------^
+helmHoltzDecomp.F90(433): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERDESTROY]
+        call VecScatterDestroy(scatterx, ierr)
+-------------^
+helmHoltzDecomp.F90(452): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERCREATETOZERO]
+        call VecScatterCreateToZero(self%x_local, gather, sol_globalOnZero, ierr)
+-------------^
+helmHoltzDecomp.F90(453): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTERBEGIN]
+        call VecScatterBegin(gather, self%x_local, sol_globalOnZero, INSERT_VALUES, SCATTER_FORWARD, ierr)
+-------------^
+helmHoltzDecomp.F90(454): warning #8889: Explicit interface or EXTERNAL declaration is required.   [VECSCATTEREND]
+        call VecScatterEnd(gather, self%x_local, sol_globalOnZero, INSERT_VALUES, SCATTER_FORWARD, ierr)
+-------------^
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  input_data_info.F90 
+input_data_info.F90(49): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+        call MPI_BCAST(num_files, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-------------^
+input_data_info.F90(50): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+        call MPI_BCAST(num_zlevels, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-------------^
+input_data_info.F90(51): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+        call MPI_BCAST(start_timeindex, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-------------^
+input_data_info.F90(52): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+        call MPI_BCAST(end_timeindex, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-------------^
+input_data_info.F90(65): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+        call MPI_BCAST(arr_z_index, num_zlevels, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-------------^
+input_data_info.F90(68): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+        call MPI_BCAST(arr_wz_index, num_zlevels+1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-------------^
+input_data_info.F90(73): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+        call MPI_BCAST(niter_laplace_smooth, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-------------^
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  interpolation.F90
+interpolation.F90(182): remark #7712: This variable has not been used.   [NEARESTINDEX]
+        integer :: shapeFineField(2), nearestIndex, ierr, i, j
+--------------------------------------^
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  read_write.F90
+read_write.F90(725): remark #7712: This variable has not been used.   [TIME_INDEX]
+    subroutine readHelmHoltzDeompFields(filename, time_index)
+--------------------------------------------------^
+read_write.F90(730): remark #7712: This variable has not been used.   [F_ERROR]
+        integer(kind=int_kind) :: f_error, ierr, file_id, ncerr, nfields, nzlevels, &
+----------------------------------^
+read_write.F90(63): remark #7712: This variable has not been used.   [F_ERROR]
+        integer(kind=int_kind) :: f_error, ierr, file_id, ncerr, nfields, nzlevels, &
+----------------------------------^
+read_write.F90(730): remark #7712: This variable has not been used.   [NFIELDS]
+        integer(kind=int_kind) :: f_error, ierr, file_id, ncerr, nfields, nzlevels, &
+-----------------------------------------------------------------^
+read_write.F90(63): remark #7712: This variable has not been used.   [NFIELDS]
+        integer(kind=int_kind) :: f_error, ierr, file_id, ncerr, nfields, nzlevels, &
+-----------------------------------------------------------------^
+read_write.F90(730): remark #7712: This variable has not been used.   [NZLEVELS]
+        integer(kind=int_kind) :: f_error, ierr, file_id, ncerr, nfields, nzlevels, &
+--------------------------------------------------------------------------^
+read_write.F90(63): remark #7712: This variable has not been used.   [NZLEVELS]
+        integer(kind=int_kind) :: f_error, ierr, file_id, ncerr, nfields, nzlevels, &
+--------------------------------------------------------------------------^
+read_write.F90(731): remark #7712: This variable has not been used.   [FIELD_COUNT3]
+                                  z_index, field_count, z_count, field_count3, fieldIndex
+-----------------------------------------------------------------^
+read_write.F90(64): remark #7712: This variable has not been used.   [FIELD_COUNT3]
+                                  z_index, field_count, z_count, field_count3, fieldIndex
+-----------------------------------------------------------------^
+read_write.F90(731): remark #7712: This variable has not been used.   [FIELDINDEX]
+                                  z_index, field_count, z_count, field_count3, fieldIndex
+-------------------------------------------------------------------------------^
+read_write.F90(64): remark #7712: This variable has not been used.   [FIELDINDEX]
+                                  z_index, field_count, z_count, field_count3, fieldIndex
+-------------------------------------------------------------------------------^
+read_write.F90(880): remark #7712: This variable has not been used.   [LATVAR_ID]
+                   timevar_id, latvar_id, lonvar_id, zvar_id, wzvar_id, &
+-------------------------------^
+read_write.F90(433): remark #7712: This variable has not been used.   [LATVAR_ID]
+                   timevar_id, latvar_id, lonvar_id, zvar_id, field_count, numvars, var_index, counter
+-------------------------------^
+read_write.F90(182): remark #7712: This variable has not been used.   [LATVAR_ID]
+                   timevar_id, latvar_id, lonvar_id, zvar_id, filtervar_id, field_count, numvars, var_index, counter
+-------------------------------^
+read_write.F90(880): remark #7712: This variable has not been used.   [LONVAR_ID]
+                   timevar_id, latvar_id, lonvar_id, zvar_id, wzvar_id, &
+------------------------------------------^
+read_write.F90(433): remark #7712: This variable has not been used.   [LONVAR_ID]
+                   timevar_id, latvar_id, lonvar_id, zvar_id, field_count, numvars, var_index, counter
+------------------------------------------^
+read_write.F90(182): remark #7712: This variable has not been used.   [LONVAR_ID]
+                   timevar_id, latvar_id, lonvar_id, zvar_id, filtervar_id, field_count, numvars, var_index, counter
+------------------------------------------^
+read_write.F90(737): remark #7712: This variable has not been used.   [NUMVARS]
+        integer numvars, dummy_count
+----------------^
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -I/home/shikhar.rai/myLibraries/petsc/include -g -O0 -traceback -check all -check bounds -check uninit   multiGridHelmHoltz.F90 -I/home/shikhar.rai/myLibraries/petsc/include 
+multiGridHelmHoltz.F90(48): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(ncoarse_factors, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+multiGridHelmHoltz.F90(49): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(absolute_tolerance, 1, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+multiGridHelmHoltz.F90(50): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(relative_tolerance, 1, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+multiGridHelmHoltz.F90(51): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(divergence_tolerance, 1, MPI_REAL , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+multiGridHelmHoltz.F90(52): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(maximum_iterations, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+multiGridHelmHoltz.F90(56): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(ncoarse_factors, 1, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+multiGridHelmHoltz.F90(64): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+            call MPI_BCAST(factorList, ncoarse_factors, MPI_INTEGER , MASTER, MPI_COMM_WORLD, i_err)
+-----------------^
+multiGridHelmHoltz.F90(177): remark #7712: This variable has not been used.   [FACTOR]
+            integer :: factor, nx, ny, shapeArr(2)
+-----------------------^
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  preprocess.F90
+preprocess.F90(102): warning #8889: Explicit interface or EXTERNAL declaration is required.   [MPI_BCAST]
+                    call MPI_BCAST(all2D_fields(:,:, counter), nxu * nyu, MPI_REAL , procid, MPI_COMM_WORLD, i_err)
+-------------------------^
+preprocess.F90(17): remark #7712: This variable has not been used.   [II]
+                   counter, z_count, iti, offset, procid, ii, jj
+----------------------------------------------------------^
+preprocess.F90(17): remark #7712: This variable has not been used.   [JJ]
+                   counter, z_count, iti, offset, procid, ii, jj
+--------------------------------------------------------------^
+mpiifort -stand f08 -warn all -c -cpp `nf-config --fflags` -g -O0 -traceback -check all -check bounds -check uninit  main.F90 -I/home/shikhar.rai/myLibraries/petsc/include
+main.F90(16): remark #7712: This variable has not been used.   [Z_INDEX]
+    integer :: file_index, time_index, z_index
+---------------------------------------^
+mpiifort -stand f08 -warn all coarsening.o configurationMod.o constants.o fields.o filterparallel.o gridModule.o helmHoltzDecomp.o input_data_info.o interpolation.o kinds.o main.o mpiwrapper.o multiGridHelmHoltz.o ncdf_wrapper.o netcdf_io.o operators.o preprocess.o read_write.o -o main.exe  -L/home/shikhar.rai/myLibraries/petsc/lib -lpetsc `nf-config --flibs`
+mv main.exe tests/

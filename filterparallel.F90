@@ -88,15 +88,18 @@ module filterparallel
             call MPI_Barrier(MPI_COMM_WORLD, i_err)
 
             do j_index=startJindex, endJindex
-                ! WRITE(*, '(A12, I4, A10, I4, A5, I4)') 'At taskid: ', taskid, '  column ', & 
-                ! j_index - startJindex + 1, ' of ', endJindex - startJindex +1
+                WRITE(*, '(A12, I4, A10, I4, A5, I4)') 'At taskid: ', taskid, '  column ', & 
+                j_index - startJindex + 1, ' of ', endJindex - startJindex +1
                 do i_index = startIindex, endIindex
                     ! condition for skipping the filterpoint for eg land
                     !call direct_filter_allVarsAtpoint(i_index, j_index)
-
+                    !print *,'i_index, j_index, filterlengthInKM', i_index, j_index, filterlengthInKM
                     call coarseGrain_FieldsAtpoint(i_index, j_index)
+                    !call MPI_Barrier(MPI_COMM_WORLD, i_err)
                     
                 end do
+                !print *, 'at taskid', taskid, 'filtered at all filterlengths at j_index', j_index
+
             end do
             
             
@@ -131,7 +134,7 @@ module filterparallel
             do filter_counter=1, num_filterlengths 
 
                 filterlengthInKM = arr_filterlengths(filter_counter)
-
+                
                 call get_boxcorners_lat_lon_grid(i_index, j_index, filterlengthInKM, &
                                     &       west_cornerindex, east_cornerindex, &
                                     &       south_cornerindex, north_cornerindex, &
@@ -139,7 +142,7 @@ module filterparallel
 
                 allocate(unfiltvars(east_west_BoxSize, north_south_BoxSize, numvars))
                 allocate(filtered_vars(numvars))
-                allocate(kernelVal(east_west_BoxSize, north_south_BoxSize) ) 
+                allocate(kernelVal(east_west_BoxSize, north_south_BoxSize) )
                 
                 call get_kernel(i_index, j_index, &       
                 &       west_cornerindex, east_cornerindex, &
@@ -150,11 +153,10 @@ module filterparallel
                 call groupUnfiltVarsForCoarseGraining(unfiltvars, east_west_BoxSize, north_south_BoxSize, numvars, &
                 &                    west_cornerindex, east_cornerindex, &
                 &                    south_cornerindex, north_cornerindex )
-
                 
                 call get_filteredVals_allVars(east_west_BoxSize, north_south_BoxSize, numvars, &
                                               unfiltvars, kernelVal, filtered_vars(:) )
-                
+
                 call assignCoarseGrainedVars(numvars,i_index, j_index, filter_counter, filtered_vars)
 
                 deallocate(unfiltvars)
@@ -162,8 +164,6 @@ module filterparallel
                 deallocate(kernelVal) 
 
             end do
-            
-
         end subroutine
 
         subroutine direct_filter_allVarsAtpoint(i_index, j_index)
@@ -488,57 +488,83 @@ module filterparallel
 
             real(kind=real_kind), intent(out) :: kernelVal(east_west_BoxSize, north_south_BoxSize)
 
-            real(kind=real_kind) :: arr_UAREA(east_west_BoxSize, north_south_BoxSize), &
-                                &   arr_ULAT(east_west_BoxSize, north_south_BoxSize), &
-                                &   arr_ULONG(east_west_BoxSize, north_south_BoxSize), &
-                                &   great_circ_dist(east_west_BoxSize, north_south_BoxSize)
+            real(kind=real_kind), allocatable, dimension(:,:) :: &
+                                &   arr_UAREA, arr_ULAT, &
+                                &   arr_ULONG, great_circ_dist, &
+                                &   pointfive, Ell_filter_by2
 
-            real(kind=real_kind) :: center_long, center_lat, pointfive(east_west_BoxSize, north_south_BoxSize), &
-                                    Ell_filter_by2(east_west_BoxSize, north_south_BoxSize)
+            real(kind=real_kind) :: center_long, center_lat 
+                                    
 
             center_long = ULONG(i_index, j_index)
             center_lat = ULAT(i_index, j_index)
+
+            allocate(arr_UAREA(east_west_BoxSize, north_south_BoxSize), &
+                &   arr_ULAT(east_west_BoxSize, north_south_BoxSize), &
+                &   arr_ULONG(east_west_BoxSize, north_south_BoxSize), &
+                &   great_circ_dist(east_west_BoxSize, north_south_BoxSize), &
+                &   pointfive(east_west_BoxSize, north_south_BoxSize), &
+                &   Ell_filter_by2(east_west_BoxSize, north_south_BoxSize))
+
 
             arr_UAREA(:,:) = UAREA(west_cornerindex: east_cornerindex, south_cornerindex:north_cornerindex)
             arr_ULONG(:,:) = ULONG(west_cornerindex: east_cornerindex, south_cornerindex:north_cornerindex)
             arr_ULAT(:,:) = ULAT(west_cornerindex: east_cornerindex, south_cornerindex:north_cornerindex) 
 
+            
             call calc_greatCircDist(center_long, center_lat, east_west_BoxSize, north_south_BoxSize, &
-                                    arr_ULONG, arr_ULAT, great_circ_dist)
+                                arr_ULONG, arr_ULAT, great_circ_dist)
 
             great_circ_dist = great_circ_dist * 1d-3 ! turn into kilometers
             Ell_Filter_by2(:,:) =  filterlengthInKM/2 
             pointfive(:,:) = 0.5
 
-            kernelVal = pointfive-0.5*tanh((great_circ_dist-Ell_Filter_by2)/10.0) * arr_UAREA
-            where (great_circ_dist > Ell_filter_by2 .OR. kernelVal .LT. 0)
+            kernelVal = (pointfive-0.5*tanh((great_circ_dist-Ell_Filter_by2)/10.0)) * arr_UAREA
+            where (great_circ_dist > (1.1 *Ell_filter_by2)) ! tolerance 10%
                 kernelVal = 0
             end where
             kernelVal = kernelVal/sum(kernelVal)
             !if (taskid .EQ. 0) print *, sum(kernelVal)
+            deallocate(arr_UAREA, arr_ULAT, &
+            &   arr_ULONG, great_circ_dist, &
+            &   pointfive, Ell_filter_by2)
         
         end subroutine
 
-        subroutine calc_greatCircDist(center_long, center_lat, xshape, yshape, arr_ULONG, arr_ULAT, distance)
+        subroutine calc_greatCircDist(center_long, center_lat, xshape, yshape, arr_ULONG, arr_ULAT, distance, debugflag)
             real(kind=real_kind), intent(in):: center_lat, center_long
             integer(kind=int_kind), intent(in) :: xshape, yshape
             real(kind=real_kind), intent(in) :: arr_ULONG( xshape, yshape), arr_ULAT( xshape, yshape)
             real(kind=real_kind), intent(out):: distance( xshape, yshape)
             
-            real(kind=real_kind):: dlambda( xshape, yshape), phi1( xshape, yshape), phi2( xshape, yshape), &
-                          &        dsigma( xshape, yshape), numerator( xshape, yshape), denominator( xshape, yshape)
+            real(kind=real_kind), allocatable:: dlambda(:,:), &
+                                                phi1(:,:), &
+                                                phi2(:,:), &
+                                                dsigma(:,:), &
+                                                numerator(:,:), &
+                                                denominator(:,:)
 
+            logical, optional :: debugflag
 
-            dlambda = arr_ULONG - center_long
-            phi1 = center_lat
-            phi2 = arr_ULAT
+            allocate(dlambda( xshape, yshape), &
+                     phi1( xshape, yshape), &
+                     phi2( xshape, yshape), &
+                     dsigma( xshape, yshape), &
+                     numerator( xshape, yshape), &
+                     denominator( xshape, yshape))
+
+            dlambda(:,:) = arr_ULONG(:,:) - center_long
+            phi1(:,:) = center_lat
+            phi2(:,:) = arr_ULAT(:,:)
 
             numerator = ( cos(phi2)*sin(dlambda) )**2 + (cos(phi1)*sin(phi2) -sin(phi1)*cos(phi2)*cos(dlambda))**2
             numerator = sqrt(numerator)
             denominator = sin(phi1)*sin(phi2) + cos(phi1)*cos(phi2)*cos(dlambda)
 
             dsigma = atan2(numerator, denominator)
-            distance = radius * dsigma
+            distance = radius * abs(dsigma)
+
+            deallocate(dlambda, phi1, phi2, dsigma, numerator, denominator)
 
         end subroutine
 
@@ -571,6 +597,18 @@ module filterparallel
 
             east_west_BoxSize = east_cornerindex - west_cornerindex + 1
             north_south_BoxSize = north_cornerindex - south_cornerindex + 1
+
+            ! if (i_index > 165 .AND. filterlengthInKM > 2000) then
+            !     print *, 'i_index, j_index, filterlengthInKM', i_index, j_index, filterlengthInKM
+            !     print *, 'east_west_BoxSize, north_south_BoxSize', east_west_BoxSize, north_south_BoxSize
+            !     stop 'print ERROR in east_west_BoxSize'
+            ! endif
+
+            ! if (north_south_BoxSize > nyu) then
+            !     print *, 'i_index, j_index, filterlengthInKM', i_index, j_index, filterlengthInKM
+            !     print *, 'east_west_BoxSize, north_south_BoxSize', east_west_BoxSize, north_south_BoxSize
+            !     stop 'print ERROR in north_south_BoxSize'
+            ! endif
 
         end subroutine
 

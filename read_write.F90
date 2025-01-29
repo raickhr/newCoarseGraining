@@ -907,7 +907,7 @@ module read_write
         !  open netcdf file
         !-------------------------------------------------------------------
     
-        ncerr = nf90_create(fullfilename, nf90_clobber, file_id)
+        ncerr = nf90_create(fullfilename, IOR(NF90_CLOBBER, NF90_NETCDF4), file_id)
         if (ncerr /= nf90_noerr) call handle_err(ncerr, 'nf90_open to write')
     
         !-------------------------------------------------------------------
@@ -1132,7 +1132,12 @@ module read_write
         ! print *, '3D scalar definition complete'
 
         ncerr = nf90_enddef(file_id)
-        if (ncerr /= nf90_noerr) stop 'at enddef'
+        ! if (ncerr /= nf90_noerr) stop 'at enddef'
+        ! print *, 'all definition complete'
+        if (ncerr /= NF90_NOERR) then
+            print *, 'Error ending define mode:', nf90_strerror(ncerr)
+            stop
+        endif
 
         ! Put time, lengthscale and z co-ordinates value
 
