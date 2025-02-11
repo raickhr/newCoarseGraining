@@ -1,5 +1,6 @@
 module mpiwrapper
     use mpi
+    implicit none
     !include 'mpif.h'
     integer :: i_err, taskid, numtasks, numworkers, mtype,  &
         & MASTER, source, dest, FROM_MASTER, FROM_WORKER, ERRORCODE

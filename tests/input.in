@@ -2,9 +2,9 @@
 InputPath = './input'
 gridFile = 'WPE_ROMS_grid.nc'
 num_of_files_to_read = 1
-num_of_scalar2D_fields_to_read = 2
+num_of_scalar2D_fields_to_read = 0
 num_of_scalar3D_fields_to_read = 0
-num_of_vector2D_fields_to_read = 0
+num_of_vector2D_fields_to_read = 1
 num_of_vector3D_fields_to_read = 0
 timevar_name = "ocean_time"
 vertdim_name = "s_rho"
@@ -25,25 +25,38 @@ num_iti_laplace_smooth = 10 ! This is the number of iterations for gaussian smoo
 OutputPath = 'output'
 /
 
-&Lists
+&fileList
 list_filenames = "temp_terms_file_000.nc"
+/
 
-! "ocean_avg_20180127_20180216.nc"
-
+&scalar2DList
 list_scalar2D_fieldsNames = "D", "shfluxbyh"
-list_scalar3D_fieldsNames = "" 
-!"H", "HT", "HTT", "Htemp_hdiff", "Htemp_vdiff", 'resHeq', 'resHTeq'
-! "salt"
+/
 
-list_vector2DX_fieldsNames = "" !"Dubar"
-list_vector2DY_fieldsNames = "" !"Dvbar"
+%scalar3DList
+list_scalar3D_fieldsNames = "" !"H", "HT", "HTT", "Htemp_hdiff", "Htemp_vdiff", 'resHeq', 'resHTeq', "salt"
+/
 
-list_vector3DX_fieldsNames = "" !"HUT", "HU"
-list_vector3DY_fieldsNames = "" !"HVT", "HV"
-list_vector3DZ_fieldsNames = "" !"HOmgT", "HOmg"
+&vector2DList
+list_vector2DX_fieldsNames = "Dubar"
+list_vector2DY_fieldsNames = "Dvbar"
+/
 
+&vector3DList
+list_vector3DX_fieldsNames = "HUT", "HU"
+list_vector3DY_fieldsNames = "HVT", "HV"
+list_vector3DZ_fieldsNames = "HOmgT", "HOmg"
+/
+
+&zlevelLists
 list_zlevels = 7, 8, 9, 10
 list_wzlevels = 7, 8, 9, 10, 11
+/
+
+&coarseFactorList
 list_coarse_factor_levels = 9, 5, 3, 2, 1  ! always should have one in the end
+/
+
+&filterLenList
 list_filterLength = 50
 /

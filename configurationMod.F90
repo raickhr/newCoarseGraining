@@ -40,7 +40,8 @@ module configurationMod
             integer :: startTimeIndex   !Start Time index for each file
             integer :: endTimeIndex   !End Time index for each file
             integer :: nx, ny, nz, nt        ! size of the array in each file
-            integer, allocatable :: list_zlevels(:) , list_wzlevels(:) ! list of zlevels to read
+            integer, allocatable :: list_zlevels(:) ! list of zlevels to read
+            integer, allocatable :: list_wzlevels(:) ! list of zlevels to read on top and bottom cell
 
             integer :: ncoarse_levels
             integer, allocatable :: list_coarse_factor_levels(:)
@@ -102,8 +103,9 @@ module configurationMod
             integer :: startTimeIndex   !Start Time index for each file
             integer :: endTimeIndex   !End Time index for each file
             integer :: nx, ny, nz, nt        ! size of the array in each file
-            integer, allocatable , dimension(:):: list_zlevels, list_wzlevels
 
+            integer, allocatable :: list_zlevels(:) ! list of zlevels to read
+            integer, allocatable :: list_wzlevels(:) ! list of zlevels to read on top and bottom cell
 
             integer :: ncoarse_levels ! number of coarsening levels for Helmholtz decomposition
             integer, allocatable :: list_coarse_factor_levels(:)
@@ -144,17 +146,30 @@ module configurationMod
                     & num_iti_laplace_smooth, &
                     & OutputPath
 
-            namelist /Lists/ &
-                    & list_filenames, &
-                    & list_scalar2D_fieldsNames, &
-                    & list_scalar3D_fieldsNames, &
+            namelist /fileList/ &
+                    & list_filenames
+
+            namelist /scalar2DList/ &
+                    & list_scalar2D_fieldsNames
+
+            namelist /scalar3DList/ &
+                    & list_scalar3D_fieldsNames
+
+            namelist /vector2DList/ &
                     & list_vector2DX_fieldsNames, &
-                    & list_vector2DY_fieldsNames, &
+                    & list_vector2DY_fieldsNames
+
+            namelist /vector3DList/ &
                     & list_vector3DX_fieldsNames, &
                     & list_vector3DY_fieldsNames, &
-                    & list_vector3DZ_fieldsNames, &
-                    & list_zlevels, list_wzlevels, &
-                    & list_coarse_factor_levels, &
+                    & list_vector3DZ_fieldsNames
+
+            namelist /zlevelLists/ &
+                    & list_zlevels, list_wzlevels
+
+            namelist /coarseFactorList/ &
+                    & list_coarse_factor_levels
+            namelist /filterLenList/ &
                     & list_filterLength
 
 
@@ -210,123 +225,169 @@ module configurationMod
             self%nfilter = nfilter
             self%num_iti_laplace_smooth = num_iti_laplace_smooth
 
-            allocate(list_filenames(num_of_files_to_read))
-            allocate(list_scalar2D_fieldsNames(num_of_scalar2D_fields_to_read))
-            allocate(list_scalar3D_fieldsNames(num_of_scalar3D_fields_to_read))
-            allocate(list_vector2DX_fieldsNames(num_of_vector2D_fields_to_read))
-            allocate(list_vector2DY_fieldsNames(num_of_vector2D_fields_to_read))
-            allocate(list_vector3DX_fieldsNames(num_of_vector3D_fields_to_read))
-            allocate(list_vector3DY_fieldsNames(num_of_vector3D_fields_to_read))
-            allocate(list_vector3DZ_fieldsNames(num_of_vector3D_fields_to_read))
-            allocate(list_zlevels(nz), list_wzlevels(nz+1))
-            allocate(list_coarse_factor_levels(ncoarse_levels))
-            allocate(list_filterLength(nfilter))
+            if ( num_of_files_to_read > 0) then 
+                allocate(list_filenames(num_of_files_to_read))
+                allocate(self%list_filenames(num_of_files_to_read))
+                read(*,fileList)
 
-            allocate(self%list_filenames(num_of_files_to_read))
-            allocate(self%list_scalar2D_fieldsNames(num_of_scalar2D_fields_to_read))
-            allocate(self%list_scalar3D_fieldsNames(num_of_scalar3D_fields_to_read))
-            allocate(self%list_vector2DX_fieldsNames(num_of_vector2D_fields_to_read))
-            allocate(self%list_vector2DY_fieldsNames(num_of_vector2D_fields_to_read))
-            allocate(self%list_vector3DX_fieldsNames(num_of_vector3D_fields_to_read))
-            allocate(self%list_vector3DY_fieldsNames(num_of_vector3D_fields_to_read))
-            allocate(self%list_vector3DZ_fieldsNames(num_of_vector3D_fields_to_read))
-            allocate(self%list_zlevels(nz), self%list_wzlevels(nz+1))
-            allocate(self%list_coarse_factor_levels(ncoarse_levels))
-            allocate(self%list_filterLength(nfilter))
+                print *, ' Following are the filenames that will be read'
+                do counter=1, num_of_files_to_read
+                    WRITE(*,'(A50)') trim(adjustl(list_filenames(counter)))
+                    self%list_filenames(counter) = trim(adjustl(list_filenames(counter)))
+                end do
+                print *, ' '
+                print *, ' '
 
-            read(*, Lists)
-            
-            print *, ' Following are the filenames that will be read'
-            do counter=1, num_of_files_to_read
-                WRITE(*,'(A50)') trim(adjustl(list_filenames(counter)))
-                self%list_filenames(counter) = trim(adjustl(list_filenames(counter)))
-            end do
-            print *, ' '
-            print *, ' '
+                deallocate(list_filenames)
+            endif
 
-            print *, ' Following are the 2D scalar fieldnames that will be read'
-            do counter=1, num_of_scalar2D_fields_to_read
-                WRITE(*,'(A25)') trim(adjustl(list_scalar2D_fieldsNames(counter)))
-                self%list_scalar2D_fieldsNames(counter) = trim(adjustl(list_scalar2D_fieldsNames(counter)))
-            end do
-            print *, ' '
-            print *, ' '
+            if ( num_of_scalar2D_fields_to_read > 0) then 
+                
+                allocate(list_scalar2D_fieldsNames(num_of_scalar2D_fields_to_read))
+                allocate(self%list_scalar2D_fieldsNames(num_of_scalar2D_fields_to_read))
 
-            print *, ' Following are the 3D scalar fieldnames that will be read'
-            do counter=1, num_of_scalar3D_fields_to_read
-                WRITE(*,'(A25)') trim(adjustl(list_scalar3D_fieldsNames(counter)))
-                self%list_scalar3D_fieldsNames(counter) = trim(adjustl(list_scalar3D_fieldsNames(counter)))
-            end do
-            print *, ' '
-            print *, ' '
+                read(*,scalar2DList)
 
-            print *, ' Following are the 2D vector fieldnames that will be read'
-            do counter=1, num_of_vector2D_fields_to_read
-                WRITE(*,'(A25, A25)') trim(adjustl(list_vector2DX_fieldsNames(counter))), &
-                                      trim(adjustl(list_vector2DY_fieldsNames(counter)))
-                self%list_vector2DX_fieldsNames(counter) = trim(adjustl(list_vector2DX_fieldsNames(counter)))
-                self%list_vector2DY_fieldsNames(counter) = trim(adjustl(list_vector2DY_fieldsNames(counter)))
-            end do
-            print *, ' '
-            print *, ' '
+                print *, ' Following are the 2D scalar fieldnames that will be read'
+                do counter=1, num_of_scalar2D_fields_to_read
+                    WRITE(*,'(A25)') trim(adjustl(list_scalar2D_fieldsNames(counter)))
+                    self%list_scalar2D_fieldsNames(counter) = trim(adjustl(list_scalar2D_fieldsNames(counter)))
+                end do
+                print *, ' '
+                print *, ' '
+                deallocate(list_scalar2D_fieldsNames)
 
-            print *, ' Following are the 3D vector fieldnames that will be read'
-            do counter=1, num_of_vector3D_fields_to_read
-                WRITE(*,'(A25,A25, A25)') trim(adjustl(list_vector3DX_fieldsNames(counter))), &
-                                    &     trim(adjustl(list_vector3DY_fieldsNames(counter))), &
-                                    &     trim(adjustl(list_vector3DZ_fieldsNames(counter)))
-                self%list_vector3DX_fieldsNames(counter) = trim(adjustl(list_vector3DX_fieldsNames(counter)))
-                self%list_vector3DY_fieldsNames(counter) = trim(adjustl(list_vector3DY_fieldsNames(counter)))
-                self%list_vector3DZ_fieldsNames(counter) = trim(adjustl(list_vector3DZ_fieldsNames(counter)))
-            end do
-            print *, ' '
-            print *, ' '
+            endif
 
-            print *, ' Following are the vertical level indices that will be read'
-            do counter=1, nz
-                WRITE(*,'(I50)') list_zlevels(counter)
-                self%list_zlevels(counter) = list_zlevels(counter)
-            end do
-            print *, ' '
-            print *, ' '
+            if ( num_of_scalar3D_fields_to_read > 0) then 
+               
+                allocate(list_scalar3D_fieldsNames(num_of_scalar3D_fields_to_read))
+                allocate(self%list_scalar3D_fieldsNames(num_of_scalar3D_fields_to_read))
 
-            print *, ' Following are the vertical level indices for top/bottom faces that will be read'
-            do counter=1, nz+1
-                WRITE(*,'(I50)') list_wzlevels(counter)
-                self%list_wzlevels(counter) = list_wzlevels(counter)
-            end do
-            print *, ' '
-            print *, ' '
+                read(*,scalar3DList)
 
-            print *, ' Following are the coarsening levels for Helmholtz decomposition ' 
-            do counter=1, ncoarse_levels
-                WRITE(*,'(I50)') list_coarse_factor_levels(counter)
-                self%list_coarse_factor_levels(counter) = list_coarse_factor_levels(counter)
-            end do
-            print *, ' '
-            print *, ' '
-            
-            print *, ' Following are the filterlengths ' 
-            do counter=1, nfilter
-                WRITE(*,'(F50.3)') list_filterLength(counter)
-                self%list_filterLength(counter) = list_filterLength(counter)
-            end do
-            print *, ' '
-            print *, ' '
+                print *, ' Following are the 3D scalar fieldnames that will be read'
+                do counter=1, num_of_scalar3D_fields_to_read
+                    WRITE(*,'(A25)') trim(adjustl(list_scalar3D_fieldsNames(counter)))
+                    self%list_scalar3D_fieldsNames(counter) = trim(adjustl(list_scalar3D_fieldsNames(counter)))
+                end do
+                print *, ' '
+                print *, ' '
 
-            print *, "Configuration read and set SUCCESS "
+                deallocate(list_scalar3D_fieldsNames)
+            endif
 
-            deallocate(list_filenames)
-            deallocate(list_scalar2D_fieldsNames)
-            deallocate(list_scalar3D_fieldsNames)
-            deallocate(list_vector2DX_fieldsNames)
-            deallocate(list_vector2DY_fieldsNames)
-            deallocate(list_vector3DX_fieldsNames)
-            deallocate(list_vector3DY_fieldsNames)
-            deallocate(list_vector3DZ_fieldsNames)
-            deallocate(list_zlevels, list_wzlevels)
-            deallocate(list_coarse_factor_levels)
-            deallocate(list_filterLength)
+
+            if ( num_of_vector2D_fields_to_read > 0) then
+                
+                allocate(list_vector2DX_fieldsNames(num_of_vector2D_fields_to_read))
+                allocate(list_vector2DY_fieldsNames(num_of_vector2D_fields_to_read))
+
+                allocate(self%list_vector2DX_fieldsNames(num_of_vector2D_fields_to_read))
+                allocate(self%list_vector2DY_fieldsNames(num_of_vector2D_fields_to_read))
+
+                read(*,vector2DList)
+
+                print *, ' Following are the 2D vector fieldnames that will be read'
+                do counter=1, num_of_vector2D_fields_to_read
+                    WRITE(*,'(A25, A25)') trim(adjustl(list_vector2DX_fieldsNames(counter))), &
+                                        trim(adjustl(list_vector2DY_fieldsNames(counter)))
+                    self%list_vector2DX_fieldsNames(counter) = trim(adjustl(list_vector2DX_fieldsNames(counter)))
+                    self%list_vector2DY_fieldsNames(counter) = trim(adjustl(list_vector2DY_fieldsNames(counter)))
+                end do
+                print *, ' '
+                print *, ' '
+
+                deallocate(list_vector2DX_fieldsNames) 
+                deallocate(list_vector2DY_fieldsNames) 
+
+            endif
+
+            if ( num_of_vector3D_fields_to_read > 0) then
+                
+                allocate(list_vector3DX_fieldsNames(num_of_vector3D_fields_to_read))
+                allocate(list_vector3DY_fieldsNames(num_of_vector3D_fields_to_read))
+                allocate(list_vector3DZ_fieldsNames(num_of_vector3D_fields_to_read))
+
+                allocate(self%list_vector3DX_fieldsNames(num_of_vector3D_fields_to_read))
+                allocate(self%list_vector3DY_fieldsNames(num_of_vector3D_fields_to_read))
+                allocate(self%list_vector3DZ_fieldsNames(num_of_vector3D_fields_to_read))
+
+                read(*,vector3DList)
+
+                print *, ' Following are the 3D vector fieldnames that will be read'
+                do counter=1, num_of_vector3D_fields_to_read
+                    WRITE(*,'(A25,A25, A25)') trim(adjustl(list_vector3DX_fieldsNames(counter))), &
+                                        &     trim(adjustl(list_vector3DY_fieldsNames(counter))), &
+                                        &     trim(adjustl(list_vector3DZ_fieldsNames(counter)))
+                    self%list_vector3DX_fieldsNames(counter) = trim(adjustl(list_vector3DX_fieldsNames(counter)))
+                    self%list_vector3DY_fieldsNames(counter) = trim(adjustl(list_vector3DY_fieldsNames(counter)))
+                    self%list_vector3DZ_fieldsNames(counter) = trim(adjustl(list_vector3DZ_fieldsNames(counter)))
+                end do
+                print *, ' '
+                print *, ' '
+
+                deallocate(list_vector3DX_fieldsNames)
+                deallocate(list_vector3DY_fieldsNames)
+                deallocate(list_vector3DZ_fieldsNames)
+
+            endif
+
+            if ( nz > 0) then
+                
+                allocate(list_zlevels(nz), list_wzlevels(nz+1))
+                allocate(self%list_zlevels(nz), self%list_wzlevels(nz+1))
+                read(*,zlevelLists)
+
+                print *, ' Following are the vertical level indices that will be read'
+                do counter=1, nz
+                    WRITE(*,'(I50)') list_zlevels(counter)
+                    self%list_zlevels(counter) = list_zlevels(counter)
+                end do
+                print *, ' '
+                print *, ' '
+
+                print *, ' Following are the vertical level indices for top/bottom faces that will be read'
+                do counter=1, nz+1
+                    WRITE(*,'(I50)') list_wzlevels(counter)
+                    self%list_wzlevels(counter) = list_wzlevels(counter)
+                end do
+                print *, ' '
+                print *, ' '
+
+                deallocate(list_zlevels, list_wzlevels)
+
+            endif
+
+            if ( ncoarse_levels > 0) then 
+                allocate(list_coarse_factor_levels(ncoarse_levels))
+                allocate(self%list_coarse_factor_levels(ncoarse_levels))
+                read(*,coarseFactorList)
+                print *, ' Following are the coarsening levels for Helmholtz decomposition ' 
+                do counter=1, ncoarse_levels
+                    WRITE(*,'(I50)') list_coarse_factor_levels(counter)
+                    self%list_coarse_factor_levels(counter) = list_coarse_factor_levels(counter)
+                end do
+                print *, ' '
+                print *, ' '
+                deallocate(list_coarse_factor_levels)
+            endif
+
+            if ( nfilter > 0) then 
+                allocate(list_filterLength(nfilter))
+                allocate(self%list_filterLength(nfilter))
+                read(*, filterLenList)
+                print *, ' Following are the filterlengths ' 
+                do counter=1, nfilter
+                    WRITE(*,'(F50.3)') list_filterLength(counter)
+                    self%list_filterLength(counter) = list_filterLength(counter)
+                end do
+                print *, ' '
+                print *, ' '
+                deallocate(list_filterLength)
+            endif
+
+            print *, "Configuration read and set SUCCESS"
 
         end subroutine new_configuration
 
@@ -341,6 +402,7 @@ module configurationMod
             if (allocated(self%list_vector3DY_fieldsNames)) deallocate(self%list_vector3DY_fieldsNames)
             if (allocated(self%list_vector3DZ_fieldsNames)) deallocate(self%list_vector3DZ_fieldsNames)
             if (allocated(self%list_zlevels)) deallocate(self%list_zlevels)
+            if (allocated(self%list_wzlevels)) deallocate(self%list_wzlevels)
             if (allocated(self%list_filterLength)) deallocate(self%list_filterLength)
 
         end subroutine

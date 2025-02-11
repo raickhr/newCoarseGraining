@@ -76,10 +76,9 @@ module preprocess
         end do  
         
         call MPI_Barrier(MPI_COMM_WORLD, i_err)  
-
         ! Gaussian smoothing 
-        if (arr_num2D_fields_in_thisproc(taskid) > 0 ) then
-            do counter = start_indices(taskid), end_indices(taskid)
+        if (arr_num2D_fields_in_thisproc(taskid + 1) > 0 ) then
+            do counter = start_indices(taskid + 1), end_indices(taskid + 1)
                 dummy2D = all2D_fields(:,:, counter)
                 do iti =1, niter_laplace_smooth
                     dummy2D_new = 0.0
@@ -103,11 +102,12 @@ module preprocess
         endif
 
         call MPI_Barrier(MPI_COMM_WORLD, i_err)
+        if (taskid == 0) print *, 'smooth complete'
 
         ! Broadcasting smoothed fields
         do procid = 0, numtasks-1
-            if (arr_num2D_fields_in_thisproc(procid) > 0 ) then
-                do counter = start_indices(procid), end_indices(procid)
+            if (arr_num2D_fields_in_thisproc(procid + 1) > 0 ) then
+                do counter = start_indices(procid + 1), end_indices(procid + 1)
                     call MPI_BCAST(all2D_fields(:,:, counter), nxu * nyu, MPI_REAL , procid, MPI_COMM_WORLD, i_err)
                     call MPI_Barrier(MPI_COMM_WORLD, i_err)
                 end do
