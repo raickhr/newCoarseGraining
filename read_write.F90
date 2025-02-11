@@ -1177,7 +1177,7 @@ module read_write
             var_index = 1
             do field_count =1, num_scalar2D_fields
                 dummy2d(:,:, 1,1) = OL_scalar2D_fields(:,:, field_count, counter)
-                ncerr = nf90_put_var(file_id, varids(var_index), dummy3d,       &
+                ncerr = nf90_put_var(file_id, varids(var_index), dummy2d,       &
                         start = (/1, 1, counter, 1/), &
                         count = (/nxu, nyu, 1, 1 /))
                 var_index = var_index + 1    

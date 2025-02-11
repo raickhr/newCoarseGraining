@@ -3,9 +3,9 @@ InputPath = './input'
 gridFile = 'WPE_ROMS_grid.nc'
 num_of_files_to_read = 1
 num_of_scalar2D_fields_to_read = 2
-num_of_scalar3D_fields_to_read = 7
-num_of_vector2D_fields_to_read = 1
-num_of_vector3D_fields_to_read = 2
+num_of_scalar3D_fields_to_read = 0
+num_of_vector2D_fields_to_read = 0
+num_of_vector3D_fields_to_read = 0
 timevar_name = "ocean_time"
 vertdim_name = "s_rho"
 wvertdim_name = "s_w"  ! This is the vertical co-ordinate name for vertical velocity
@@ -20,8 +20,8 @@ max_iterations = 500 ! This is the number of iterations for Helmholtz decomposit
 abs_tol = 1d-10      ! absolute tolerance for Helmholtz decomposition
 rel_tol = 1d-10      ! relative tolerance for Helmholtz decomposition
 div_tol = 1d10       ! divergence tolerance for Helmholtz decomposition
-nfilter = 8
-num_iti_laplace_smooth = 1000 ! This is the number of iterations for gaussian smootihg in land points
+nfilter = 1
+num_iti_laplace_smooth = 10 ! This is the number of iterations for gaussian smootihg in land points
 OutputPath = 'output'
 /
 
@@ -30,19 +30,20 @@ list_filenames = "temp_terms_file_000.nc"
 
 ! "ocean_avg_20180127_20180216.nc"
 
-list_scalar2D_fieldsNames = "D", "hshflux"
-list_scalar3D_fieldsNames = "H", "HT", "HTT", "Htemp_hdiff", "Htemp_vdiff", 'resHeq', 'resHTeq'
+list_scalar2D_fieldsNames = "D", "shfluxbyh"
+list_scalar3D_fieldsNames = "" 
+!"H", "HT", "HTT", "Htemp_hdiff", "Htemp_vdiff", 'resHeq', 'resHTeq'
 ! "salt"
 
-list_vector2DX_fieldsNames = "Dubar"
-list_vector2DY_fieldsNames = "Dvbar"
+list_vector2DX_fieldsNames = "" !"Dubar"
+list_vector2DY_fieldsNames = "" !"Dvbar"
 
-list_vector3DX_fieldsNames = "HUT", "HU"
-list_vector3DY_fieldsNames = "HVT", "HV"
-list_vector3DZ_fieldsNames = "HOmgT", "HOmg"
+list_vector3DX_fieldsNames = "" !"HUT", "HU"
+list_vector3DY_fieldsNames = "" !"HVT", "HV"
+list_vector3DZ_fieldsNames = "" !"HOmgT", "HOmg"
 
 list_zlevels = 7, 8, 9, 10
 list_wzlevels = 7, 8, 9, 10, 11
 list_coarse_factor_levels = 9, 5, 3, 2, 1  ! always should have one in the end
-list_filterLength = 20.0 , 40.0 , 80.0 , 160.0 , 320.0, 640.0 ,1280.0, 2560.0
+list_filterLength = 50
 /

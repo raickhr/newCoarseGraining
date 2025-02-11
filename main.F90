@@ -36,9 +36,8 @@ program main
 
 #ifdef HELMHOLTZ
     call init_helmholtz()
-#endif
-
     if (taskid == 0) print *, 'helmholtz initialized'
+#endif
 
     call init_filtering()
 
@@ -108,6 +107,8 @@ program main
             end if
             
             call filter_allvars()
+            call MPI_Barrier(MPI_COMM_WORLD, i_err)
+            
             
             if (taskid .EQ. MASTER) then 
                 print *, ''

@@ -15,16 +15,25 @@ module preprocess
     subroutine laplaceSmoothLand()
         integer :: num2D_fields, avg_num2D_fields, rem_num2D_fields, &
                    counter, z_count, iti, offset, procid, ii, jj
-        integer, allocatable :: start_indices(:), end_indices(:), arr_num2D_fields_in_thisproc(:)
 
-        real(kind=real_kind), allocatable :: all2D_fields(:,:,:), dummy2D(:,:), dummy2D_new(:,:)
+        integer, allocatable :: start_indices(:),&
+                                end_indices(:), &
+                                arr_num2D_fields_in_thisproc(:)
+
+        real(kind=real_kind), allocatable :: all2D_fields(:,:,:), &
+                                             dummy2D(:,:), &
+                                             dummy2D_new(:,:)
         
         num2D_fields = num_scalar2D_fields + (num_scalar3D_fields * nzu)
 
         if (taskid .EQ. 0) print *,' extending values at land points by laplace smoothing'
 
-        allocate(start_indices(numtasks), end_indices(numtasks), arr_num2D_fields_in_thisproc(numtasks))
-        allocate(all2D_fields(nxu, nyu, num2D_fields), dummy2D(nxu, nyu), &
+        allocate(start_indices(numtasks), &
+                 end_indices(numtasks), &
+                 arr_num2D_fields_in_thisproc(numtasks))
+
+        allocate(all2D_fields(nxu, nyu, num2D_fields), &
+                 dummy2D(nxu, nyu), &
                  dummy2D_new(nxu, nyu))
 
         offset = 1
@@ -54,12 +63,12 @@ module preprocess
             else
                 arr_num2D_fields_in_thisproc(counter) = avg_num2D_fields
             endif
+            
             if (arr_num2D_fields_in_thisproc(counter) > 0 ) then
                 start_indices(counter) = offset
                 end_indices(counter) = offset + arr_num2D_fields_in_thisproc(counter) -1
                 offset = offset + arr_num2D_fields_in_thisproc(counter)
-                ! if (taskid .EQ. 0) print *, counter, arr_num2D_fields_in_thisproc(counter), &
-                !                             start_indices(counter) , end_indices(counter) 
+                
             else 
                 start_indices(counter) = 0
                 end_indices(counter) = 0 
@@ -86,10 +95,10 @@ module preprocess
                     dummy2D(:,nyu) = dummy2D(:,nyu-1)
                     
                     where(KMU > 0)
-                        dummy2D = all2D_fields(:,:, counter)
+                        dummy2D(:,:) = all2D_fields(:,:, counter)
                     endwhere
                 end do
-                all2D_fields(:,:, counter) = dummy2D
+                all2D_fields(:,:, counter) = dummy2D(:,:)
             end do
         endif
 
