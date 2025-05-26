@@ -11,4 +11,3 @@ tests/*.c
 **/*.exe
 **/test.*
 **/*ipynb*
-**/*.py
