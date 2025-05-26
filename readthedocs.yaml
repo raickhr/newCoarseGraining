@@ -6,8 +6,7 @@ build:
     python: "3.9"
 
 sphinx:
-  configuration: source/conf.py  # or docs/conf.py if inside docs/ folder
-
+  configuration: source/conf.py  
 python:
   install:
     - requirements: requirements.txt
